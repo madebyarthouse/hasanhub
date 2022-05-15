@@ -6,7 +6,7 @@ const Header = () => {
       <Link to="/" prefetch="render">
         <h1 className="text-4xl lg:text-7xl font-bold text-left group">
           Hasan
-          <span className="dark:text-black text-white inline-block bg-twitchPurpleLight group-hover:bg-twitchPurple p-2 ml-2 rounded-lg">
+          <span className="dark:text-black text-white inline-block bg-twitchPurpleLight group-hover:bg-twitchPurple p-2 ml-2 rounded-lg saturate-50">
             Hub
           </span>
         </h1>
@@ -14,12 +14,20 @@ const Header = () => {
 
       <div className="flex flex-row space-x-3 items-center">
         <a
-          href="https://twitch.tv/chrcit"
+          href="https://twitter.com/chrcit"
           target="_blank"
           rel="noreferrer"
-          className="bg-twitchPurpleLight text-white text-center font-bold hover:bg-twitchPurple px-4 py-2 rounded"
+          className="bg-twitchPurpleLight saturate-50 text-white text-center font-bold hover:bg-twitchPurple px-4 py-2 rounded"
         >
-          Made by chrcit
+          @chrcit
+        </a>
+        <a
+          href="https://buymeacoffee.com/chrcit"
+          target="_blank"
+          rel="noreferrer"
+          className="bg-twitchPurpleLight saturate-50 text-white text-center font-bold hover:bg-twitchPurple px-4 py-2 rounded"
+        >
+          Buy me a coffee
         </a>
       </div>
     </header>

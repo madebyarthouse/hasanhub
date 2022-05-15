@@ -1,5 +1,3 @@
-import type { Tag } from "@prisma/client";
-import { motion } from "framer-motion";
 import cx from "classnames";
 import { Link } from "@remix-run/react";
 
