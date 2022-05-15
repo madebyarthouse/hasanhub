@@ -1,8 +1,8 @@
-import { Channel, Tag, TagVideo, Video } from '@prisma/client';
-import VideoGridItem from './VideoGridItem';
-import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
-import React, { Fragment, useState } from 'react';
-import Filters, { TimeFilterOptions } from './filters';
+import { Channel, Tag, TagVideo, Video } from "@prisma/client";
+import VideoGridItem from "./VideoGridItem";
+import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
+import React, { Fragment, useState } from "react";
+import Filters, { TimeFilterOptions } from "./filters";
 
 type VideoType = Video & {
   channel: Channel | null;
@@ -15,8 +15,10 @@ type Props = {
   videos: VideoType[];
   title: string;
   totalVideosCount: number;
-  handleLoadMore: (e: React.MouseEvent<HTMLAnchorElement>) => Promise<void>;
+  handleLoadMore: (lastVideoId: number | null) => Promise<void>;
   loading?: boolean;
+  loadingMore?: boolean;
+  loadMoreUrl: string;
 };
 
 const gridContainerVariants = {
@@ -44,20 +46,23 @@ const VideosGrid = ({
   handleLoadMore,
   totalVideosCount,
   loading = false,
+  loadingMore = false,
+  loadMoreUrl,
 }: Props) => {
+  const lastVideoId = videos ? videos[videos.length - 1]?.id : null;
   return (
     <section aria-label={title} className="w-full lg:w-3/4 xl:w-4/5">
       <div className="sticky top-0 w-full gap-1 text-left sm:gap-3 bg-white dark:bg-black z-20 flex flex-col md:flex-row md:items-center lg:flex-col lg:items-start justify-between px-3 lg:px-0 mb-5 py-5">
         <h1 className="text-4xl md:text-5xl mt-0">{title}</h1>
         <div className="text-sm font-semibold">
-          <strong className="font-extrabold">{videos.length}</strong> of{' '}
+          <strong className="font-extrabold">{videos.length}</strong> of{" "}
           <strong className="font-extrabold">{totalVideosCount}</strong> Videos
           shown
         </div>
       </div>
 
       {loading ? (
-        'Loading...'
+        "Loading..."
       ) : (
         <>
           <motion.ul
@@ -82,11 +87,15 @@ const VideosGrid = ({
           <div className="w-full flex justify-center items-center my-10">
             {totalVideosCount > videos.length ? (
               <a
-                href="#"
-                onClick={handleLoadMore}
+                href={`${loadMoreUrl}=${lastVideoId}`}
+                onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                  e.preventDefault();
+
+                  handleLoadMore(lastVideoId);
+                }}
                 className="bg-twitchPurpleLight text-white text-center font-bold hover:bg-twitchPurple px-4 py-2 rounded inline-block"
               >
-                Load more
+                {loadingMore ? "Loading..." : "Load more"}
               </a>
             ) : (
               <span>All done</span>

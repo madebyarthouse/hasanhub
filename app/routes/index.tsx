@@ -1,10 +1,18 @@
-import { useState } from "react";
-import { json, LoaderFunction, MetaFunction } from "@remix-run/node";
-import { useLoaderData, useTransition } from "@remix-run/react";
-import type { Tag } from "@prisma/client";
+import { json } from "@remix-run/node";
+import type { LoaderFunction, MetaFunction } from "@remix-run/node";
+import {
+  useFetcher,
+  useLoaderData,
+  useSearchParams,
+  useTransition,
+} from "@remix-run/react";
 import { prisma } from "~/utils/prisma.server";
 import VideosGrid from "~/components/VideosGrid";
 import getVideos from "../lib/getVideos";
+import { useEffect, useState } from "react";
+import { z } from "zod";
+import { TimeFilterOptions } from "../lib/getVideos";
+import useFilterParams from "~/hooks/useSearchParams";
 
 export function headers() {
   return {
@@ -12,8 +20,30 @@ export function headers() {
   };
 }
 
+const durationParam = z.enum(["all", "short", "medium", "long", "extralong"]);
+const lastVideoIdParam = z.number();
+
 export const loader: LoaderFunction = async ({ request }) => {
-  const [videos, totalVideosCount] = await getVideos({});
+  const url = new URL(request.url);
+  const duration = url.searchParams.get("duration");
+  const lastVideoId = url.searchParams.get("lastVideoId");
+
+  let getParams: {
+    duration?: TimeFilterOptions;
+    lastVideoId?: number;
+  } = {};
+
+  if (duration) {
+    durationParam.parse(duration);
+    getParams["duration"] = duration;
+  }
+  if (lastVideoId) {
+    lastVideoIdParam.parse(parseInt(lastVideoId));
+    getParams["lastVideoId"] = parseInt(lastVideoId);
+  }
+
+  console.log(getParams);
+  const [videos, totalVideosCount] = await getVideos(getParams);
 
   await prisma.$disconnect();
 
@@ -22,10 +52,26 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 export default function Index() {
   const { totalVideosCount, videos } = useLoaderData();
-  const transition = useTransition();
+  console.log(videos);
+  const [liveVideos, setLiveVideos] = useState<typeof videos>(videos);
+  const fetcher = useFetcher();
+  const { transitionState, durationFilter, nextDurationFilter } =
+    useFilterParams();
 
-  const handleLoadMore = async (e: React.MouseEvent<HTMLAnchorElement>) => {
-    console.log(e);
+  const loaderUrl = `?index&duration=${
+    nextDurationFilter ?? durationFilter
+  }&lastVideoId`;
+
+  useEffect(() => {
+    console.log("fetcher useEffect", fetcher.data);
+    if (fetcher.data && fetcher.data.videos.length > 0) {
+      setLiveVideos((prev) => [...prev, ...fetcher.data.videos]);
+    }
+  }, [fetcher.data]);
+
+  const handleLoadMore = async (lastVideoId: number | null) => {
+    console.log("handleLoadMore", lastVideoId);
+    fetcher.load(`${loaderUrl}=${lastVideoId}`);
   };
 
   return (
@@ -33,8 +79,10 @@ export default function Index() {
       totalVideosCount={totalVideosCount}
       handleLoadMore={handleLoadMore}
       title={"Latest Videos"}
-      videos={videos}
-      loading={transition.state === "loading"}
+      videos={liveVideos}
+      loading={transitionState === "loading"}
+      loadMoreUrl={loaderUrl}
+      loadingMore={fetcher.state === "loading"}
     />
   );
 }

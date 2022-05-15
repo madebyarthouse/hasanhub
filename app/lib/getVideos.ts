@@ -33,7 +33,7 @@ const getMinxMaxForTimeFilter = (time?: TimeFilterOptions) => {
         minSeconds = 60 * 15;
         maxSeconds = 60 * 30;
         break;
-      case "extraLong":
+      case "extralong":
         minSeconds = 60 * 30;
         maxSeconds = 999999999;
         break;
@@ -46,11 +46,10 @@ const getMinxMaxForTimeFilter = (time?: TimeFilterOptions) => {
     return [minSeconds, maxSeconds];
 }
 
-type GetVideosArgs = {tagSlugs?: string[]; order?: 'asc' | 'desc'; time?: TimeFilterOptions; lastVideoId?: number; take?: number};
+type GetVideosArgs = {tagSlugs?: string[]; order?: 'asc' | 'desc'; duration?: TimeFilterOptions; lastVideoId?: number; take?: number};
 
 const getVideos = async ({tagSlugs, order, duration, lastVideoId, take}: GetVideosArgs) => {    
     let conditions: {tags?: object, publishedAt?: object, duration?: object, disabled?: boolean } = {};
-    console.log(tagSlugs);
     if (tagSlugs) {
         conditions['tags'] = { some: { tag: { slug: { in: tagSlugs } } } };
     }
@@ -58,9 +57,9 @@ const getVideos = async ({tagSlugs, order, duration, lastVideoId, take}: GetVide
     const lastPublishedAt = lastVideoId ? (await getLastVideo(lastVideoId))?.publishedAt : null;
     if (lastPublishedAt) {
         if (order === 'asc') {
-            conditions['publishedAt'] = {publishedAt: { gt: lastPublishedAt }}
+            conditions['publishedAt'] = { gt: lastPublishedAt }
         } else {
-            conditions['publishedAt'] = {publishedAt: { lt: lastPublishedAt }}
+            conditions['publishedAt'] = { lt: lastPublishedAt }
         }
     }
 

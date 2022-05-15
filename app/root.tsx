@@ -94,17 +94,11 @@ export default function App() {
   const nextSearchParams = new URLSearchParams(transition.location?.search);
   const nextDuration = nextSearchParams.get("duration");
 
-  console.log(durationFilter, nextDuration);
-
   const handleTimeFilterChange = async (value: TimeFilterOptions) => {
     console.log(value);
   };
 
   const handleTagsChanged = async (slugs: string[]) => {};
-
-  const handleLoadMore = async (e: React.MouseEvent<HTMLAnchorElement>) => {
-    console.log(e);
-  };
 
   return (
     <html lang="en">

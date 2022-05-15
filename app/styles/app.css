@@ -497,6 +497,14 @@ Ensure the default browser behavior of the `hidden` attribute.
   top: 0px;
 }
 
+.bottom-1 {
+  bottom: 0.25rem;
+}
+
+.right-1 {
+  right: 0.25rem;
+}
+
 .z-20 {
   z-index: 20;
 }
@@ -576,6 +584,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   min-width: -webkit-max-content;
   min-width: -moz-max-content;
   min-width: max-content;
+}
+
+.flex-1 {
+  flex: 1 1 0%;
 }
 
 .flex-grow {
@@ -709,8 +721,21 @@ Ensure the default browser behavior of the `hidden` attribute.
   background-color: rgb(119 44 232 / var(--tw-bg-opacity));
 }
 
+.bg-black {
+  --tw-bg-opacity: 1;
+  background-color: rgb(24 24 27 / var(--tw-bg-opacity));
+}
+
 .bg-opacity-80 {
   --tw-bg-opacity: 0.8;
+}
+
+.bg-cover {
+  background-size: cover;
+}
+
+.bg-center {
+  background-position: center;
 }
 
 .p-2 {
@@ -783,6 +808,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .text-center {
   text-align: center;
+}
+
+.text-right {
+  text-align: right;
 }
 
 .text-sm {

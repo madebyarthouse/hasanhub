@@ -1,10 +1,7 @@
 import type { Tag } from "@prisma/client";
 import TagButton from "./tagButton";
-import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
-import Filters, { TimeFilterOptions } from "./filters";
-import * as ToggleGroup from "@radix-ui/react-toggle-group";
-import cx from "classnames";
-import { useTransition } from "@remix-run/react";
+import { motion } from "framer-motion";
+import type { TimeFilterOptions } from "./filters";
 
 const gridContainerVariants = {
   hidden: { opacity: 0 },
@@ -45,6 +42,8 @@ const Sidebar = ({
           <motion.ul
             className="flex flex-row flex-wrap rounded gap-3"
             variants={gridContainerVariants}
+            initial="hidden"
+            animate="visible"
           >
             {[
               { value: "all", label: "All" },
@@ -53,13 +52,14 @@ const Sidebar = ({
               { value: "long", label: "15-30min" },
               { value: "extralong", label: "> 30 min" },
             ].map(({ value, label }) => (
-              <TagButton
-                href={`?duration=${value}`}
-                key={value}
-                styleVariant="sidebar"
-                label={label}
-                active={durationFilter === value}
-              />
+              <motion.li variants={gridElVariant} key={value}>
+                <TagButton
+                  href={`?duration=${value}`}
+                  styleVariant="sidebar"
+                  label={label}
+                  active={durationFilter === value}
+                />
+              </motion.li>
             ))}
           </motion.ul>
 
@@ -68,7 +68,6 @@ const Sidebar = ({
             variants={gridContainerVariants}
             initial="hidden"
             animate="visible"
-            layout
             className="grid pb-3  lg:pb-0  grid-flow-col grid-rows-4 lg:flex lg:flex-row flex-nowrap lg:flex-wrap gap-y-2 gap-x-3 text-base overflow-x-auto lg:overflow-x-visible"
           >
             {tags.map((tag) => (

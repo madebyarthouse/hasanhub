@@ -16,7 +16,8 @@ const formatDuration = (duration: number) => {
   const seconds = Math.floor(duration % 60);
 
   const hoursString = hours > 0 ? hours : "";
-  const minutesString = hours > 0 ? `0${minutes}` : `${minutes}`;
+  const minutesString =
+    hours > 0 && minutes < 10 ? `0${minutes}` : `${minutes}`;
   const secondsString = seconds > 9 ? `${seconds}` : `0${seconds}`;
 
   return [hoursString, minutesString, secondsString].filter(Boolean).join(":");
@@ -46,17 +47,28 @@ const VideoGridItem = ({
             target="_blank"
             href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
           >
-            <img alt="" src={video.largeThumbnailUrl ?? ""} className="" />
+            <div
+              className="w-full h-full bg-cover bg-center"
+              style={{
+                backgroundImage: `url(${video.largeThumbnailUrl})` ?? "",
+              }}
+            />
+            {/* <img alt="" src={video.largeThumbnailUrl ?? ""} className="" /> */}
             {video.duration && (
-              <span className="bg-twitchPurpleLight group-hover:bg-opacity-90 text-sm bg-opacity-80 text-white absolute bottom-0 right-0 p-2">
+              <div className="bg-black group-hover:bg-opacity-90 text-sm bg-opacity-80 text-white absolute bottom-1 right-1 px-2 py-1">
                 {formatDuration(video.duration)}
-              </span>
+              </div>
             )}
           </a>
         </div>
 
+        <ul className="flex flex-row justify-between py-2 items-center w-full text-sm">
+          <li>{video.publishedAt && formatDate(video.publishedAt)}</li>
+          <li>{video.views} views</li>
+        </ul>
+
         <div className="flex flex-row space-x-3 items-center relative w-full">
-          <div className=" flex flex-row space-x-3 items-center p-3 pl-0 overflow-clip">
+          <div className="flex flex-row items-center gap-x-3 p-3 pl-0 overflow-clip">
             <img
               alt={video.channel?.title}
               className="rounded-full"
@@ -75,11 +87,8 @@ const VideoGridItem = ({
               </h3>
             </a>
           </div>
-
-          <div className="text-sm absolute right-0 bg-white dark:bg-black p-1 pr-0">
-            {video.publishedAt && formatDate(video.publishedAt)}
-          </div>
         </div>
+
         <a
           rel="noreferrer"
           target="_blank"
@@ -90,6 +99,7 @@ const VideoGridItem = ({
           </h2>
         </a>
       </div>
+
       <div className=" items-center ">
         <Taglist tags={video.tags.map((tag) => tag.tag as Tag)} />
       </div>
