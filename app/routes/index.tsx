@@ -47,7 +47,10 @@ export const loader: LoaderFunction = async ({ request }) => {
 
   await prisma.$disconnect();
 
-  return json({ totalVideosCount, videos });
+  return json(
+    { totalVideosCount, videos },
+    { status: 200, headers: { "cache-control": "max-age=300, s-maxage=3600" } }
+  );
 };
 
 export default function Index() {
