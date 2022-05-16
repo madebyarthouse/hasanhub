@@ -723,6 +723,16 @@ Ensure the default browser behavior of the `hidden` attribute.
   background-color: rgb(119 44 232 / var(--tw-bg-opacity));
 }
 
+.bg-slate-100 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(241 245 249 / var(--tw-bg-opacity));
+}
+
+.bg-neutral-200 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(229 229 229 / var(--tw-bg-opacity));
+}
+
 .bg-opacity-80 {
   --tw-bg-opacity: 0.8;
 }

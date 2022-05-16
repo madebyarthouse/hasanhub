@@ -58,17 +58,21 @@ const VideosGrid = ({
       <div className="sticky top-0 w-full gap-1 text-left sm:gap-3 bg-white dark:bg-black z-20 flex flex-col md:flex-row md:items-center lg:flex-col lg:items-start justify-between px-3 lg:px-0 mb-5 py-5">
         <h1
           className={cx("text-4xl md:text-5xl mt-0", {
-            "bg-slate-300": loading,
+            "bg-neutral-200": loading,
           })}
         >
           {title}
         </h1>
         <div className="text-sm font-semibold">
-          <strong className={cx("font-extrabold", { "bg-slate-300": loading })}>
+          <strong
+            className={cx("font-extrabold", { "bg-neutral-200": loading })}
+          >
             {videos.length}
           </strong>{" "}
           of{" "}
-          <strong className={cx("font-extrabold", { "bg-slate-300": loading })}>
+          <strong
+            className={cx("font-extrabold", { "bg-neutral-200": loading })}
+          >
             {totalVideosCount}
           </strong>{" "}
           Videos shown
