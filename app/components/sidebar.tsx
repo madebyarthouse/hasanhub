@@ -34,7 +34,7 @@ const constructUrl = (
       : [...activeSlugs, newSlug];
   }
 
-  let fullUrl = `${base}${slugs.join("/")}?duration=${duration}`;
+  let fullUrl = `${base}${slugs.sort().join("/")}?duration=${duration}`;
 
   return fullUrl.endsWith(`${base}?duration=${duration}`)
     ? "/" + fullUrl.replace(base, "")
