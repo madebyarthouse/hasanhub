@@ -9,6 +9,21 @@ const formatDate = (date: string | Date) => {
   return date.toLocaleDateString();
 };
 
+const formatViewCount = (views: number) => {
+  if (views < 1000) {
+    return views;
+  } else if (views < 1000000) {
+    const thousands = Math.floor(views / 1000);
+    const hundreds = Math.floor((views % 1000) / 100);
+    return `${thousands}.${hundreds}k`;
+  } else {
+    const millions = Math.floor(views / 1000000);
+    const thousands = Math.floor((views % 1000000) / 10000);
+
+    return `${millions}.${thousands}m`;
+  }
+};
+
 const formatDuration = (duration: number) => {
   const hours = Math.floor(duration / 3600);
   const minutes = Math.floor((duration % 3600) / 60);
@@ -69,7 +84,7 @@ const VideoGridItem = ({
 
         <ul className="flex flex-row justify-between py-2 items-center w-full text-sm">
           <li>{video.publishedAt && formatDate(video.publishedAt)}</li>
-          <li>{video.views} views</li>
+          <li>{formatViewCount(video.views ?? 0)} views</li>
         </ul>
 
         <div className="flex flex-row space-x-3 items-center relative w-full">
