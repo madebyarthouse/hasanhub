@@ -18,6 +18,7 @@ import Sidebar from "./components/sidebar";
 import styles from "./styles/app.css";
 import { prisma } from "./utils/prisma.server";
 import { useTransition } from "@remix-run/react";
+import { getStreamInfo } from "./lib/getStreamInfo.server";
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
@@ -81,16 +82,20 @@ export const loader: LoaderFunction = async ({ params, request }) => {
         })
       : [];
 
+  const [streamInfo, schedule] = await getStreamInfo();
+
   await prisma.$disconnect();
 
   return json({
     tags,
     activeTags,
+    streamInfo,
+    schedule,
   });
 };
 
 export default function App() {
-  const { tags, activeTags } = useLoaderData();
+  const { tags, activeTags, streamInfo, schedule } = useLoaderData();
   const [searchParams] = useSearchParams();
   const durationFilter = searchParams.getAll("duration") ?? ["all"];
   const fetcher = useFetcher();
@@ -112,7 +117,7 @@ export default function App() {
         <Links />
       </head>
       <body>
-        <Layout>
+        <Layout streamInfo={streamInfo} streamSchedule={schedule}>
           <Sidebar
             tags={tags}
             activeTags={fetcher.data?.activeTags ?? activeTags}

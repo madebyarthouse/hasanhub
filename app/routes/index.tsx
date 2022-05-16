@@ -89,8 +89,6 @@ export default function Index() {
     fetcher.load(loaderUrl(lastVideoId));
   };
 
-  console.log("index videos", videos, liveVideos);
-
   return (
     <VideosGrid
       totalVideosCount={totalVideosCount}
