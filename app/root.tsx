@@ -99,13 +99,12 @@ export default function App() {
   const nextDuration = nextSearchParams.getAll("duration");
 
   useEffect(() => {
-    console.log(transition.location?.pathname);
+    console.log("pathname", transition.location?.pathname);
     if (transition.location) {
       fetcher.load(transition.location.pathname);
     }
   }, [transition.location]);
 
-  console.log("app reload", activeTags, fetcher.data);
   return (
     <html lang="en">
       <head>

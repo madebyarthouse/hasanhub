@@ -10,10 +10,13 @@ import getActiveTagsBySlugs from "../../lib/getActiveTagsBySlugs";
 import type { Tag } from "@prisma/client";
 import type { TimeFilterOptions } from "../../lib/getVideos";
 import useFilterParams from "~/hooks/useSearchParams";
+import { buildLoadMoreUrl } from "~/helpers/buildUrl";
 
 const slugsParam = z.array(z.string());
 
-const durationParam = z.enum(["all", "short", "medium", "long", "extralong"]);
+const durationParams = z.array(
+  z.enum(["short", "medium", "long", "extralong"])
+);
 const lastVideoIdParam = z.number();
 
 export function headers() {
@@ -39,7 +42,9 @@ type LoaderData = {
 };
 export const loader: LoaderFunction = async ({ request, params }) => {
   const url = new URL(request.url);
-  const duration = url.searchParams.get("duration");
+  const duration = url.searchParams.getAll(
+    "duration"
+  ) as unknown as TimeFilterOptions[];
   const lastVideoId = url.searchParams.get("lastVideoId");
 
   const slugs = params["*"]?.split("/") ?? [];
@@ -47,13 +52,13 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   let getParams: {
     tagSlugs: string[];
-    duration?: TimeFilterOptions;
+    durations?: TimeFilterOptions[];
     lastVideoId?: number;
   } = { tagSlugs: slugs };
 
   if (duration) {
-    durationParam.parse(duration);
-    getParams["duration"] = duration;
+    durationParams.parse(duration);
+    getParams["durations"] = duration;
   }
   if (lastVideoId) {
     lastVideoIdParam.parse(parseInt(lastVideoId));
@@ -85,23 +90,34 @@ export default function TagPage() {
   const { transitionState, durationFilter, nextDurationFilter } =
     useFilterParams();
 
-  const slugUrl = activeTags.map((tag) => tag.slug).join("/");
   const title = activeTags.map((tag) => tag.name).join(" / ");
 
-  const loaderUrl = `/tags/${slugUrl}?duration=${
-    nextDurationFilter ?? durationFilter
-  }&lastVideoId`;
+  const loaderUrl = (lastVideoId: number) => {
+    return buildLoadMoreUrl(
+      `/tags/`,
+      activeTags.map((tag) => tag.slug ?? ""),
+      nextDurationFilter.length > 0 ? nextDurationFilter : durationFilter,
+      lastVideoId,
+      false
+    );
+  };
 
   useEffect(() => {
+    console.log(fetcher.data);
     if (fetcher.data && fetcher.data.videos.length > 0) {
       setLiveVideos((prev) => [...prev, ...fetcher.data.videos]);
     }
   }, [fetcher.data]);
 
-  const handleLoadMore = async (lastVideoId: number | null) => {
-    console.log("handleLoadMore", lastVideoId);
-    fetcher.load(`${loaderUrl}=${lastVideoId}`);
+  const handleLoadMore = async (lastVideoId: number) => {
+    fetcher.load(loaderUrl(lastVideoId));
   };
+
+  useEffect(() => {
+    setLiveVideos(videos);
+  }, [videos]);
+
+  console.log("tagVideos", videos, liveVideos);
 
   return (
     <VideosGrid

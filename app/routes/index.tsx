@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import type { TimeFilterOptions } from "../lib/getVideos";
 import useFilterParams from "~/hooks/useSearchParams";
+import { buildLoadMoreUrl } from "~/helpers/buildUrl";
 
 export function headers() {
   return {
@@ -15,23 +16,25 @@ export function headers() {
   };
 }
 
-const durationParam = z.array(
-  z.enum(["all", "short", "medium", "long", "extralong"])
+const durationParams = z.array(
+  z.enum(["short", "medium", "long", "extralong"])
 );
 const lastVideoIdParam = z.number();
 
 export const loader: LoaderFunction = async ({ request }) => {
   const url = new URL(request.url);
-  const duration = url.searchParams.getAll("duration");
+  const duration = url.searchParams.getAll(
+    "duration"
+  ) as unknown as TimeFilterOptions[];
   const lastVideoId = url.searchParams.get("lastVideoId");
 
   let getParams: {
-    duration?: TimeFilterOptions[];
+    durations?: TimeFilterOptions[];
     lastVideoId?: number;
   } = {};
 
   if (duration) {
-    durationParam.parse(duration);
+    durationParams.parse(duration);
     getParams["durations"] = duration;
   }
   if (lastVideoId) {
@@ -61,20 +64,32 @@ export default function Index() {
   const { transitionState, durationFilter, nextDurationFilter } =
     useFilterParams();
 
-  const loaderUrl = `?index&duration=${
-    nextDurationFilter ?? durationFilter
-  }&lastVideoId`;
+  const loaderUrl = (lastVideoId: number) => {
+    return buildLoadMoreUrl(
+      `/`,
+      [],
+      nextDurationFilter?.length > 0 ? nextDurationFilter : durationFilter,
+      lastVideoId,
+      true
+    );
+  };
 
   useEffect(() => {
-    if (fetcher.data && fetcher.data.videos.length > 0) {
+    console.log(fetcher.data);
+    if (fetcher.data && fetcher.data.videos?.length > 0) {
       setLiveVideos((prev) => [...prev, ...fetcher.data.videos]);
     }
   }, [fetcher.data]);
 
-  const handleLoadMore = async (lastVideoId: number | null) => {
-    console.log("handleLoadMore", lastVideoId);
-    fetcher.load(`${loaderUrl}=${lastVideoId}`);
+  useEffect(() => {
+    setLiveVideos(videos);
+  }, [videos]);
+
+  const handleLoadMore = async (lastVideoId: number) => {
+    fetcher.load(loaderUrl(lastVideoId));
   };
+
+  console.log("index videos", videos, liveVideos);
 
   return (
     <VideosGrid

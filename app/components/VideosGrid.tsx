@@ -16,10 +16,10 @@ type Props = {
   videos: VideoType[];
   title: string;
   totalVideosCount: number;
-  handleLoadMore: (lastVideoId: number | null) => Promise<void>;
+  handleLoadMore: (lastVideoId: number) => Promise<void>;
+  loadMoreUrl: (lastVideoId: number) => string;
   loading?: boolean;
   loadingMore?: boolean;
-  loadMoreUrl: string;
 };
 
 const gridContainerVariants = {
@@ -96,11 +96,11 @@ const VideosGrid = ({
           <div className="w-full flex justify-center items-center my-10">
             {totalVideosCount > videos.length ? (
               <a
-                href={`${loadMoreUrl}=${lastVideoId}`}
+                href={loadMoreUrl(lastVideoId ?? -1)}
                 onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
                   e.preventDefault();
 
-                  handleLoadMore(lastVideoId);
+                  handleLoadMore(lastVideoId ?? -1);
                 }}
                 className="bg-twitchPurpleLight text-white text-center font-bold hover:bg-twitchPurple px-4 py-2 rounded inline-block"
               >

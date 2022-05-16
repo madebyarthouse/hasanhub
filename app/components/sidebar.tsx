@@ -69,8 +69,8 @@ const Sidebar = ({
   const [base, setBase] = useState(activeTags.length > 0 ? "/tags/" : "/");
   const activeTagSlugs = activeTags.map((tag) => tag.slug ?? "");
   const durationFilterData: { value: TimeFilterOptions; label: string }[] = [
-    { value: "short", label: "< 2min" },
-    { value: "medium", label: "2-15min" },
+    { value: "short", label: "< 3min" },
+    { value: "medium", label: "3-15min" },
     { value: "long", label: "15-30min" },
     { value: "extralong", label: "> 30 min" },
   ];
