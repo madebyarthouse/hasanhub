@@ -70,47 +70,48 @@ const VideosGrid = ({
         </div>
       </div>
 
+      <motion.ul
+        variants={gridContainerVariants}
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10 relative z-10"
+      >
+        <AnimatePresence exitBeforeEnter>
+          {videos
+            .filter((video) => !video.disabled)
+            .map((video, index) =>
+              loading ? null : (
+                <motion.li
+                  key={video.youtubeId}
+                  variants={gridElVariant}
+                  exit={{ opacity: 0 }}
+                >
+                  <VideoGridItem video={video} lazy={index === 0} />
+                </motion.li>
+              )
+            )}
+        </AnimatePresence>
+      </motion.ul>
       {loading ? (
         "Loading..."
       ) : (
-        <>
-          <motion.ul
-            variants={gridContainerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10 relative z-10"
-          >
-            <AnimatePresence>
-              {videos
-                .filter((video) => !video.disabled)
-                .map((video, index) => (
-                  <Fragment key={video.youtubeId}>
-                    <motion.li variants={gridElVariant} exit={{ opacity: 0 }}>
-                      <VideoGridItem video={video} lazy={index === 0} />
-                    </motion.li>
-                  </Fragment>
-                ))}
-            </AnimatePresence>
-          </motion.ul>
+        <div className="w-full flex justify-center items-center my-10">
+          {totalVideosCount > videos.length ? (
+            <a
+              href={loadMoreUrl(lastVideoId ?? -1)}
+              onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                e.preventDefault();
 
-          <div className="w-full flex justify-center items-center my-10">
-            {totalVideosCount > videos.length ? (
-              <a
-                href={loadMoreUrl(lastVideoId ?? -1)}
-                onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                  e.preventDefault();
-
-                  handleLoadMore(lastVideoId ?? -1);
-                }}
-                className="bg-twitchPurpleLight text-white text-center font-bold hover:bg-twitchPurple px-4 py-2 rounded inline-block"
-              >
-                {loadingMore ? "Loading..." : "Load more"}
-              </a>
-            ) : (
-              <span>All done</span>
-            )}
-          </div>
-        </>
+                handleLoadMore(lastVideoId ?? -1);
+              }}
+              className="bg-twitchPurpleLight text-white text-center font-bold hover:bg-twitchPurple px-4 py-2 rounded inline-block"
+            >
+              {loadingMore ? "Loading..." : "Load more"}
+            </a>
+          ) : (
+            <span>All done</span>
+          )}
+        </div>
       )}
     </section>
   );
