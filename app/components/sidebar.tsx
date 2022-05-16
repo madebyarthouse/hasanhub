@@ -94,7 +94,11 @@ const Sidebar = ({
             animate="visible"
           >
             {durationFilterData.map(({ value, label }) => (
-              <motion.li variants={gridElVariant} key={value}>
+              <motion.li
+                className="min-w-max"
+                variants={gridElVariant}
+                key={value}
+              >
                 <TagButton
                   href={constructUrl(
                     base,
@@ -119,7 +123,11 @@ const Sidebar = ({
             className="grid pb-3  lg:pb-0  grid-flow-col grid-rows-2 sm:grid-rows-4 lg:flex lg:flex-row flex-nowrap lg:flex-wrap gap-y-2 gap-x-3 text-base overflow-x-auto lg:overflow-x-visible"
           >
             {tags.map((tag) => (
-              <motion.li variants={gridElVariant} key={tag.id}>
+              <motion.li
+                className="min-w-max"
+                variants={gridElVariant}
+                key={tag.id}
+              >
                 <TagButton
                   href={constructUrl(
                     "/tags/",
