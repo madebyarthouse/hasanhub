@@ -9,6 +9,9 @@ module.exports = {
         twitchPurple: "#772ce8",
         twitchPurpleLight: "#9147ff",
       },
+      screens: {
+        'betterhover': {'raw': '(hover: hover)'},
+      }
     },
   },
   plugins: [],

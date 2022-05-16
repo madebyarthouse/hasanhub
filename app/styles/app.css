@@ -708,9 +708,9 @@ Ensure the default browser behavior of the `hidden` attribute.
   background-color: rgb(255 255 255 / var(--tw-bg-opacity));
 }
 
-.bg-slate-300 {
+.bg-neutral-200 {
   --tw-bg-opacity: 1;
-  background-color: rgb(203 213 225 / var(--tw-bg-opacity));
+  background-color: rgb(229 229 229 / var(--tw-bg-opacity));
 }
 
 .bg-twitchPurpleLight {
@@ -721,16 +721,6 @@ Ensure the default browser behavior of the `hidden` attribute.
 .bg-twitchPurple {
   --tw-bg-opacity: 1;
   background-color: rgb(119 44 232 / var(--tw-bg-opacity));
-}
-
-.bg-slate-100 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(241 245 249 / var(--tw-bg-opacity));
-}
-
-.bg-neutral-200 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(229 229 229 / var(--tw-bg-opacity));
 }
 
 .bg-opacity-80 {
@@ -856,14 +846,13 @@ Ensure the default browser behavior of the `hidden` attribute.
   color: rgb(145 71 255 / var(--tw-text-opacity));
 }
 
-.text-black {
-  --tw-text-opacity: 1;
-  color: rgb(24 24 27 / var(--tw-text-opacity));
-}
-
 .text-twitchPurple {
   --tw-text-opacity: 1;
   color: rgb(119 44 232 / var(--tw-text-opacity));
+}
+
+.opacity-0 {
+  opacity: 0;
 }
 
 .shadow-md {
@@ -897,6 +886,16 @@ Ensure the default browser behavior of the `hidden` attribute.
   transition-duration: 150ms;
 }
 
+.transition-opacity {
+  transition-property: opacity;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.duration-100 {
+  transition-duration: 100ms;
+}
+
 html, body {
   --tw-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity));
@@ -917,9 +916,24 @@ html, body {
   font-family: Inter, Helvetica, sans-serif;
 }
 
-.hover\:bg-twitchPurple:hover {
-  --tw-bg-opacity: 1;
-  background-color: rgb(119 44 232 / var(--tw-bg-opacity));
+@-webkit-keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
 
 .hover\:text-white:hover {
@@ -971,20 +985,12 @@ html, body {
     flex-wrap: wrap;
   }
 
-  .sm\:justify-end {
-    justify-content: flex-end;
-  }
-
   .sm\:justify-between {
     justify-content: space-between;
   }
 
   .sm\:gap-3 {
     gap: 0.75rem;
-  }
-
-  .sm\:gap-0 {
-    gap: 0px;
   }
 
   .sm\:overflow-x-visible {
@@ -1120,11 +1126,6 @@ html, body {
     padding-bottom: 0px;
   }
 
-  .lg\:text-7xl {
-    font-size: 4.5rem;
-    line-height: 1;
-  }
-
   .lg\:text-6xl {
     font-size: 3.75rem;
     line-height: 1;
@@ -1152,5 +1153,17 @@ html, body {
   .xl\:text-7xl {
     font-size: 4.5rem;
     line-height: 1;
+  }
+}
+
+@media (hover: hover) {
+  .betterhover\:hover\:bg-twitchPurple:hover {
+    --tw-bg-opacity: 1;
+    background-color: rgb(119 44 232 / var(--tw-bg-opacity));
+  }
+
+  .betterhover\:hover\:text-white:hover {
+    --tw-text-opacity: 1;
+    color: rgb(255 255 255 / var(--tw-text-opacity));
   }
 }

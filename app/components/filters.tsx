@@ -1,5 +1,4 @@
 import * as ToggleGroup from "@radix-ui/react-toggle-group";
-import { motion } from "framer-motion";
 import cx from "classnames";
 
 export type TimeFilterOptions = "short" | "medium" | "long" | "extralong";
@@ -17,7 +16,7 @@ const TimeFilterTab = ({
     <ToggleGroup.Item
       value={value}
       className={cx(
-        "px-3 py-2 text-sm border border-twitchPurpleLight transition-colors min-w-min hover:bg-twitchPurple duration-400 hover:text-white saturate-50 relative rounded-lg ",
+        "px-3 py-2 text-sm border border-twitchPurpleLight transition-colors min-w-min betterhover:hover:bg-twitchPurple duration-400 hover:text-white saturate-50 relative rounded-lg ",
         active ? "bg-twitchPurple text-white" : "text-twitchPurpleLight"
       )}
     >

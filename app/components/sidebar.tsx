@@ -1,25 +1,7 @@
 import type { Tag } from "@prisma/client";
 import TagButton from "./tagButton";
-import { motion } from "framer-motion";
 import type { TimeFilterOptions } from "./filters";
 import { useEffect, useState } from "react";
-
-const gridContainerVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1 },
-};
-
-const gridElVariant = {
-  hidden: {
-    opacity: 0,
-  },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 1,
-    },
-  },
-};
 
 const constructUrl = (
   base: string,
@@ -81,23 +63,18 @@ const Sidebar = ({
 
   return (
     <>
-      <motion.aside
-        layout
-        className="w-full lg:sticky lg:top-0 lg:w-1/4 xl:w-1/5  py-5     px-3 lg:px-0"
-      >
+      <aside className="w-full lg:sticky lg:top-0 lg:w-1/4 xl:w-1/5  py-5 px-3 lg:px-0 transition-opacity duration-100">
         <section className="lg:overflow-y-auto lg:max-h-[calc(100vh-2.5rem)] lg:pr-3 flex flex-col gap-y-5">
           {/* Time */}
-          <motion.ul
-            className="flex flex-row flex-nowrap pb-3 sm:pb-0 overflow-x-auto sm:overflow-x-visible sm:flex-wrap rounded gap-3"
-            variants={gridContainerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            {durationFilterData.map(({ value, label }) => (
-              <motion.li
+          <ul className="flex flex-row flex-nowrap pb-3 sm:pb-0 overflow-x-auto sm:overflow-x-visible sm:flex-wrap rounded gap-3">
+            {durationFilterData.map(({ value, label }, index) => (
+              <li
                 className="min-w-max"
-                variants={gridElVariant}
                 key={value}
+                style={{
+                  animationDuration: `${250 + index * 50}ms`,
+                  animationName: "fadeIn",
+                }}
               >
                 <TagButton
                   href={constructUrl(
@@ -111,21 +88,19 @@ const Sidebar = ({
                   label={label}
                   active={durationFilter.includes(value)}
                 />
-              </motion.li>
+              </li>
             ))}
-          </motion.ul>
+          </ul>
 
           {/* Tags  */}
-          <motion.ul
-            variants={gridContainerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid pb-3  lg:pb-0  grid-flow-col grid-rows-2 sm:grid-rows-4 lg:flex lg:flex-row flex-nowrap lg:flex-wrap gap-y-2 gap-x-3 text-base overflow-x-auto lg:overflow-x-visible"
-          >
-            {tags.map((tag) => (
-              <motion.li
+          <ul className="grid pb-3  lg:pb-0  grid-flow-col grid-rows-2 sm:grid-rows-4 lg:flex lg:flex-row flex-nowrap lg:flex-wrap gap-y-2 gap-x-3 text-base overflow-x-auto lg:overflow-x-visible">
+            {tags.map((tag, index) => (
+              <li
                 className="min-w-max"
-                variants={gridElVariant}
+                style={{
+                  animationDuration: `${250 + index * 50}ms`,
+                  animationName: "fadeIn",
+                }}
                 key={tag.id}
               >
                 <TagButton
@@ -140,11 +115,11 @@ const Sidebar = ({
                   label={tag.name}
                   active={activeTagSlugs.includes(tag.slug ?? "")}
                 />
-              </motion.li>
+              </li>
             ))}
-          </motion.ul>
+          </ul>
         </section>
-      </motion.aside>
+      </aside>
     </>
   );
 };

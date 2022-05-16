@@ -79,7 +79,7 @@ const Header = ({
           href="https://twitter.com/chrcit"
           target="_blank"
           rel="noreferrer"
-          className="bg-twitchPurpleLight saturate-50 text-white text-center font-bold hover:bg-twitchPurple px-4 py-2 rounded"
+          className="bg-twitchPurpleLight saturate-50 text-white text-center font-bold betterhover:hover:bg-twitchPurple px-4 py-2 rounded"
         >
           Made by @chrcit
         </a>
@@ -87,7 +87,7 @@ const Header = ({
           href="https://buymeacoffee.com/chrcit"
           target="_blank"
           rel="noreferrer"
-          className="bg-twitchPurpleLight saturate-50 text-white text-center font-bold hover:bg-twitchPurple px-4 py-2 rounded"
+          className="bg-twitchPurpleLight saturate-50 text-white text-center font-bold betterhover:hover:bg-twitchPurple px-4 py-2 rounded"
         >
           Buy me a coffee
         </a>

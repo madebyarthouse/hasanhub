@@ -19,7 +19,6 @@
     "@vercel/node": "^1.15.2",
     "axios": "^0.27.2",
     "classnames": "^2.3.1",
-    "framer-motion": "^6.3.3",
     "html-entities": "^2.3.3",
     "iso8601-duration": "^2.1.1",
     "react": "^17.0.2",

@@ -1,6 +1,5 @@
-import { Channel, Tag, TagVideo, Video } from "@prisma/client";
+import type { Channel, Tag, TagVideo, Video } from "@prisma/client";
 import Taglist from "./Taglist";
-import { motion } from "framer-motion";
 
 const formatDate = (date: string | Date) => {
   if (typeof date === "string") {
@@ -37,8 +36,7 @@ const VideoGridItem = ({
   layoutId?: string;
 }) => {
   return (
-    <motion.article
-      layoutId={layoutId}
+    <article
       className="gap-5 h-full flex flex-col justify-between"
       key={video.youtubeId}
     >
@@ -111,7 +109,7 @@ const VideoGridItem = ({
       <div className=" items-center ">
         <Taglist tags={video.tags.map((tag) => tag.tag as Tag)} />
       </div>
-    </motion.article>
+    </article>
   );
 };
 

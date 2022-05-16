@@ -1,9 +1,5 @@
-import { Channel, Tag, TagVideo, Video } from "@prisma/client";
+import type { Channel, Tag, TagVideo, Video } from "@prisma/client";
 import VideoGridItem from "./VideoGridItem";
-import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
-import React, { Fragment, useState } from "react";
-import Filters, { TimeFilterOptions } from "./filters";
-import Index from "../routes/index";
 import cx from "classnames";
 
 type VideoType = Video & {
@@ -21,25 +17,6 @@ type Props = {
   loadMoreUrl: (lastVideoId: number) => string;
   loading?: boolean;
   loadingMore?: boolean;
-};
-
-const gridContainerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
-
-const gridElVariant = {
-  hidden: {
-    opacity: 0,
-  },
-  visible: {
-    opacity: 1,
-  },
 };
 
 const VideosGrid = ({
@@ -79,28 +56,23 @@ const VideosGrid = ({
         </div>
       </div>
 
-      <motion.ul
-        variants={gridContainerVariants}
-        initial="hidden"
-        animate="visible"
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10 relative z-10"
-      >
-        <AnimatePresence exitBeforeEnter>
-          {videos
-            .filter((video) => !video.disabled)
-            .map((video, index) =>
-              loading ? null : (
-                <motion.li
-                  key={video.youtubeId}
-                  variants={gridElVariant}
-                  exit={{ opacity: 0 }}
-                >
-                  <VideoGridItem video={video} lazy={index === 0} />
-                </motion.li>
-              )
-            )}
-        </AnimatePresence>
-      </motion.ul>
+      <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10 relative z-10">
+        {videos
+          .filter((video) => !video.disabled)
+          .map((video, index) =>
+            loading ? null : (
+              <li
+                style={{
+                  animationDuration: `${250 + index * 150}ms`,
+                  animationName: "fadeIn",
+                }}
+                key={video.youtubeId}
+              >
+                <VideoGridItem video={video} lazy={index === 0} />
+              </li>
+            )
+          )}
+      </ul>
       {loading ? (
         "Loading..."
       ) : (
@@ -113,7 +85,7 @@ const VideosGrid = ({
 
                 handleLoadMore(lastVideoId ?? -1);
               }}
-              className="bg-twitchPurpleLight text-white text-center font-bold hover:bg-twitchPurple px-4 py-2 rounded inline-block saturate-50"
+              className="bg-twitchPurpleLight text-white text-center font-bold betterhover:hover:bg-twitchPurple px-4 py-2 rounded inline-block saturate-50"
             >
               {loadingMore ? "Loading..." : "Load more"}
             </a>
