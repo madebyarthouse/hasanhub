@@ -59,6 +59,14 @@ export function links() {
       rel: "manifest",
       href: "site.webmanifest",
     },
+    {
+      rel: "preconnect",
+      href: "	https://i.ytimg.com",
+    },
+    {
+      rel: "dns-prefetch",
+      href: "	https://i.ytimg.com",
+    },
   ];
 }
 
@@ -130,6 +138,13 @@ export default function App() {
         <ScrollRestoration />
         <Scripts />
         <LiveReload />
+
+        <script
+          defer
+          src="/stats/js/script.js"
+          data-api="/stats/api/event"
+          data-domain="hasanhub.com"
+        />
       </body>
     </html>
   );
