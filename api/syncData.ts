@@ -1,4 +1,4 @@
-import { Channel, Playlist } from "@prisma/client";
+import type { Channel, Playlist } from "@prisma/client";
 import { decode } from "html-entities";
 import { searchChannels, searchPlaylists, searchVideos } from "./_youtube.server";
 import matchTagsAndVideos from "./_matchTagsAndVideosService";
