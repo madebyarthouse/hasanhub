@@ -566,10 +566,6 @@ Ensure the default browser behavior of the `hidden` attribute.
   width: max-content;
 }
 
-.w-auto {
-  width: auto;
-}
-
 .min-w-min {
   min-width: -webkit-min-content;
   min-width: -moz-min-content;
@@ -592,10 +588,6 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .grid-cols-1 {
   grid-template-columns: repeat(1, minmax(0, 1fr));
-}
-
-.grid-rows-4 {
-  grid-template-rows: repeat(4, minmax(0, 1fr));
 }
 
 .grid-rows-2 {
@@ -624,10 +616,6 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .items-center {
   align-items: center;
-}
-
-.justify-end {
-  justify-content: flex-end;
 }
 
 .justify-center {
@@ -941,14 +929,6 @@ html, body {
 }
 
 @media (min-width: 640px) {
-  .sm\:grid {
-    display: grid;
-  }
-
-  .sm\:hidden {
-    display: none;
-  }
-
   .sm\:grid-rows-4 {
     grid-template-rows: repeat(4, minmax(0, 1fr));
   }
@@ -959,10 +939,6 @@ html, body {
 
   .sm\:flex-wrap {
     flex-wrap: wrap;
-  }
-
-  .sm\:flex-nowrap {
-    flex-wrap: nowrap;
   }
 
   .sm\:justify-end {
@@ -991,10 +967,6 @@ html, body {
 }
 
 @media (min-width: 768px) {
-  .md\:flex {
-    display: flex;
-  }
-
   .md\:grid-cols-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1005,10 +977,6 @@ html, body {
 
   .md\:items-center {
     align-items: center;
-  }
-
-  .md\:text-left {
-    text-align: left;
   }
 
   .md\:text-5xl {

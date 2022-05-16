@@ -55,11 +55,18 @@ const VideosGrid = ({
   return (
     <section aria-label={title} className="w-full lg:w-3/4 xl:w-4/5">
       <div className="sticky top-0 w-full gap-1 text-left sm:gap-3 bg-white dark:bg-black z-20 flex flex-col md:flex-row md:items-center lg:flex-col lg:items-start justify-between px-3 lg:px-0 mb-5 py-5">
-        <h1 className="text-4xl md:text-5xl mt-0">{title}</h1>
+        <h1 className="text-4xl md:text-5xl mt-0">
+          {loading ? "Loading..." : title}
+        </h1>
         <div className="text-sm font-semibold">
-          <strong className="font-extrabold">{videos.length}</strong> of{" "}
-          <strong className="font-extrabold">{totalVideosCount}</strong> Videos
-          shown
+          <strong className="font-extrabold">
+            {loading ? "x" : videos.length}
+          </strong>{" "}
+          of{" "}
+          <strong className="font-extrabold">
+            {loading ? "x" : totalVideosCount}
+          </strong>{" "}
+          Videos shown
         </div>
       </div>
 

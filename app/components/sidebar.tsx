@@ -2,7 +2,6 @@ import type { Tag } from "@prisma/client";
 import TagButton from "./tagButton";
 import { motion } from "framer-motion";
 import type { TimeFilterOptions } from "./filters";
-import { TimeFilterOptions } from "./filters";
 import { useEffect, useState } from "react";
 
 const gridContainerVariants = {
@@ -23,6 +22,7 @@ const gridElVariant = {
 };
 
 const constructUrl = (
+  base: string,
   activeSlugs: string[],
   newSlug: string | null,
   duration: TimeFilterOptions
@@ -34,7 +34,11 @@ const constructUrl = (
       : [...activeSlugs, newSlug];
   }
 
-  return `${slugs.join("/")}?duration=${duration}`;
+  let fullUrl = `${base}${slugs.join("/")}?duration=${duration}`;
+
+  return fullUrl.endsWith(`${base}?duration=${duration}`)
+    ? "/" + fullUrl.replace(base, "")
+    : fullUrl;
 };
 
 const Sidebar = ({
@@ -46,9 +50,7 @@ const Sidebar = ({
   activeTags: Tag[];
   durationFilter: TimeFilterOptions;
 }) => {
-  const [basePath, setBasePath] = useState(
-    activeTags.length > 0 ? "/tags/" : "/"
-  );
+  const [base, setBase] = useState(activeTags.length > 0 ? "/tags/" : "/");
   const activeTagSlugs = activeTags.map((tag) => tag.slug ?? "");
   const durationFilterData: { value: TimeFilterOptions; label: string }[] = [
     { value: "all", label: "All" },
@@ -59,7 +61,7 @@ const Sidebar = ({
   ];
 
   useEffect(() => {
-    setBasePath(activeTags.length > 0 ? "/tags/" : "/");
+    setBase(activeTags.length > 0 ? "/tags/" : "/");
   }, [activeTags]);
 
   return (
@@ -79,7 +81,7 @@ const Sidebar = ({
             {durationFilterData.map(({ value, label }) => (
               <motion.li variants={gridElVariant} key={value}>
                 <TagButton
-                  href={basePath + constructUrl(activeTagSlugs, null, value)}
+                  href={constructUrl(base, activeTagSlugs, null, value)}
                   styleVariant="sidebar"
                   label={label}
                   active={durationFilter === value}
@@ -98,10 +100,12 @@ const Sidebar = ({
             {tags.map((tag) => (
               <motion.li variants={gridElVariant} key={tag.id}>
                 <TagButton
-                  href={
-                    "/tags/" +
-                    constructUrl(activeTagSlugs, tag.slug, durationFilter)
-                  }
+                  href={constructUrl(
+                    "/tags/",
+                    activeTagSlugs,
+                    tag.slug,
+                    durationFilter
+                  )}
                   styleVariant="sidebar"
                   label={tag.name}
                   active={activeTagSlugs.includes(tag.slug ?? "")}
