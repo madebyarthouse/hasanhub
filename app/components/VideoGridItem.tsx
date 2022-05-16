@@ -26,12 +26,14 @@ const formatDuration = (duration: number) => {
 const VideoGridItem = ({
   video,
   layoutId,
+  lazy = false,
 }: {
   video: Video & { channel: Channel | null } & {
     tags: (TagVideo & {
       tag: Tag | null;
     })[];
   };
+  lazy?: boolean;
   layoutId?: string;
 }) => {
   return (
@@ -55,7 +57,7 @@ const VideoGridItem = ({
             /> */}
             <img
               className="w-full h-full object-cover"
-              loading="lazy"
+              loading={lazy ? "lazy" : "eager"}
               alt={`Thumbnail for ${video.title}`}
               src={video.largeThumbnailUrl ?? ""}
             />
@@ -80,7 +82,7 @@ const VideoGridItem = ({
               src={video.channel?.mediumThumbnailUrl ?? ""}
               width={32}
               height={32}
-              loading="lazy"
+              loading={lazy ? "lazy" : "eager"}
             />
             <a
               rel="noreferrer"

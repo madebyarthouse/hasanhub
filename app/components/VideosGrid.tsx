@@ -3,6 +3,7 @@ import VideoGridItem from "./VideoGridItem";
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import React, { Fragment, useState } from "react";
 import Filters, { TimeFilterOptions } from "./filters";
+import Index from "../routes/index";
 
 type VideoType = Video & {
   channel: Channel | null;
@@ -50,6 +51,7 @@ const VideosGrid = ({
   loadMoreUrl,
 }: Props) => {
   const lastVideoId = videos ? videos[videos.length - 1]?.id : null;
+
   return (
     <section aria-label={title} className="w-full lg:w-3/4 xl:w-4/5">
       <div className="sticky top-0 w-full gap-1 text-left sm:gap-3 bg-white dark:bg-black z-20 flex flex-col md:flex-row md:items-center lg:flex-col lg:items-start justify-between px-3 lg:px-0 mb-5 py-5">
@@ -74,10 +76,10 @@ const VideosGrid = ({
             <AnimatePresence>
               {videos
                 .filter((video) => !video.disabled)
-                .map((video) => (
+                .map((video, index) => (
                   <Fragment key={video.youtubeId}>
                     <motion.li variants={gridElVariant} exit={{ opacity: 0 }}>
-                      <VideoGridItem video={video} />
+                      <VideoGridItem video={video} lazy={index === 0} />
                     </motion.li>
                   </Fragment>
                 ))}
