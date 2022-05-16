@@ -22,10 +22,10 @@ const Header = ({
 }) => {
   console.log(streamInfo, streamSchedule);
   return (
-    <header className="px-5 lg:px-10 xl:px-14 my-6 flex gap-3 sm:gap-0 flex-col sm:flex-row justify-between">
-      <div className="flex flex-col sm:flex-row gap-3 items-center">
+    <header className="px-5 lg:px-10 xl:px-14 my-6 flex gap-5 md:gap-0 flex-col md:flex-row justify-between">
+      <div className="flex flex-col sm:flex-row sm:justify-between gap-3 items-center">
         <Link to="/" prefetch="render">
-          <h1 className="text-4xl lg:text-7xl font-bold sm:text-left group text-center">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold sm:text-left group text-center">
             Hasan
             <span className="dark:text-black text-white inline-block bg-twitchPurpleLight group-hover:bg-twitchPurple p-2 ml-2 rounded-lg saturate-50">
               Hub
@@ -33,7 +33,7 @@ const Header = ({
           </h1>
         </Link>
 
-        <div className="flex flex-col text-sm text-center sm:text-left">
+        <div className="flex flex-col text-sm text-center sm:text-right md:text-left">
           {streamInfo.data?.length > 0 ? (
             <a
               className="hover:text-twitchPurple saturate-50"
@@ -74,7 +74,7 @@ const Header = ({
         </div>
       </div>
 
-      <div className="flex flex-row gap-2 justify-center sm:justify-end items-center text-sm md:text-base">
+      <div className="flex flex-row gap-2 justify-center md:flex-col lg:flex-row md:justify-end items-center text-sm md:text-base">
         <a
           href="https://twitter.com/chrcit"
           target="_blank"
