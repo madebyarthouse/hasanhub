@@ -1,19 +1,14 @@
 import { z } from "zod";
 import type { LoaderFunction, MetaFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import {
-  useFetcher,
-  useLoaderData,
-  useSearchParams,
-  useTransition,
-} from "@remix-run/react";
+import { useFetcher, useLoaderData } from "@remix-run/react";
 import getVideos from "~/lib/getVideos";
 import { prisma } from "~/utils/prisma.server";
 import VideosGrid from "~/components/VideosGrid";
 import { useEffect, useState } from "react";
 import getActiveTagsBySlugs from "../../lib/getActiveTagsBySlugs";
 import type { Tag } from "@prisma/client";
-import { TimeFilterOptions } from "../../lib/getVideos";
+import type { TimeFilterOptions } from "../../lib/getVideos";
 import useFilterParams from "~/hooks/useSearchParams";
 
 const loaderParamsSchema = z.object({
@@ -25,7 +20,7 @@ const lastVideoIdParam = z.number();
 
 export function headers() {
   return {
-    "Cache-Control": "max-age=300, s-maxage=3600",
+    "Cache-Control": "max-age=360, s-maxage=360, stale-while-revalidate",
   };
 }
 
@@ -77,7 +72,12 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   return json(
     { totalVideosCount, videos, activeTags },
-    { status: 200, headers: { "cache-control": "max-age=300, s-maxage=3600" } }
+    {
+      status: 200,
+      headers: {
+        "cache-control": "max-age=360, s-maxage=360, stale-while-revalidate",
+      },
+    }
   );
 };
 

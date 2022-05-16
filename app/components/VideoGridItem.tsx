@@ -47,13 +47,18 @@ const VideoGridItem = ({
             target="_blank"
             href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
           >
-            <div
+            {/* <div
               className="w-full h-full bg-cover bg-center"
               style={{
                 backgroundImage: `url(${video.largeThumbnailUrl})` ?? "",
               }}
+            /> */}
+            <img
+              className="w-full h-full object-cover"
+              loading="lazy"
+              alt={`Thumbnail for ${video.title}`}
+              src={video.largeThumbnailUrl ?? ""}
             />
-            {/* <img alt="" src={video.largeThumbnailUrl ?? ""} className="" /> */}
             {video.duration && (
               <div className="bg-black group-hover:bg-opacity-90 text-sm bg-opacity-80 text-white absolute bottom-1 right-1 px-2 py-1">
                 {formatDuration(video.duration)}
@@ -75,6 +80,7 @@ const VideoGridItem = ({
               src={video.channel?.mediumThumbnailUrl ?? ""}
               width={32}
               height={32}
+              loading="lazy"
             />
             <a
               rel="noreferrer"

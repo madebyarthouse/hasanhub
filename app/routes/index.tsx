@@ -1,22 +1,17 @@
 import { json } from "@remix-run/node";
-import type { LoaderFunction, MetaFunction } from "@remix-run/node";
-import {
-  useFetcher,
-  useLoaderData,
-  useSearchParams,
-  useTransition,
-} from "@remix-run/react";
+import type { LoaderFunction } from "@remix-run/node";
+import { useFetcher, useLoaderData } from "@remix-run/react";
 import { prisma } from "~/utils/prisma.server";
 import VideosGrid from "~/components/VideosGrid";
 import getVideos from "../lib/getVideos";
 import { useEffect, useState } from "react";
 import { z } from "zod";
-import { TimeFilterOptions } from "../lib/getVideos";
+import type { TimeFilterOptions } from "../lib/getVideos";
 import useFilterParams from "~/hooks/useSearchParams";
 
 export function headers() {
   return {
-    "Cache-Control": "max-age=300, s-maxage=3600",
+    "Cache-Control": "max-age=360, s-maxage=360, stale-while-revalidate",
   };
 }
 
@@ -49,7 +44,12 @@ export const loader: LoaderFunction = async ({ request }) => {
 
   return json(
     { totalVideosCount, videos },
-    { status: 200, headers: { "cache-control": "max-age=300, s-maxage=3600" } }
+    {
+      status: 200,
+      headers: {
+        "cache-control": "max-age=360, s-maxage=360, stale-while-revalidate",
+      },
+    }
   );
 };
 
