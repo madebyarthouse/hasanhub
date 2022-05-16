@@ -15,22 +15,24 @@ export function headers() {
   };
 }
 
-const durationParam = z.enum(["all", "short", "medium", "long", "extralong"]);
+const durationParam = z.array(
+  z.enum(["all", "short", "medium", "long", "extralong"])
+);
 const lastVideoIdParam = z.number();
 
 export const loader: LoaderFunction = async ({ request }) => {
   const url = new URL(request.url);
-  const duration = url.searchParams.get("duration");
+  const duration = url.searchParams.getAll("duration");
   const lastVideoId = url.searchParams.get("lastVideoId");
 
   let getParams: {
-    duration?: TimeFilterOptions;
+    duration?: TimeFilterOptions[];
     lastVideoId?: number;
   } = {};
 
   if (duration) {
     durationParam.parse(duration);
-    getParams["duration"] = duration;
+    getParams["durations"] = duration;
   }
   if (lastVideoId) {
     lastVideoIdParam.parse(parseInt(lastVideoId));

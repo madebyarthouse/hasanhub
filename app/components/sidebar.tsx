@@ -25,18 +25,34 @@ const constructUrl = (
   base: string,
   activeSlugs: string[],
   newSlug: string | null,
-  duration: TimeFilterOptions
+  activeDurationFilter: TimeFilterOptions[],
+  newDuration: TimeFilterOptions | null
 ) => {
   let slugs = activeSlugs;
   if (newSlug) {
     slugs = activeSlugs.includes(newSlug)
       ? activeSlugs.filter((slug) => slug !== newSlug)
       : [...activeSlugs, newSlug];
+    slugs = slugs.sort();
   }
 
-  let fullUrl = `${base}${slugs.sort().join("/")}?duration=${duration}`;
+  const slugParams = slugs.join("/");
 
-  return fullUrl.endsWith(`${base}?duration=${duration}`)
+  let durations = activeDurationFilter;
+  if (newDuration) {
+    durations = activeDurationFilter.includes(newDuration)
+      ? activeDurationFilter.filter((d) => d !== newDuration)
+      : [...activeDurationFilter, newDuration];
+    durations = durations.sort();
+  }
+
+  const durationParams = durations
+    .map((option) => `duration=${option}`)
+    .join("&");
+
+  let fullUrl = `${base}${slugParams}?${durationParams}`;
+
+  return fullUrl.endsWith(`${base}?${durationParams}`)
     ? "/" + fullUrl.replace(base, "")
     : fullUrl;
 };
@@ -48,12 +64,11 @@ const Sidebar = ({
 }: {
   tags: Tag[];
   activeTags: Tag[];
-  durationFilter: TimeFilterOptions;
+  durationFilter: TimeFilterOptions[];
 }) => {
   const [base, setBase] = useState(activeTags.length > 0 ? "/tags/" : "/");
   const activeTagSlugs = activeTags.map((tag) => tag.slug ?? "");
   const durationFilterData: { value: TimeFilterOptions; label: string }[] = [
-    { value: "all", label: "All" },
     { value: "short", label: "< 2min" },
     { value: "medium", label: "2-15min" },
     { value: "long", label: "15-30min" },
@@ -81,10 +96,16 @@ const Sidebar = ({
             {durationFilterData.map(({ value, label }) => (
               <motion.li variants={gridElVariant} key={value}>
                 <TagButton
-                  href={constructUrl(base, activeTagSlugs, null, value)}
+                  href={constructUrl(
+                    base,
+                    activeTagSlugs,
+                    null,
+                    durationFilter,
+                    value
+                  )}
                   styleVariant="sidebar"
                   label={label}
-                  active={durationFilter === value}
+                  active={durationFilter.includes(value)}
                 />
               </motion.li>
             ))}
@@ -104,7 +125,8 @@ const Sidebar = ({
                     "/tags/",
                     activeTagSlugs,
                     tag.slug,
-                    durationFilter
+                    durationFilter,
+                    null
                   )}
                   styleVariant="sidebar"
                   label={tag.name}

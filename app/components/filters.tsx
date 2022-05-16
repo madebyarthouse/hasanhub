@@ -1,13 +1,8 @@
-import * as ToggleGroup from '@radix-ui/react-toggle-group';
-import { motion } from 'framer-motion';
-import cx from 'classnames';
+import * as ToggleGroup from "@radix-ui/react-toggle-group";
+import { motion } from "framer-motion";
+import cx from "classnames";
 
-export type TimeFilterOptions =
-  | 'all'
-  | 'short'
-  | 'medium'
-  | 'long'
-  | 'extralong';
+export type TimeFilterOptions = "short" | "medium" | "long" | "extralong";
 
 const TimeFilterTab = ({
   active,
@@ -22,8 +17,8 @@ const TimeFilterTab = ({
     <ToggleGroup.Item
       value={value}
       className={cx(
-        'px-3 py-2 text-sm border border-twitchPurpleLight transition-colors min-w-min hover:bg-twitchPurple duration-400 hover:text-white saturate-50 relative rounded-lg ',
-        active ? 'bg-twitchPurple text-white' : 'text-twitchPurpleLight'
+        "px-3 py-2 text-sm border border-twitchPurpleLight transition-colors min-w-min hover:bg-twitchPurple duration-400 hover:text-white saturate-50 relative rounded-lg ",
+        active ? "bg-twitchPurple text-white" : "text-twitchPurpleLight"
       )}
     >
       {label}
@@ -45,16 +40,16 @@ const TimeFilters = ({
       value={value}
       onValueChange={onValueChange}
     >
-      <TimeFilterTab active={'all' === value} value="all" label="All" />
-      <TimeFilterTab active={'short' === value} value="short" label="< 2 min" />
+      <TimeFilterTab active={"all" === value} value="all" label="All" />
+      <TimeFilterTab active={"short" === value} value="short" label="< 2 min" />
       <TimeFilterTab
-        active={'medium' === value}
+        active={"medium" === value}
         value="medium"
         label="2 - 15 min"
       />
-      <TimeFilterTab active={'long' === value} value="long" label="15-30 min" />
+      <TimeFilterTab active={"long" === value} value="long" label="15-30 min" />
       <TimeFilterTab
-        active={'extralong' === value}
+        active={"extralong" === value}
         value="extralong"
         label="> 30 min"
       />

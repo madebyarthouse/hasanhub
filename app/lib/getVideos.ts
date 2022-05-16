@@ -13,43 +13,27 @@ const getLastVideo = async (lastVideoId: number) => {
     });
 }
 
-const getMinxMaxForTimeFilter = (time?: TimeFilterOptions) => {
-    let minSeconds;
-    let maxSeconds;
-    switch (time) {
-      case "all":
-        minSeconds = 0;
-        maxSeconds = 999999999;
-        break;
-      case "short":
-        minSeconds = 0;
-        maxSeconds = 60 * 3;
-        break;
-      case "medium":
-        minSeconds = 60 * 3;
-        maxSeconds = 60 * 15;
-        break;
-      case "long":
-        minSeconds = 60 * 15;
-        maxSeconds = 60 * 30;
-        break;
-      case "extralong":
-        minSeconds = 60 * 30;
-        maxSeconds = 999999999;
-        break;
-      default:
-        minSeconds = 0;
-        maxSeconds = 999999999;
-        break;
-    }
-
-    return [minSeconds, maxSeconds];
+const getMinxMaxForTimeFilter = (durations?: TimeFilterOptions[]) => {
+    return durations?.map(duration => {
+      switch (duration) {
+        case "short":
+          return [0, 60 * 3];
+        case "medium":
+          return [60 * 3, 60 * 15];
+        case "long":
+          return [60 * 15, 60 * 30];
+        case "extralong":
+          return [60 * 30, 999999];
+        default:
+          return [0, 999999999];
+      }
+    })
 }
 
-type GetVideosArgs = {tagSlugs?: string[]; order?: 'asc' | 'desc'; duration?: TimeFilterOptions; lastVideoId?: number; take?: number};
+type GetVideosArgs = {tagSlugs?: string[]; order?: 'asc' | 'desc'; durations?: TimeFilterOptions[]; lastVideoId?: number; take?: number};
 
-const getVideos = async ({tagSlugs, order, duration, lastVideoId, take}: GetVideosArgs) => {    
-    let conditions: {tags?: object, publishedAt?: object, duration?: object, disabled?: boolean } = {};
+const getVideos = async ({tagSlugs, order, durations, lastVideoId, take}: GetVideosArgs) => {    
+    let conditions: {tags?: object, publishedAt?: object, OR?: Array<object>, disabled?: boolean } = {};
     if (tagSlugs) {
         conditions['tags'] = { some: { tag: { slug: { in: tagSlugs } } } };
     }
@@ -63,12 +47,19 @@ const getVideos = async ({tagSlugs, order, duration, lastVideoId, take}: GetVide
         }
     }
 
-    if (duration) {
-        const [minSeconds, maxSeconds] = getMinxMaxForTimeFilter(duration);
-        conditions['duration'] = { gte: minSeconds, lte: maxSeconds }
+    if (durations) {
+        const minMaxPairs = getMinxMaxForTimeFilter(durations)?.map((pair) => {return { gte: pair[0], lte: pair[1] }}) ?? [];
+        if (minMaxPairs.length > 0) {
+          conditions['OR'] = [];
+          minMaxPairs.forEach((pair) => {
+            conditions.OR?.push({ duration: pair });
+          }) 
+
+        }
     }
 
     conditions['disabled'] = false;
+    console.log(durations, conditions);
     return await prisma.$transaction([
         prisma.video.findMany({
             where: conditions,

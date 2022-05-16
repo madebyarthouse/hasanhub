@@ -92,11 +92,11 @@ export const loader: LoaderFunction = async ({ params, request }) => {
 export default function App() {
   const { tags, activeTags } = useLoaderData();
   const [searchParams] = useSearchParams();
-  const durationFilter = searchParams.get("duration") ?? "all";
+  const durationFilter = searchParams.getAll("duration") ?? ["all"];
   const fetcher = useFetcher();
   const transition = useTransition();
   const nextSearchParams = new URLSearchParams(transition.location?.search);
-  const nextDuration = nextSearchParams.get("duration");
+  const nextDuration = nextSearchParams.getAll("duration");
 
   useEffect(() => {
     console.log(transition.location?.pathname);
@@ -117,7 +117,9 @@ export default function App() {
           <Sidebar
             tags={tags}
             activeTags={fetcher.data?.activeTags ?? activeTags}
-            durationFilter={nextDuration ?? durationFilter}
+            durationFilter={
+              nextDuration.length > 0 ? nextDuration : durationFilter
+            }
           />
           <Outlet />
         </Layout>
