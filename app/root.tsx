@@ -7,11 +7,12 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useFetcher,
   useLoaderData,
   useSearchParams,
 } from "@remix-run/react";
-import { useState } from "react";
-import { TimeFilterOptions } from "./components/filters";
+import { useEffect, useState } from "react";
+import type { TimeFilterOptions } from "./components/filters";
 import Layout from "./components/layout";
 import Sidebar from "./components/sidebar";
 import styles from "./styles/app.css";
@@ -61,6 +62,8 @@ export function links() {
 }
 
 export const loader: LoaderFunction = async ({ params, request }) => {
+  const slugs = params["*"]?.split("/") ?? [];
+  console.log("root reload", slugs);
   const tags = await prisma.tag.findMany({
     orderBy: {
       videos: {
@@ -69,13 +72,14 @@ export const loader: LoaderFunction = async ({ params, request }) => {
     },
   });
 
-  const activeTags = params.tagSlug
-    ? await prisma.tag.findMany({
-        where: {
-          slug: { in: params.tagSlug },
-        },
-      })
-    : [];
+  const activeTags =
+    slugs.length > 0
+      ? await prisma.tag.findMany({
+          where: {
+            slug: { in: slugs },
+          },
+        })
+      : [];
 
   await prisma.$disconnect();
 
@@ -89,17 +93,19 @@ export default function App() {
   const { tags, activeTags } = useLoaderData();
   const [searchParams] = useSearchParams();
   const durationFilter = searchParams.get("duration") ?? "all";
+  const fetcher = useFetcher();
   const transition = useTransition();
-
   const nextSearchParams = new URLSearchParams(transition.location?.search);
   const nextDuration = nextSearchParams.get("duration");
 
-  const handleTimeFilterChange = async (value: TimeFilterOptions) => {
-    console.log(value);
-  };
+  useEffect(() => {
+    console.log(transition.location?.pathname);
+    if (transition.location) {
+      fetcher.load(transition.location.pathname);
+    }
+  }, [transition.location]);
 
-  const handleTagsChanged = async (slugs: string[]) => {};
-
+  console.log("app reload", activeTags, fetcher.data);
   return (
     <html lang="en">
       <head>
@@ -110,10 +116,8 @@ export default function App() {
         <Layout>
           <Sidebar
             tags={tags}
-            activeTags={activeTags}
+            activeTags={fetcher.data?.activeTags ?? activeTags}
             durationFilter={nextDuration ?? durationFilter}
-            handleTagsChanged={handleTagsChanged}
-            setTimeFilter={handleTimeFilterChange}
           />
           <Outlet />
         </Layout>

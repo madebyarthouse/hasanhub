@@ -37,7 +37,6 @@ export const loader: LoaderFunction = async ({ request }) => {
     getParams["lastVideoId"] = parseInt(lastVideoId);
   }
 
-  console.log(getParams);
   const [videos, totalVideosCount] = await getVideos(getParams);
 
   await prisma.$disconnect();
@@ -55,7 +54,6 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 export default function Index() {
   const { totalVideosCount, videos } = useLoaderData();
-  console.log(videos);
   const [liveVideos, setLiveVideos] = useState<typeof videos>(videos);
   const fetcher = useFetcher();
   const { transitionState, durationFilter, nextDurationFilter } =
@@ -66,7 +64,6 @@ export default function Index() {
   }&lastVideoId`;
 
   useEffect(() => {
-    console.log("fetcher useEffect", fetcher.data);
     if (fetcher.data && fetcher.data.videos.length > 0) {
       setLiveVideos((prev) => [...prev, ...fetcher.data.videos]);
     }

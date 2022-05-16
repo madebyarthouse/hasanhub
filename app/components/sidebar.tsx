@@ -2,6 +2,8 @@ import type { Tag } from "@prisma/client";
 import TagButton from "./tagButton";
 import { motion } from "framer-motion";
 import type { TimeFilterOptions } from "./filters";
+import { TimeFilterOptions } from "./filters";
+import { useEffect, useState } from "react";
 
 const gridContainerVariants = {
   hidden: { opacity: 0 },
@@ -20,6 +22,21 @@ const gridElVariant = {
   },
 };
 
+const constructUrl = (
+  activeSlugs: string[],
+  newSlug: string | null,
+  duration: TimeFilterOptions
+) => {
+  let slugs = activeSlugs;
+  if (newSlug) {
+    slugs = activeSlugs.includes(newSlug)
+      ? activeSlugs.filter((slug) => slug !== newSlug)
+      : [...activeSlugs, newSlug];
+  }
+
+  return `${slugs.join("/")}?duration=${duration}`;
+};
+
 const Sidebar = ({
   tags,
   activeTags,
@@ -29,7 +46,21 @@ const Sidebar = ({
   activeTags: Tag[];
   durationFilter: TimeFilterOptions;
 }) => {
+  const [basePath, setBasePath] = useState(
+    activeTags.length > 0 ? "/tags/" : "/"
+  );
   const activeTagSlugs = activeTags.map((tag) => tag.slug ?? "");
+  const durationFilterData: { value: TimeFilterOptions; label: string }[] = [
+    { value: "all", label: "All" },
+    { value: "short", label: "< 2min" },
+    { value: "medium", label: "2-15min" },
+    { value: "long", label: "15-30min" },
+    { value: "extralong", label: "> 30 min" },
+  ];
+
+  useEffect(() => {
+    setBasePath(activeTags.length > 0 ? "/tags/" : "/");
+  }, [activeTags]);
 
   return (
     <>
@@ -37,24 +68,18 @@ const Sidebar = ({
         layout
         className="w-full lg:sticky lg:top-0 lg:w-1/4 xl:w-1/5  py-5     px-3 lg:px-0"
       >
-        <div className="lg:overflow-y-auto lg:max-h-[calc(100vh-2.5rem)] lg:pr-3 flex flex-col gap-y-5">
+        <section className="lg:overflow-y-auto lg:max-h-[calc(100vh-2.5rem)] lg:pr-3 flex flex-col gap-y-5">
           {/* Time */}
           <motion.ul
-            className="flex flex-row flex-wrap rounded gap-3"
+            className="flex flex-row flex-nowrap pb-3 sm:pb-0 overflow-x-auto sm:overflow-x-visible sm:flex-wrap rounded gap-3"
             variants={gridContainerVariants}
             initial="hidden"
             animate="visible"
           >
-            {[
-              { value: "all", label: "All" },
-              { value: "short", label: "< 2min" },
-              { value: "medium", label: "2-15min" },
-              { value: "long", label: "15-30min" },
-              { value: "extralong", label: "> 30 min" },
-            ].map(({ value, label }) => (
+            {durationFilterData.map(({ value, label }) => (
               <motion.li variants={gridElVariant} key={value}>
                 <TagButton
-                  href={`?duration=${value}`}
+                  href={basePath + constructUrl(activeTagSlugs, null, value)}
                   styleVariant="sidebar"
                   label={label}
                   active={durationFilter === value}
@@ -68,12 +93,15 @@ const Sidebar = ({
             variants={gridContainerVariants}
             initial="hidden"
             animate="visible"
-            className="grid pb-3  lg:pb-0  grid-flow-col grid-rows-4 lg:flex lg:flex-row flex-nowrap lg:flex-wrap gap-y-2 gap-x-3 text-base overflow-x-auto lg:overflow-x-visible"
+            className="grid pb-3  lg:pb-0  grid-flow-col grid-rows-2 sm:grid-rows-4 lg:flex lg:flex-row flex-nowrap lg:flex-wrap gap-y-2 gap-x-3 text-base overflow-x-auto lg:overflow-x-visible"
           >
             {tags.map((tag) => (
               <motion.li variants={gridElVariant} key={tag.id}>
                 <TagButton
-                  href={`/tags/${tag.slug}`}
+                  href={
+                    "/tags/" +
+                    constructUrl(activeTagSlugs, tag.slug, durationFilter)
+                  }
                   styleVariant="sidebar"
                   label={tag.name}
                   active={activeTagSlugs.includes(tag.slug ?? "")}
@@ -81,7 +109,7 @@ const Sidebar = ({
               </motion.li>
             ))}
           </motion.ul>
-        </div>
+        </section>
       </motion.aside>
     </>
   );

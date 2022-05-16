@@ -11,9 +11,7 @@ import type { Tag } from "@prisma/client";
 import type { TimeFilterOptions } from "../../lib/getVideos";
 import useFilterParams from "~/hooks/useSearchParams";
 
-const loaderParamsSchema = z.object({
-  tagSlug: z.string(),
-});
+const slugsParam = z.array(z.string());
 
 const durationParam = z.enum(["all", "short", "medium", "long", "extralong"]);
 const lastVideoIdParam = z.number();
@@ -40,12 +38,12 @@ type LoaderData = {
   activeTags: Awaited<ReturnType<typeof getActiveTagsBySlugs>>;
 };
 export const loader: LoaderFunction = async ({ request, params }) => {
-  loaderParamsSchema.parse(params);
-  const slugs = params.tagSlug ? [params.tagSlug] : [];
   const url = new URL(request.url);
-  console.log(url);
   const duration = url.searchParams.get("duration");
   const lastVideoId = url.searchParams.get("lastVideoId");
+
+  const slugs = params["*"]?.split("/") ?? [];
+  slugsParam.parse(slugs);
 
   let getParams: {
     tagSlugs: string[];
@@ -62,7 +60,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     getParams["lastVideoId"] = parseInt(lastVideoId);
   }
 
-  console.log("getParams", getParams);
   const [activeTags, [videos, totalVideosCount]] = await Promise.all([
     getActiveTagsBySlugs(slugs),
     getVideos(getParams),
@@ -83,7 +80,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
 export default function TagPage() {
   const { videos, totalVideosCount, activeTags } = useLoaderData<LoaderData>();
-  console.log(videos);
   const [liveVideos, setLiveVideos] = useState<typeof videos>(videos);
   const fetcher = useFetcher();
   const { transitionState, durationFilter, nextDurationFilter } =
@@ -97,7 +93,6 @@ export default function TagPage() {
   }&lastVideoId`;
 
   useEffect(() => {
-    console.log("fetcher useEffect", fetcher.data);
     if (fetcher.data && fetcher.data.videos.length > 0) {
       setLiveVideos((prev) => [...prev, ...fetcher.data.videos]);
     }
