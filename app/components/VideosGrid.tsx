@@ -55,7 +55,9 @@ const VideosGrid = ({
               <li
                 style={{
                   animationDuration: `${
-                    250 + (index % 25) * (index % 25 < 10 ? 150 : 50)
+                    index % 25 < 10
+                      ? 250 + (index % 25) * 150
+                      : 1500 + (index % 25) * 50
                   }ms`,
                   animationName: "fadeIn",
                 }}

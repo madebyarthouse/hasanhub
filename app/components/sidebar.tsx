@@ -72,7 +72,9 @@ const Sidebar = ({
                 className="min-w-max"
                 key={value}
                 style={{
-                  animationDuration: `${250 + index * 50}ms`,
+                  animationDuration: `${
+                    250 + index * (index < 10 ? 50 : 25)
+                  }ms`,
                   animationName: "fadeIn",
                 }}
               >
@@ -98,7 +100,9 @@ const Sidebar = ({
               <li
                 className="min-w-max"
                 style={{
-                  animationDuration: `${250 + index * 50}ms`,
+                  animationDuration: `${
+                    250 + index * (index < 15 ? 50 : 25)
+                  }ms`,
                   animationName: "fadeIn",
                 }}
                 key={tag.id}
