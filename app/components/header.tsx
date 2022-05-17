@@ -22,59 +22,61 @@ const Header = ({
 }) => {
   console.log(streamInfo, streamSchedule);
   return (
-    <header className="px-5 lg:px-10 xl:px-14 my-6 flex gap-5 md:gap-0 flex-col md:flex-row justify-between">
-      <div className="flex flex-col sm:flex-row sm:justify-between gap-3 items-center">
-        <Link to="/" prefetch="render">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold sm:text-left group text-center">
-            Hasan
-            <span className="dark:text-lightBlack text-light inline-block bg-twitchPurpleLight group-hover:bg-twitchPurple p-2 ml-2 rounded-lg saturate-50">
-              Hub
-            </span>
-          </h1>
-        </Link>
+    <header className="px-5 lg:px-10 xl:px-14 my-6  gap-5 grid grid-cols-1 grid-rows-[auto_auto_auto] sm:grid-cols-2 sm:grid-rows-[auto_auto] xl:grid-rows-1 lg:grid-cols-[25%_auto] xl:grid-cols-[20%_auto_auto]">
+      <Link
+        to="/"
+        prefetch="render"
+        className="col-span-1 sm:col-span-1 flex items-center justify-center sm:justify-start"
+      >
+        <h1 className="text-[2.5rem] font-bold sm:text-left group text-center inline-block w-min whitespace-nowrap">
+          <span>Hasan</span>
+          <span className="dark:text-lightBlack text-light inline-block bg-twitchPurpleLight group-hover:bg-twitchPurple px-2 py-1 ml-2 rounded-lg saturate-50">
+            Hub
+          </span>
+        </h1>
+      </Link>
 
-        <div className="flex flex-col text-sm md:text-base text-center sm:text-right md:text-left">
-          {streamInfo.data?.length > 0 ? (
+      <div className="col-span-1 row-start-3 sm:col-span-2 sm:row-start-2 xl:row-start-1 xl:col-start-2 xl:col-span-1 w-full text-center xl:text-left lg:text-sm xl:max-w-[60ch]">
+        {streamInfo.data?.length > 0 ? (
+          <a
+            className="hover:text-twitchPurple dark:hover:text-twitchPurpleLight saturate-50"
+            target="_blank"
+            rel="noopener noreferrer"
+            href={`https://twitch.tv/${streamInfo.data[0]["user_login"]}`}
+          >
+            <p className="">
+              <strong className="text-twitchPurple dark:text-twitchPurpleLight saturate-50">
+                {streamInfo.data[0]["user_name"]}
+              </strong>{" "}
+              is live now: <br />"{streamInfo.data[0]["title"]}"
+            </p>
+          </a>
+        ) : (
+          streamSchedule.data && (
             <a
-              className="hover:text-twitchPurple dark:hover:text-twitchPurpleLight saturate-50"
               target="_blank"
               rel="noopener noreferrer"
-              href={`https://twitch.tv/${streamInfo.data[0]["user_login"]}`}
+              className="hover:text-twitchPurple dark:hover:text-twitchPurpleLight saturate-50"
+              href={`https://twitch.tv/${streamSchedule.data["broadcaster_login"]}`}
             >
-              <p className="">
+              <p>
                 <strong className="text-twitchPurple dark:text-twitchPurpleLight saturate-50">
-                  {streamInfo.data[0]["user_name"]}
+                  {streamSchedule.data?.["broadcaster_name"]}
                 </strong>{" "}
-                is live now: <br />"{streamInfo.data[0]["title"]}"
+                is live at{" "}
+                <strong className="text-twitchPurple dark:text-twitchPurpleLight saturate-50">
+                  {formatDate(
+                    streamSchedule.data?.["segments"][0]["start_time"]
+                  )}
+                </strong>{" "}
+                <br />"{streamSchedule.data?.["segments"][0]["title"]}"
               </p>
             </a>
-          ) : (
-            streamSchedule.data && (
-              <a
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-twitchPurple dark:hover:text-twitchPurpleLight saturate-50"
-                href={`https://twitch.tv/${streamSchedule.data["broadcaster_login"]}`}
-              >
-                <p>
-                  <strong className="text-twitchPurple dark:text-twitchPurpleLight saturate-50">
-                    {streamSchedule.data?.["broadcaster_name"]}
-                  </strong>{" "}
-                  is live at{" "}
-                  <strong className="text-twitchPurple dark:text-twitchPurpleLight saturate-50">
-                    {formatDate(
-                      streamSchedule.data?.["segments"][0]["start_time"]
-                    )}
-                  </strong>{" "}
-                  <br />"{streamSchedule.data?.["segments"][0]["title"]}"
-                </p>
-              </a>
-            )
-          )}
-        </div>
+          )
+        )}
       </div>
 
-      <div className="flex flex-row gap-2 justify-center md:flex-col lg:flex-row md:justify-end items-center text-sm md:text-base">
+      <div className="col-span-1 row-start-2 sm:row-start-1 sm:col-start-2 sm:col-span-1 xl:col-start-3 flex flex-row gap-2 justify-center md:justify-end items-center text-sm md:text-base">
         <a
           href="https://twitter.com/chrcit"
           target="_blank"
