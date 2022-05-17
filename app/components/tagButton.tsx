@@ -18,13 +18,13 @@ const TagButton = ({
         <Link
           to={href}
           className={cx(
-            "border-twitchPurpleLight duration-400 transition-colors border  betterhover:hover:bg-twitchPurple betterhover:hover:text-white inline-block rounded-lg saturate-50 ",
+            "border-twitchPurpleLight duration-400 transition-colors border  betterhover:hover:bg-twitchPurple betterhover:hover:text-light inline-block rounded-lg saturate-50 ",
             styleVariant === "sidebar"
               ? "text-base px-3 py-2"
-              : "text-sm px-2 py-1",
+              : "text-base px-2 py-1",
             active
-              ? "bg-twitchPurple text-white"
-              : "bg-white dark:bg-black text-twitchPurpleLight"
+              ? "bg-twitchPurpleLight text-light"
+              : "bg-light dark:bg-lightBlack text-twitchPurpleLight"
           )}
         >
           {label}

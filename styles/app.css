@@ -3,17 +3,19 @@
 @tailwind utilities;
 
 html, body {
-    @apply bg-white text-black dark:bg-black dark:text-gray-100;
+    @apply bg-light text-lightBlack dark:bg-lightBlack dark:text-light antialiased;
     font-family: Inter, Helvetica, sans-serif;
 }
 
 @keyframes fadeIn {
     0% {
         opacity: 0;
+        transform: scale(0);
     }
 
     100% {
         opacity: 1;
+        transform: scale(1);
     }
 }
 

@@ -3,7 +3,7 @@ const LoadingSpinner = () => {
     <div className="flex justify-center items-center gap-3">
       <span className="sr-only">Loading...</span>
       <div
-        className="bg-twitchPurple h-10 w-3"
+        className="bg-twitchPurple saturate-50 h-10 w-3"
         style={{
           animationDuration: "1000ms",
           animationName: "pulse",
@@ -11,7 +11,7 @@ const LoadingSpinner = () => {
         }}
       ></div>
       <div
-        className="bg-twitchPurple h-10 w-3"
+        className="bg-twitchPurple saturate-50 h-10 w-3"
         style={{
           animationDuration: "1500ms",
           animationName: "pulse",
@@ -19,7 +19,7 @@ const LoadingSpinner = () => {
         }}
       ></div>
       <div
-        className="bg-twitchPurple h-10 w-3"
+        className="bg-twitchPurple saturate-50 h-10 w-3"
         style={{
           animationDuration: "2000ms",
           animationName: "pulse",

@@ -578,10 +578,6 @@ Ensure the default browser behavior of the `hidden` attribute.
   width: 0.75rem;
 }
 
-.w-2 {
-  width: 0.5rem;
-}
-
 .min-w-min {
   min-width: -webkit-min-content;
   min-width: -moz-min-content;
@@ -662,10 +658,6 @@ Ensure the default browser behavior of the `hidden` attribute.
   gap: 0.5rem;
 }
 
-.gap-4 {
-  gap: 1rem;
-}
-
 .gap-x-3 {
   -moz-column-gap: 0.75rem;
        column-gap: 0.75rem;
@@ -718,14 +710,14 @@ Ensure the default browser behavior of the `hidden` attribute.
   border-color: rgb(145 71 255 / var(--tw-border-opacity));
 }
 
-.bg-black {
+.bg-lightBlack {
   --tw-bg-opacity: 1;
-  background-color: rgb(24 24 27 / var(--tw-bg-opacity));
+  background-color: rgb(31 31 35 / var(--tw-bg-opacity));
 }
 
-.bg-white {
+.bg-light {
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
+  background-color: rgb(247 247 248 / var(--tw-bg-opacity));
 }
 
 .bg-twitchPurpleLight {
@@ -740,14 +732,6 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .bg-opacity-80 {
   --tw-bg-opacity: 0.8;
-}
-
-.bg-cover {
-  background-size: cover;
-}
-
-.bg-center {
-  background-position: center;
 }
 
 .object-cover {
@@ -851,6 +835,11 @@ Ensure the default browser behavior of the `hidden` attribute.
   font-weight: 700;
 }
 
+.text-light {
+  --tw-text-opacity: 1;
+  color: rgb(247 247 248 / var(--tw-text-opacity));
+}
+
 .text-white {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));
@@ -893,6 +882,12 @@ Ensure the default browser behavior of the `hidden` attribute.
   transition-duration: 150ms;
 }
 
+.transition-transform {
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
 .transition-opacity {
   transition-property: opacity;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -913,17 +908,19 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 html, body {
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
+  background-color: rgb(247 247 248 / var(--tw-bg-opacity));
   --tw-text-opacity: 1;
-  color: rgb(24 24 27 / var(--tw-text-opacity));
+  color: rgb(31 31 35 / var(--tw-text-opacity));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 @media (prefers-color-scheme: dark) {
   html, body {
     --tw-bg-opacity: 1;
-    background-color: rgb(24 24 27 / var(--tw-bg-opacity));
+    background-color: rgb(31 31 35 / var(--tw-bg-opacity));
     --tw-text-opacity: 1;
-    color: rgb(243 244 246 / var(--tw-text-opacity));
+    color: rgb(247 247 248 / var(--tw-text-opacity));
   }
 }
 
@@ -934,20 +931,24 @@ html, body {
 @-webkit-keyframes fadeIn {
   0% {
     opacity: 0;
+    transform: scale(0);
   }
 
   100% {
     opacity: 1;
+    transform: scale(1);
   }
 }
 
 @keyframes fadeIn {
   0% {
     opacity: 0;
+    transform: scale(0);
   }
 
   100% {
     opacity: 1;
+    transform: scale(1);
   }
 }
 
@@ -1005,19 +1006,29 @@ html, body {
 }
 
 @media (prefers-color-scheme: dark) {
-  .dark\:bg-black {
+  .dark\:bg-lightBlack {
     --tw-bg-opacity: 1;
-    background-color: rgb(24 24 27 / var(--tw-bg-opacity));
+    background-color: rgb(31 31 35 / var(--tw-bg-opacity));
   }
 
-  .dark\:text-black {
+  .dark\:text-lightBlack {
     --tw-text-opacity: 1;
-    color: rgb(24 24 27 / var(--tw-text-opacity));
+    color: rgb(31 31 35 / var(--tw-text-opacity));
+  }
+
+  .dark\:text-twitchPurpleLight {
+    --tw-text-opacity: 1;
+    color: rgb(145 71 255 / var(--tw-text-opacity));
   }
 
   .dark\:shadow-slate-800 {
     --tw-shadow-color: #1e293b;
     --tw-shadow: var(--tw-shadow-colored);
+  }
+
+  .dark\:hover\:text-twitchPurpleLight:hover {
+    --tw-text-opacity: 1;
+    color: rgb(145 71 255 / var(--tw-text-opacity));
   }
 }
 
@@ -1206,13 +1217,19 @@ html, body {
 }
 
 @media (hover: hover) {
+  .betterhover\:hover\:scale-\[1\.02\]:hover {
+    --tw-scale-x: 1.02;
+    --tw-scale-y: 1.02;
+    transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+  }
+
   .betterhover\:hover\:bg-twitchPurple:hover {
     --tw-bg-opacity: 1;
     background-color: rgb(119 44 232 / var(--tw-bg-opacity));
   }
 
-  .betterhover\:hover\:text-white:hover {
+  .betterhover\:hover\:text-light:hover {
     --tw-text-opacity: 1;
-    color: rgb(255 255 255 / var(--tw-text-opacity));
+    color: rgb(247 247 248 / var(--tw-text-opacity));
   }
 }

@@ -5,7 +5,8 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        black: "#18181b",
+        light: "#f7f7f8",
+        lightBlack: "#1f1f23",
         twitchPurple: "#772ce8",
         twitchPurpleLight: "#9147ff",
       },

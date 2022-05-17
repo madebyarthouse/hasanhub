@@ -52,22 +52,16 @@ const VideoGridItem = ({
 }) => {
   return (
     <article
-      className="gap-5 h-full flex flex-col justify-between"
+      className="gap-5 h-full flex flex-col justify-between betterhover:hover:scale-[1.02] transition-transform group"
       key={video.youtubeId}
     >
       <div className="px-3 lg:px-0">
-        <div className="aspect-video relative group shadow-md dark:shadow-slate-800">
+        <div className="aspect-video relative shadow-md dark:shadow-slate-800 ">
           <a
             rel="noreferrer"
             target="_blank"
             href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
           >
-            {/* <div
-              className="w-full h-full bg-cover bg-center"
-              style={{
-                backgroundImage: `url(${video.largeThumbnailUrl})` ?? "",
-              }}
-            /> */}
             <img
               className="w-full h-full object-cover"
               loading={lazy ? "lazy" : "eager"}
@@ -75,7 +69,7 @@ const VideoGridItem = ({
               src={video.largeThumbnailUrl ?? ""}
             />
             {video.duration && (
-              <div className="bg-black group-hover:bg-opacity-90 text-sm bg-opacity-80 text-white absolute bottom-1 right-1 px-2 py-1">
+              <div className="bg-lightBlack group-hover:bg-opacity-90 text-sm bg-opacity-80 text-light absolute bottom-1 right-1 px-2 py-1">
                 {formatDuration(video.duration)}
               </div>
             )}

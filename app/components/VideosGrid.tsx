@@ -35,7 +35,7 @@ const VideosGrid = ({
     <section aria-label={title} className="w-full lg:w-3/4 xl:w-4/5">
       <div
         className={cx(
-          "sticky top-0 w-full gap-1 text-left sm:gap-3 bg-white dark:bg-black z-20 flex flex-col md:flex-row md:items-center lg:flex-col transition-opacity lg:items-start justify-between px-3 lg:px-0 mb-5 py-5",
+          "sticky top-0 w-full gap-1 text-left sm:gap-3 bg-light dark:bg-lightBlack z-20 flex flex-col md:flex-row md:items-center lg:flex-col transition-opacity lg:items-start justify-between px-3 lg:px-0 mb-5 py-5",
           { "opacity-0": loading }
         )}
       >
@@ -54,7 +54,9 @@ const VideosGrid = ({
             loading ? null : (
               <li
                 style={{
-                  animationDuration: `${250 + index * 150}ms`,
+                  animationDuration: `${
+                    250 + (index % 25) * (index % 25 < 10 ? 150 : 50)
+                  }ms`,
                   animationName: "fadeIn",
                 }}
                 key={video.youtubeId}
@@ -71,17 +73,21 @@ const VideosGrid = ({
       ) : (
         <div className="w-full flex justify-center items-center my-10">
           {totalVideosCount > videos.length ? (
-            <a
-              href={loadMoreUrl(lastVideoId ?? -1)}
-              onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                e.preventDefault();
+            loadingMore ? (
+              <LoadingSpinner />
+            ) : (
+              <a
+                href={loadMoreUrl(lastVideoId ?? -1)}
+                onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                  e.preventDefault();
 
-                handleLoadMore(lastVideoId ?? -1);
-              }}
-              className="bg-twitchPurpleLight text-white text-center font-bold betterhover:hover:bg-twitchPurple px-4 py-2 rounded inline-block saturate-50"
-            >
-              {loadingMore ? "Loading..." : "Load more"}
-            </a>
+                  handleLoadMore(lastVideoId ?? -1);
+                }}
+                className="bg-twitchPurpleLight text-light text-center font-bold betterhover:hover:bg-twitchPurple px-4 py-2 rounded inline-block saturate-50"
+              >
+                Load more
+              </a>
+            )
           ) : (
             <span>All done</span>
           )}
