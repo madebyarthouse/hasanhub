@@ -21,7 +21,8 @@ const lastVideoIdParam = z.number();
 
 export function headers() {
   return {
-    "Cache-Control": "max-age=360, s-maxage=360, stale-while-revalidate",
+    "Cache-Control":
+      "public, max-age=360, s-maxage=360, stale-while-revalidate",
   };
 }
 
@@ -77,7 +78,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     {
       status: 200,
       headers: {
-        "cache-control": "max-age=360, s-maxage=360, stale-while-revalidate",
+        "cache-control":
+          "public, max-age=360, s-maxage=360, stale-while-revalidate",
       },
     }
   );
