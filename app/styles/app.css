@@ -608,10 +608,6 @@ Ensure the default browser behavior of the `hidden` attribute.
   min-width: max-content;
 }
 
-.max-w-\[60ch\] {
-  max-width: 60ch;
-}
-
 .flex-grow {
   flex-grow: 1;
 }
@@ -682,10 +678,6 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .gap-2 {
   gap: 0.5rem;
-}
-
-.gap-4 {
-  gap: 1rem;
 }
 
 .gap-x-3 {
@@ -777,10 +769,6 @@ Ensure the default browser behavior of the `hidden` attribute.
   padding: 0.75rem;
 }
 
-.p-2 {
-  padding: 0.5rem;
-}
-
 .px-3 {
   padding-left: 0.75rem;
   padding-right: 0.75rem;
@@ -852,23 +840,13 @@ Ensure the default browser behavior of the `hidden` attribute.
   line-height: 2.5rem;
 }
 
+.text-\[2\.5rem\] {
+  font-size: 2.5rem;
+}
+
 .text-base {
   font-size: 1rem;
   line-height: 1.5rem;
-}
-
-.text-6xl {
-  font-size: 3.75rem;
-  line-height: 1;
-}
-
-.text-5xl {
-  font-size: 3rem;
-  line-height: 1;
-}
-
-.text-\[2\.5rem\] {
-  font-size: 2.5rem;
 }
 
 .font-semibold {
@@ -1105,16 +1083,12 @@ html, body {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .sm\:grid-rows-2 {
-    grid-template-rows: repeat(2, minmax(0, 1fr));
+  .sm\:grid-rows-\[auto_auto\] {
+    grid-template-rows: auto auto;
   }
 
   .sm\:grid-rows-4 {
     grid-template-rows: repeat(4, minmax(0, 1fr));
-  }
-
-  .sm\:grid-rows-\[auto_auto\] {
-    grid-template-rows: auto auto;
   }
 
   .sm\:flex-wrap {
@@ -1140,11 +1114,6 @@ html, body {
   .sm\:text-left {
     text-align: left;
   }
-
-  .sm\:text-5xl {
-    font-size: 3rem;
-    line-height: 1;
-  }
 }
 
 @media (min-width: 768px) {
@@ -1156,24 +1125,12 @@ html, body {
     flex-direction: row;
   }
 
-  .md\:flex-col {
-    flex-direction: column;
-  }
-
   .md\:items-center {
     align-items: center;
   }
 
   .md\:justify-end {
     justify-content: flex-end;
-  }
-
-  .md\:gap-0 {
-    gap: 0px;
-  }
-
-  .md\:text-left {
-    text-align: left;
   }
 
   .md\:text-5xl {
@@ -1213,16 +1170,8 @@ html, body {
     width: 25%;
   }
 
-  .lg\:max-w-\[60ch\] {
-    max-width: 60ch;
-  }
-
   .lg\:grid-cols-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .lg\:grid-cols-\[25\%_auto_auto\] {
-    grid-template-columns: 25% auto auto;
   }
 
   .lg\:grid-cols-\[25\%_auto\] {
@@ -1243,10 +1192,6 @@ html, body {
 
   .lg\:items-start {
     align-items: flex-start;
-  }
-
-  .lg\:gap-20 {
-    gap: 5rem;
   }
 
   .lg\:gap-5 {
@@ -1279,23 +1224,9 @@ html, body {
     padding-bottom: 0px;
   }
 
-  .lg\:text-left {
-    text-align: left;
-  }
-
-  .lg\:text-6xl {
-    font-size: 3.75rem;
-    line-height: 1;
-  }
-
   .lg\:text-sm {
     font-size: 0.875rem;
     line-height: 1.25rem;
-  }
-
-  .lg\:text-4xl {
-    font-size: 2.25rem;
-    line-height: 2.5rem;
   }
 }
 
@@ -1304,20 +1235,16 @@ html, body {
     grid-column: span 1 / span 1;
   }
 
-  .xl\:col-start-3 {
-    grid-column-start: 3;
-  }
-
   .xl\:col-start-2 {
     grid-column-start: 2;
   }
 
-  .xl\:row-start-1 {
-    grid-row-start: 1;
+  .xl\:col-start-3 {
+    grid-column-start: 3;
   }
 
-  .xl\:row-start-2 {
-    grid-row-start: 2;
+  .xl\:row-start-1 {
+    grid-row-start: 1;
   }
 
   .xl\:w-4\/5 {
@@ -1336,24 +1263,12 @@ html, body {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
-  .xl\:grid-cols-\[25\%_auto_auto\] {
-    grid-template-columns: 25% auto auto;
-  }
-
-  .xl\:grid-cols-\[25\%_max_auto\] {
-    grid-template-columns: 25% max auto;
-  }
-
   .xl\:grid-cols-\[20\%_auto_auto\] {
     grid-template-columns: 20% auto auto;
   }
 
   .xl\:grid-rows-1 {
     grid-template-rows: repeat(1, minmax(0, 1fr));
-  }
-
-  .xl\:gap-0 {
-    gap: 0px;
   }
 
   .xl\:px-14 {
@@ -1363,11 +1278,6 @@ html, body {
 
   .xl\:text-left {
     text-align: left;
-  }
-
-  .xl\:text-7xl {
-    font-size: 4.5rem;
-    line-height: 1;
   }
 }
 
