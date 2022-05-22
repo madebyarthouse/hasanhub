@@ -20,7 +20,6 @@ const Header = ({
   streamInfo: StreamInfo;
   streamSchedule: StreamSchedule;
 }) => {
-  console.log(streamInfo, streamSchedule);
   return (
     <header className="px-5 lg:px-10 xl:px-14 my-6  gap-5 grid grid-cols-1 grid-rows-[auto_auto_auto] sm:grid-cols-2 sm:grid-rows-[auto_auto] xl:grid-rows-1 lg:grid-cols-[25%_auto] xl:grid-cols-[20%_auto_auto]">
       <Link
