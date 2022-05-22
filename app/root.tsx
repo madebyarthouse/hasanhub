@@ -80,6 +80,8 @@ export const loader: LoaderFunction = async ({ params, request }) => {
     },
   });
 
+  console.log({ params, request });
+
   const activeTags =
     slugs.length > 0
       ? await prisma.tag.findMany({
