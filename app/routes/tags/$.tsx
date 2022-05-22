@@ -119,8 +119,6 @@ export default function TagPage() {
     setLiveVideos(videos);
   }, [videos]);
 
-  console.log("tagVideos", videos, liveVideos);
-
   return (
     <VideosGrid
       totalVideosCount={totalVideosCount}

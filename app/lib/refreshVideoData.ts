@@ -30,7 +30,6 @@ const ytVideoExtendedDTO = (ytData: ExtendendYTChannelSnippet) => {
   const likes = parseInt(ytData?.statistics?.likeCount);
   const comments = parseInt(ytData?.statistics?.commentCount);
   const favorites = parseInt(ytData?.statistics?.favoriteCount);
-  console.log(typeof comments === "number", comments);
   return {
     title: decode(ytData?.snippet?.title),
     description: ytData?.snippet?.description,
@@ -56,7 +55,6 @@ const processVideo = async (video: Video) => {
     })
   )?.data;
 
-  console.log(JSON.stringify(ytVideo));
 
   if ("error" in ytVideo) {
     console.log(
@@ -71,7 +69,6 @@ const processVideo = async (video: Video) => {
     );
     return;
   }
-console.log(ytVideo.items[0])
   const updated = await prisma.video.update({
     where: { id: video.id },
     data: ytVideoExtendedDTO(ytVideo.items[0]),

@@ -60,8 +60,6 @@ export const searchVideos = async (params: Params): Promise<
     ...(buildYoutubeRequest(params)),
   };
 
-  console.log(requestData);
-
   return axios.request(requestData);
 };
 

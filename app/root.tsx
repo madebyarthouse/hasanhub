@@ -72,7 +72,6 @@ export function links() {
 
 export const loader: LoaderFunction = async ({ params, request }) => {
   const slugs = params["*"]?.split("/") ?? [];
-  console.log("root reload", slugs);
   const tags = await prisma.tag.findMany({
     orderBy: {
       videos: {
@@ -112,7 +111,6 @@ export default function App() {
   const nextDuration = nextSearchParams.getAll("duration");
 
   useEffect(() => {
-    console.log("pathname", transition.location?.pathname);
     if (transition.location) {
       fetcher.load(transition.location.pathname);
     }

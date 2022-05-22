@@ -59,7 +59,6 @@ const getVideos = async ({tagSlugs, order, durations, lastVideoId, take}: GetVid
     }
 
     conditions['disabled'] = false;
-    console.log(durations, conditions);
     return await prisma.$transaction([
         prisma.video.findMany({
             where: conditions,

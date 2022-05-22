@@ -37,8 +37,6 @@ const processVideo = async (video: Video) => {
     })
   )?.data;
 
-  console.log(JSON.stringify(ytVideo));
-
   if ("error" in ytVideo) {
     console.log(
       `Error '${ytVideo.error}' while searching video ${video.youtubeId}`,
@@ -52,7 +50,6 @@ const processVideo = async (video: Video) => {
     );
     return;
   }
-console.log(ytVideo.items[0])
   const updated = await prisma.video.update({
     where: { id: video.id },
     data: ytVideoExtendedDTO(ytVideo.items[0]),
