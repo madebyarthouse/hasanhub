@@ -72,39 +72,34 @@ export function links() {
 
 export const loader: LoaderFunction = async ({ params, request }) => {
   const slugs = params["*"]?.split("/") ?? [];
-  const tags = await prisma.tag.findMany({
-    orderBy: {
-      videos: {
-        _count: "desc",
+
+  const [tags, [streamInfo, schedule]] = await Promise.all([
+    prisma.tag.findMany({
+      orderBy: {
+        videos: {
+          _count: "desc",
+        },
       },
-    },
-  });
+    }),
+    getStreamInfo(),
+  ]);
 
   console.log(JSON.stringify({ params, request }));
-
-  const activeTags =
-    slugs.length > 0
-      ? await prisma.tag.findMany({
-          where: {
-            slug: { in: slugs },
-          },
-        })
-      : [];
-
-  const [streamInfo, schedule] = await getStreamInfo();
 
   await prisma.$disconnect();
 
   return json({
     tags,
-    activeTags,
     streamInfo,
     schedule,
+    slugs,
   });
 };
 
 export default function App() {
-  const { tags, activeTags, streamInfo, schedule } = useLoaderData();
+  const { tags, slugs, streamInfo, schedule } = useLoaderData();
+  const activeTags =
+    slugs.length > 0 ? tags.filter((tag) => slugs.includes(tag.slug)) : [];
   const [searchParams] = useSearchParams();
   const durationFilter = searchParams.getAll("duration") ?? ["all"];
   const fetcher = useFetcher();
