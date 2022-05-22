@@ -80,7 +80,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
     },
   });
 
-  console.log({ params, request });
+  console.log(JSON.stringify({ params, request }));
 
   const activeTags =
     slugs.length > 0
