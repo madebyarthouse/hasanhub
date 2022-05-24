@@ -1,7 +1,7 @@
 import { prisma } from "~/utils/prisma.server";
 
 export const loader = async () => {
-  const BASE_URL = "http://hasanhub.com";
+  const BASE_URL = "https://hasanhub.com";
 
   const tags = await prisma.tag.findMany();
 

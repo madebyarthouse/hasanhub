@@ -2,21 +2,43 @@ import { prisma } from "~/utils/prisma.server";
 
 export const loader = async () => {
   const tags = await prisma.tag.findMany();
-  // handle "GET" request
-  // set up our text content that will be returned in the response
+  const slugCombinations = tags
+    .map((tag) => {
+      return `Allow: /tags/${tag.slug}/`;
+    })
+    .join("\n");
+
+  const allowAssets = `Allow: /build/*.css
+Allow: /build/*.js
+Allow: /build>/*.jpg
+Allow: /build>/*.jpeg
+Allow: /build>/*.png
+Allow: /build>/*.gif`;
+
+  const allowPlausible = `Allow: https://www.hasanhub.com/stats/js/script.js`;
+
+  const block = `${slugCombinations}
+${allowPlausible}
+${allowAssets}`;
+
   const robotText = `
 User-agent: Googlebot
-Disallow: /nogooglebot/
-Allow: /$    
-User-agent: *
-${tags
-  .map((tag) => {
-    return `Allow: /tags/${tag.slug}/`;
-  })
-  .join("\n")}
+Sitemap: https://hasanhub.com/sitemap.xml
+Allow: /$
+${block}
 Disallow: /
 
-Sitemap: http://hasanhub.com/sitemap.xml
+User-agent: Yandex
+Sitemap: https://hasanhub.com/sitemap.xml
+Allow: /$
+${block}
+Disallow: /
+
+User-agent: *
+Sitemap: https://hasanhub.com/sitemap.xml
+Allow: /$
+${block}
+Disallow: /
         `;
   // return the text content, a status 200 success response, and set the content type to text/plain
   return new Response(robotText, {
