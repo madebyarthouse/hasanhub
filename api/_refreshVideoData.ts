@@ -11,7 +11,6 @@ const ytVideoExtendedDTO = (ytData: ExtendendYTChannelSnippet) => {
   const likes = parseInt(ytData?.statistics?.likeCount);
   const comments = parseInt(ytData?.statistics?.commentCount);
   const favorites = parseInt(ytData?.statistics?.favoriteCount);
-  console.log(typeof comments === "number", comments);
   return {
     title: decode(ytData?.snippet?.title),
     description: ytData?.snippet?.description,
@@ -50,25 +49,27 @@ const processVideo = async (video: Video) => {
     );
     return;
   }
-  const updated = await prisma.video.update({
-    where: { id: video.id },
-    data: ytVideoExtendedDTO(ytVideo.items[0]),
-  });
 
   console.log(
-    `Video '${updated.title}' with Youtube ID = '${updated.youtubeId}' was updated.`,
+    `Video '${video.title}' with Youtube ID = '${video.youtubeId}' will be updated.`,
   );
 
-  return updated;
+  return ytVideoExtendedDTO(ytVideo.items[0]);
 };
 
 const refreshVideosData = async (videos: Video[]) => {
-  const updated = [];
+  let updates = [];
   for (const video of videos) {
-    updated.push(await processVideo(video));
+    const ytVideo = await processVideo(video);
+    if (typeof ytVideo === "undefined") {continue;}
+
+    updates.push(prisma.video.update({
+      where: { id: video.id },
+      data: ytVideo,
+    }));
   }
 
-  return updated;
+  return prisma.$transaction(updates);
 };
 
 export default refreshVideosData;

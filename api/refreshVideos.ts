@@ -25,9 +25,10 @@ export default async function handler(request: VercelRequest, response: VercelRe
         ],
       },
     ], },
+    take: 30
   });
 
   const updated = await refreshVideosData(videos);
 
-  response.status(200).json(updated.filter((video) => typeof video !== "undefined").map((video) => video.title).join("\n"));
+  response.status(200).json({titles: updated.map((video) => video.title)});
 }
