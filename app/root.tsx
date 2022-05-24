@@ -27,6 +27,7 @@ export const meta: MetaFunction = () => ({
   description: "The HasanAbi Clips Industrial Complex App",
   "msapplication-tileColor": "#da532c",
   "theme-color": "#ffffff",
+  "yandex-verification": "45afda70569d2af8",
 });
 
 export function links() {
