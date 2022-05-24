@@ -10,12 +10,12 @@ export const loader = async () => {
 
   const allowAssets = `Allow: /build/*.css
 Allow: /build/*.js
-Allow: /build>/*.jpg
-Allow: /build>/*.jpeg
-Allow: /build>/*.png
-Allow: /build>/*.gif`;
+Allow: /build/*.jpg
+Allow: /build/*.jpeg
+Allow: /build/*.png
+Allow: /build/*.gif`;
 
-  const allowPlausible = `Allow: https://www.hasanhub.com/stats/js/script.js`;
+  const allowPlausible = `Allow: /stats/js/script.js`;
 
   const block = `${slugCombinations}
 ${allowPlausible}
