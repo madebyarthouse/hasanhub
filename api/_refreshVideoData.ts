@@ -29,12 +29,22 @@ const ytVideoExtendedDTO = (ytData: ExtendendYTChannelSnippet) => {
 };
 
 const processVideo = async (video: Video) => {
-  const ytVideo = (
-    await getVideoDetails({
-      part: "contentDetails,snippet,statistics",
-      id: video.youtubeId,
-    })
-  )?.data;
+  let ytVideo;
+  try {
+    ytVideo = (
+      await getVideoDetails({
+        part: "contentDetails,snippet,statistics",
+        id: video.youtubeId,
+      })
+    )?.data;
+  } catch (e) {
+    console.error(e);
+  }
+
+  if (!ytVideo) {
+    console.log('API didn\'t return anything')
+    return;
+  }
 
   if ("error" in ytVideo) {
     console.log(
