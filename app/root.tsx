@@ -11,8 +11,7 @@ import {
   useLoaderData,
   useSearchParams,
 } from "@remix-run/react";
-import { useEffect, useState } from "react";
-import type { TimeFilterOptions } from "./components/filters";
+import { useEffect } from "react";
 import Layout from "./components/layout";
 import Sidebar from "./components/sidebar";
 import styles from "./styles/app.css";
@@ -75,13 +74,14 @@ export const loader: LoaderFunction = async ({ params, request }) => {
   const slugs = params["*"]?.split("/") ?? [];
 
   const [tags, [streamInfo, schedule]] = await Promise.all([
-    prisma.tag.findMany({
-      orderBy: {
-        videos: {
-          _count: "desc",
-        },
-      },
-    }),
+    prisma.$queryRaw`
+      SELECT t.*, sum(v.views) AS view_count
+      FROM Tag t
+        JOIN TagVideo tv ON tv.tagId = t.id
+        JOIN Video v ON tv.videoId = v.id
+      GROUP BY t.id
+      ORDER BY view_count DESC
+    `,
     getStreamInfo(),
   ]);
 
