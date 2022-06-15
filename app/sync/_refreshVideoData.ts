@@ -3,7 +3,7 @@ import { parse, toSeconds } from "iso8601-duration";
 import type { Video } from "@prisma/client";
 import type { ExtendendYTChannelSnippet } from "./_youtube.server";
 import { getVideoDetails } from "./_youtube.server";
-import { prisma } from "./_prisma.server";
+import { prisma } from "~/utils/prisma.server";
 
 const ytVideoExtendedDTO = (ytData: ExtendendYTChannelSnippet) => {
   const duration = toSeconds(parse(ytData?.contentDetails?.duration));

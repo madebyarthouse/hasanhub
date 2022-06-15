@@ -1,8 +1,11 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { prisma } from "./_prisma.server";
-import matchTagsAndVideos from "./_matchTagsAndVideosService";
+import { prisma } from "~/utils/prisma.server";
+import matchTagsAndVideos from "~/sync/_matchTagsAndVideosService";
 
-export default async function handler(request: VercelRequest, response: VercelResponse) {
+export default async function handler(
+  request: VercelRequest,
+  response: VercelResponse
+) {
   const responseString: String[] = [];
   try {
     const [tags, videos] = await Promise.all([
@@ -15,7 +18,9 @@ export default async function handler(request: VercelRequest, response: VercelRe
       if (data.length > 0) {
         await prisma.tag.update({
           where: { id: parseInt(tagId) },
-          data: { videos: { createMany: { data: data, skipDuplicates: true } } },
+          data: {
+            videos: { createMany: { data: data, skipDuplicates: true } },
+          },
         });
       }
     }

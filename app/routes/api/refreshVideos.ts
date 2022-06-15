@@ -1,16 +1,14 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { prisma } from "./_prisma.server";
-import refreshVideosData from "./_refreshVideoData";
+import { prisma } from "~/utils/prisma.server";
+import refreshVideosData from "~/sync/_refreshVideoData";
+import { json } from "@remix-run/node";
 
 const minute = 1000 * 60;
 const hour = minute * 60;
 const day = hour * 24;
 const week = day * 7;
 
-export default async function handler(
-  request: VercelRequest,
-  response: VercelResponse
-) {
+export async function loader({ params }) {
   console.log(new Date(Date.now() - week));
   const videos = await prisma.video.findMany({
     where: {
@@ -44,5 +42,5 @@ export default async function handler(
 
   const updated = await refreshVideosData(videos);
 
-  response.status(200).json({ titles: updated.map((video) => video.title) });
+  return json({ titles: updated.map((video) => video.title) });
 }

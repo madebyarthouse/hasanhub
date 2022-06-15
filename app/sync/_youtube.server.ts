@@ -24,7 +24,7 @@ const buildYoutubeRequest = (params: Params): AxiosRequestConfig => {
 
   return {
     method: "get" as Method,
-    params: { ...(Object.assign(defaultParams, params)) },
+    params: { ...Object.assign(defaultParams, params) },
     headers: { "x-rapidapi-host": host, "x-rapidapi-key": key },
   };
 };
@@ -37,7 +37,11 @@ export type YTVideoItem = {
     channelId: string;
     title: string;
     description: string;
-    thumbnails: { default: YTImageData; medium: YTImageData; high: YTImageData };
+    thumbnails: {
+      default: YTImageData;
+      medium: YTImageData;
+      high: YTImageData;
+    };
     channelTitle: string;
     liveBroadcastContent: string;
     publishTime: string;
@@ -52,12 +56,12 @@ export type SearchVideosResponseType = {
   items: YTVideoItem[];
 };
 
-export const searchVideos = async (params: Params): Promise<
-  AxiosResponse<SearchVideosResponseType, any>
-> => {
+export const searchVideos = async (
+  params: Params
+): Promise<AxiosResponse<SearchVideosResponseType, any>> => {
   const requestData = {
     url: "https://youtube-v31.p.rapidapi.com/search",
-    ...(buildYoutubeRequest(params)),
+    ...buildYoutubeRequest(params),
   };
 
   return axios.request(requestData);
@@ -72,29 +76,39 @@ export type YTChannelSnippet = {
     title: string;
     description: string;
     publishedAt: string;
-    thumbnails: { default: YTImageData; medium: YTImageData; high: YTImageData };
+    thumbnails: {
+      default: YTImageData;
+      medium: YTImageData;
+      high: YTImageData;
+    };
   };
-  statistics: { viewCount: string; subscriberCount: string; videoCount: string };
+  statistics: {
+    viewCount: string;
+    subscriberCount: string;
+    videoCount: string;
+  };
   brandingSettings: {
     channel: { title: string; description: string; keywords: string };
     image: { bannerExternalUrl: string };
   };
 };
 
-export const searchChannels = async (params: Params): Promise<
+export const searchChannels = async (
+  params: Params
+): Promise<
   AxiosResponse<
-      | {
+    | {
         kind: string;
         pageInfo: { totalResults: number; resultsPerPage: number };
         items: YTChannelSnippet[];
       }
-      | { error: string },
+    | { error: string },
     any
   >
 > => {
   const requestData = {
     url: "https://youtube-v31.p.rapidapi.com/channels",
-    ...(buildYoutubeRequest(params)),
+    ...buildYoutubeRequest(params),
   };
 
   return axios.request(requestData);
@@ -128,20 +142,22 @@ export type ExtendendYTChannelSnippet = {
   };
 };
 
-export const getVideoDetails = async (params: Params): Promise<
+export const getVideoDetails = async (
+  params: Params
+): Promise<
   AxiosResponse<
-      | {
+    | {
         kind: string;
         pageInfo: { totalResults: number; resultsPerPage: number };
         items: ExtendendYTChannelSnippet[];
       }
-      | { error: string },
+    | { error: string },
     any
   >
 > => {
   const requestData = {
     url: "https://youtube-v31.p.rapidapi.com/videos",
-    ...(buildYoutubeRequest(params)),
+    ...buildYoutubeRequest(params),
   };
 
   return axios.request(requestData);
@@ -166,20 +182,22 @@ export type YTPlaylistSnippet = {
   };
 };
 
-export const searchPlaylists = async (params: Params): Promise<
+export const searchPlaylists = async (
+  params: Params
+): Promise<
   AxiosResponse<
-      | {
+    | {
         kind: "youtube#playlistListResponse";
         pageInfo: { totalResults: number; resultsPerPage: number };
         items: YTPlaylistSnippet[];
       }
-      | { error: string },
+    | { error: string },
     any
   >
 > => {
   const requestData = {
     url: "https://youtube-v31.p.rapidapi.com/playlists",
-    ...(buildYoutubeRequest(params)),
+    ...buildYoutubeRequest(params),
   };
 
   return axios.request(requestData);

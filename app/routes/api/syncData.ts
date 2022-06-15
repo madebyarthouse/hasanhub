@@ -4,16 +4,16 @@ import {
   searchChannels,
   searchPlaylists,
   searchVideos,
-} from "./_youtube.server";
-import matchTagsAndVideos from "./_matchTagsAndVideosService";
-import refreshVideosData from "./_refreshVideoData";
+} from "~/sync/_youtube.server";
+import matchTagsAndVideos from "~/sync/_matchTagsAndVideosService";
+import refreshVideosData from "~/sync/_refreshVideoData";
 import type {
   SearchVideosResponseType,
   YTChannelSnippet,
   YTPlaylistSnippet,
   YTVideoItem,
-} from "./_youtube.server";
-import { prisma } from "./_prisma.server";
+} from "~/sync/_youtube.server";
+import { prisma } from "~/utils/prisma.server";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 const ytChannelDTO = (ytData: YTChannelSnippet) => {
@@ -197,10 +197,7 @@ function getUniqueVideos(
   return [...new Map(arr.map((item) => [item.youtubeId, item])).values()];
 }
 
-export default async function handler(
-  request: VercelRequest,
-  response: VercelResponse
-) {
+export async function loader({ params }) {
   const responseString: String[] = [];
   try {
     const [channels, tags, playlists] = await Promise.all([
@@ -267,5 +264,5 @@ export default async function handler(
 
   prisma.$disconnect();
 
-  response.status(200).send(responseString.join("\n"));
+  return responseString.join("\n");
 }
