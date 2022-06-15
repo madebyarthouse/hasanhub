@@ -42,26 +42,29 @@ const processVideo = async (video: Video) => {
   }
 
   if (!ytVideo) {
-    console.log('API didn\'t return anything')
+    console.log("API didn't return anything");
     return;
   }
 
   if ("error" in ytVideo) {
     console.log(
-      `Error '${ytVideo.error}' while searching video ${video.youtubeId}`,
+      `Error '${ytVideo.error}' while searching video ${video.youtubeId}`
     );
     return;
   }
 
   if (!("items" in ytVideo) || ytVideo.items?.length === 0) {
+    await prisma.video.delete({
+      where: { id: video.id },
+    });
     console.log(
-      `Video '${video.title}' with Youtube ID = '${video.youtubeId}' was not found.`,
+      `Video '${video.title}' with Youtube ID = '${video.youtubeId}' was not found.`
     );
     return;
   }
 
   console.log(
-    `Video '${video.title}' with Youtube ID = '${video.youtubeId}' will be updated.`,
+    `Video '${video.title}' with Youtube ID = '${video.youtubeId}' will be updated.`
   );
 
   return ytVideoExtendedDTO(ytVideo.items[0]);
@@ -71,12 +74,16 @@ const refreshVideosData = async (videos: Video[]) => {
   let updates = [];
   for (const video of videos) {
     const ytVideo = await processVideo(video);
-    if (typeof ytVideo === "undefined") {continue;}
+    if (typeof ytVideo === "undefined") {
+      continue;
+    }
 
-    updates.push(prisma.video.update({
-      where: { id: video.id },
-      data: ytVideo,
-    }));
+    updates.push(
+      prisma.video.update({
+        where: { id: video.id },
+        data: ytVideo,
+      })
+    );
   }
 
   return prisma.$transaction(updates);
