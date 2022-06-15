@@ -16,7 +16,12 @@ export default async function handler(
     where: {
       OR: [
         { updatedAt: { equals: null } },
-        { publishedAt: { gt: new Date(Date.now() - week) } }, // published in the last week
+        {
+          AND: [
+            { publishedAt: { lt: new Date(Date.now() - week) } }, // published in the last week
+            { updatedAt: { lt: new Date(Date.now() - day) } }, // but not updated in the last day
+          ],
+        },
         {
           AND: [
             { publishedAt: { lt: new Date(Date.now() - week * 4) } }, // published in the last 4 weeks
