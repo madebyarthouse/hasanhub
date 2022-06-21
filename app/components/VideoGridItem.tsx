@@ -82,26 +82,24 @@ const VideoGridItem = ({
         </ul>
 
         <div className="flex flex-row space-x-3 items-center relative w-full">
-          <div className="flex flex-row items-center gap-x-3 p-3 pl-0 overflow-clip">
+          <a
+            rel="noreferrer"
+            target="_blank"
+            className="flex flex-row items-center gap-x-3 p-3 pl-0 overflow-clip overflow-hidden"
+            href={`https://www.youtube.com/channel/${video.channel?.youtubeId}`}
+          >
             <img
-              alt={video.channel?.title}
+              alt=""
               className="rounded-full"
               src={video.channel?.mediumThumbnailUrl ?? ""}
               width={32}
               height={32}
               loading={lazy ? "lazy" : "eager"}
             />
-            <a
-              rel="noreferrer"
-              target="_blank"
-              className="inline-block overflow-hidden"
-              href={`https://www.youtube.com/channel/${video.channel?.youtubeId}`}
-            >
-              <h3 className="text-sm font-semibold overflow-clip w-max">
-                {video.channel?.title}
-              </h3>
-            </a>
-          </div>
+            <h3 className="text-sm font-semibold overflow-clip w-max">
+              {video.channel?.title}
+            </h3>
+          </a>
         </div>
 
         <a

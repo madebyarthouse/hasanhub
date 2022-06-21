@@ -33,3 +33,7 @@ html, body {
         transform: scale(1);
     }
 }
+
+img {
+    contain: content;
+}
