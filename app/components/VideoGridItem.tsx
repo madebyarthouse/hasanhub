@@ -52,7 +52,7 @@ const VideoGridItem = ({
 }) => {
   return (
     <article
-      className="gap-5 h-full flex flex-col justify-between betterhover:hover:scale-[1.02] transition-transform group"
+      className="gap-5 h-full flex flex-col justify-between group"
       key={video.youtubeId}
     >
       <div className="px-3 lg:px-0">
