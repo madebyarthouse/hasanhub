@@ -936,6 +936,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   transition-duration: 100ms;
 }
 
+.will-change-transform {
+  will-change: transform;
+}
+
 html, body {
   --tw-bg-opacity: 1;
   background-color: rgb(247 247 248 / var(--tw-bg-opacity));
@@ -956,6 +960,10 @@ html, body {
 
 html, body {
   font-family: Inter, Helvetica, sans-serif;
+}
+
+.will-fade-scale {
+  will-change: transform, opacity;
 }
 
 @-webkit-keyframes fadeIn {

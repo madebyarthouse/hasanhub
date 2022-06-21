@@ -7,6 +7,10 @@ html, body {
     font-family: Inter, Helvetica, sans-serif;
 }
 
+.will-fade-scale {
+    will-change: transform, opacity;
+}
+
 @keyframes fadeIn {
     0% {
         opacity: 0;

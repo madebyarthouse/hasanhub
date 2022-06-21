@@ -61,6 +61,7 @@ const VideosGrid = ({
                   animationName: "fadeIn",
                 }}
                 key={video.youtubeId}
+                className="will-fade-scale"
               >
                 <VideoGridItem video={video} lazy={index === 0} />
               </li>

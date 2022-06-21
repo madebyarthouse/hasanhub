@@ -69,7 +69,7 @@ const Sidebar = ({
           <ul className="flex flex-row flex-nowrap pb-3 sm:pb-0 overflow-x-auto sm:overflow-x-visible sm:flex-wrap rounded gap-3">
             {durationFilterData.map(({ value, label }, index) => (
               <li
-                className="min-w-max"
+                className="min-w-max will-fade-scale"
                 key={value}
                 style={{
                   animationDuration: `${
