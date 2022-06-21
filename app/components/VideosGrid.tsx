@@ -54,11 +54,10 @@ const VideosGrid = ({
             loading ? null : (
               <li
                 style={{
-                  animationDuration: `${
-                    index % 25 < 10
-                      ? 250 + (index % 25) * 150
-                      : 1500 + (index % 25) * 50
-                  }ms`,
+                  animationDuration: `${Math.min(
+                    300 + (index % 25) * 150,
+                    1500
+                  )}ms`,
                   animationName: "fadeIn",
                 }}
                 key={video.youtubeId}
