@@ -912,12 +912,6 @@ Ensure the default browser behavior of the `hidden` attribute.
   transition-duration: 150ms;
 }
 
-.transition-transform {
-  transition-property: transform;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-}
-
 .transition-opacity {
   transition-property: opacity;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -934,10 +928,6 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .duration-100 {
   transition-duration: 100ms;
-}
-
-.will-change-transform {
-  will-change: transform;
 }
 
 html, body {
@@ -1298,12 +1288,6 @@ img {
 }
 
 @media (hover: hover) {
-  .betterhover\:hover\:scale-\[1\.02\]:hover {
-    --tw-scale-x: 1.02;
-    --tw-scale-y: 1.02;
-    transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-  }
-
   .betterhover\:hover\:bg-twitchPurple:hover {
     --tw-bg-opacity: 1;
     background-color: rgb(119 44 232 / var(--tw-bg-opacity));

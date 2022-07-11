@@ -17,6 +17,7 @@ import Sidebar from "./components/sidebar";
 import styles from "./styles/app.css";
 import { prisma } from "./utils/prisma.server";
 import { useTransition } from "@remix-run/react";
+import { withSentry } from "@sentry/remix";
 import { getStreamInfo } from "./lib/getStreamInfo.server";
 
 export const meta: MetaFunction = () => ({
@@ -97,7 +98,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
   });
 };
 
-export default function App() {
+function App() {
   const { tags, slugs, streamInfo, schedule } = useLoaderData();
   const activeTags =
     slugs.length > 0 ? tags.filter((tag) => slugs.includes(tag.slug)) : [];
@@ -145,3 +146,5 @@ export default function App() {
     </html>
   );
 }
+
+export default withSentry(App);
