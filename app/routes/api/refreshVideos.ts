@@ -1,4 +1,3 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { prisma } from "~/utils/prisma.server";
 import refreshVideosData from "~/sync/_refreshVideoData";
 import { json } from "@remix-run/node";
@@ -16,19 +15,19 @@ export async function loader({ params }) {
         { updatedAt: { equals: null } },
         {
           AND: [
-            { publishedAt: { lt: new Date(Date.now() - week) } }, // published in the last week
+            { publishedAt: { gt: new Date(Date.now() - week) } }, // published in the last week
             { updatedAt: { lt: new Date(Date.now() - day) } }, // but not updated in the last day
           ],
         },
         {
           AND: [
-            { publishedAt: { lt: new Date(Date.now() - week * 4) } }, // published in the last 4 weeks
+            { publishedAt: { gt: new Date(Date.now() - week * 4) } }, // published in the last 4 weeks
             { updatedAt: { lt: new Date(Date.now() - week) } }, // but not updated in the last week
           ],
         },
         {
           AND: [
-            { publishedAt: { lt: new Date(Date.now() - week * 12) } }, // published in the last 12 weeks
+            { publishedAt: { gt: new Date(Date.now() - week * 12) } }, // published in the last 12 weeks
             { updatedAt: { lt: new Date(Date.now() - week * 4) } }, // but not updated in the last 4 week
           ],
         },
@@ -39,6 +38,8 @@ export async function loader({ params }) {
     },
     take: 30,
   });
+
+  console.log(videos.length);
 
   const updated = await refreshVideosData(videos);
 
