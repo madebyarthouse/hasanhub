@@ -50,6 +50,7 @@ const VideoGridItem = ({
   lazy?: boolean;
   layoutId?: string;
 }) => {
+  console.log(video.views);
   return (
     <article
       className="gap-5 h-full flex flex-col justify-between group"
@@ -78,7 +79,7 @@ const VideoGridItem = ({
 
         <ul className="flex flex-row justify-between py-2 items-center w-full text-sm">
           <li>{video.publishedAt && formatDate(video.publishedAt)}</li>
-          <li>{formatViewCount(video.views ?? 0)} views</li>
+          <li>{video.views !== null && formatViewCount(video.views)}</li>
         </ul>
 
         <div className="flex flex-row space-x-3 items-center relative w-full">
