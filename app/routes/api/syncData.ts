@@ -14,7 +14,6 @@ import type {
   YTVideoItem,
 } from "~/sync/_youtube.server";
 import { prisma } from "~/utils/prisma.server";
-import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 const ytChannelDTO = (ytData: YTChannelSnippet) => {
   return {
@@ -216,7 +215,11 @@ export async function loader({ params }) {
       const videosData = (await fetchNewVideos(channel)).map((video) =>
         ytVideoDTO(video, channel)
       );
-
+      console.log(
+        getUniqueVideos(videosData, "youtubeId"),
+        getUniqueVideos(videosData, "youtubeId").length,
+        videosData.length
+      );
       await prisma.video.createMany({
         data: getUniqueVideos(videosData, "youtubeId"),
       });
@@ -243,9 +246,8 @@ export async function loader({ params }) {
       where: { youtubeId: { in: newVideoYTIds } },
     });
 
-    const updated = await refreshVideosData(newVideos);
-
     const tagVideoData = matchTagsAndVideos(tags, newVideos);
+    console.log(tagVideoData);
     for (const [tagId, data] of Object.entries(tagVideoData)) {
       if (data.length > 0) {
         await prisma.tag.update({
@@ -257,6 +259,8 @@ export async function loader({ params }) {
         responseString.push(`${data.length} videos were added to tag ${tagId}`);
       }
     }
+
+    const updated = await refreshVideosData(newVideos);
   } catch (error) {
     responseString.push(error as String);
     prisma.$disconnect();

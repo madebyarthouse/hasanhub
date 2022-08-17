@@ -1,11 +1,7 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { prisma } from "~/utils/prisma.server";
 import matchTagsAndVideos from "~/sync/_matchTagsAndVideosService";
 
-export default async function handler(
-  request: VercelRequest,
-  response: VercelResponse
-) {
+export async function loader({ params }) {
   const responseString: String[] = [];
   try {
     const [tags, videos] = await Promise.all([
@@ -31,5 +27,5 @@ export default async function handler(
 
   prisma.$disconnect();
 
-  response.status(200).json(responseString.join("\n"));
+  return responseString.join("\n");
 }
