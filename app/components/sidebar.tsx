@@ -1,14 +1,13 @@
 import type { Tag } from "@prisma/client";
 import TagButton from "./tagButton";
-import type { TimeFilterOptions } from "./filters";
-import { useEffect, useState } from "react";
+import type { DurationListType, DurationType } from "~/utils/validators";
+import useActionUrl from "~/hooks/useActionUrl";
 
 const constructUrl = (
-  base: string,
   activeSlugs: string[],
   newSlug: string | null,
-  activeDurationFilter: TimeFilterOptions[],
-  newDuration: TimeFilterOptions | null
+  activeDurationFilter: DurationListType | undefined,
+  newDuration: DurationType | null
 ) => {
   let slugs = activeSlugs;
   if (newSlug) {
@@ -18,49 +17,33 @@ const constructUrl = (
     slugs = slugs.sort();
   }
 
-  const slugParams = slugs.join("/");
-
-  let durations = activeDurationFilter;
-  if (newDuration) {
+  let durations: DurationListType = [];
+  if (activeDurationFilter === undefined) {
+    durations = newDuration ? [newDuration] : [];
+  } else if (newDuration) {
     durations = activeDurationFilter.includes(newDuration)
       ? activeDurationFilter.filter((d) => d !== newDuration)
       : [...activeDurationFilter, newDuration];
     durations = durations.sort();
   }
-
-  const durationParams = durations
-    .map((option) => `duration=${option}`)
-    .join("&");
-
-  let fullUrl = `${base}${slugParams}?${durationParams}`;
-
-  return fullUrl.endsWith(`${base}?${durationParams}`)
-    ? "/" + fullUrl.replace(base, "")
-    : fullUrl;
 };
+
+const durationFilterData: { value: DurationType; label: string }[] = [
+  { value: "short", label: "< 3min" },
+  { value: "medium", label: "3-15min" },
+  { value: "long", label: "15-30min" },
+  { value: "extralong", label: "> 30 min" },
+];
 
 const Sidebar = ({
   tags,
-  activeTags,
+  activeTagSlugs,
   durationFilter,
 }: {
   tags: Tag[];
-  activeTags: Tag[];
-  durationFilter: TimeFilterOptions[];
+  activeTagSlugs: string[];
+  durationFilter: DurationListType | undefined;
 }) => {
-  const [base, setBase] = useState(activeTags.length > 0 ? "/tags/" : "/");
-  const activeTagSlugs = activeTags.map((tag) => tag.slug ?? "");
-  const durationFilterData: { value: TimeFilterOptions; label: string }[] = [
-    { value: "short", label: "< 3min" },
-    { value: "medium", label: "3-15min" },
-    { value: "long", label: "15-30min" },
-    { value: "extralong", label: "> 30 min" },
-  ];
-
-  useEffect(() => {
-    setBase(activeTags.length > 0 ? "/tags/" : "/");
-  }, [activeTags]);
-
   return (
     <>
       <aside className="w-full lg:sticky lg:top-0 lg:w-1/4 xl:w-1/5  py-5 px-3 lg:px-0 transition-opacity duration-100">
@@ -78,17 +61,11 @@ const Sidebar = ({
                   animationName: "fadeIn",
                 }}
               >
-                <TagButton
-                  href={constructUrl(
-                    base,
-                    activeTagSlugs,
-                    null,
-                    durationFilter,
-                    value
-                  )}
-                  styleVariant="sidebar"
+                <DynamicTagButton
+                  type="duration"
                   label={label}
-                  active={durationFilter.includes(value)}
+                  active={durationFilter?.includes(value) ?? false}
+                  filter={value}
                 />
               </li>
             ))}
@@ -107,17 +84,11 @@ const Sidebar = ({
                 }}
                 key={tag.id}
               >
-                <TagButton
-                  href={constructUrl(
-                    "/tags/",
-                    activeTagSlugs,
-                    tag.slug,
-                    durationFilter,
-                    null
-                  )}
-                  styleVariant="sidebar"
+                <DynamicTagButton
+                  type="tag"
                   label={tag.name}
-                  active={activeTagSlugs.includes(tag.slug ?? "")}
+                  active={activeTagSlugs?.includes(tag.slug ?? "")}
+                  filter={tag.slug ?? ""}
                 />
               </li>
             ))}
@@ -126,6 +97,48 @@ const Sidebar = ({
       </aside>
     </>
   );
+};
+
+const DynamicTagButton = ({
+  label,
+  type,
+  filter,
+  active,
+}: {
+  type: "tag" | "duration";
+  label: string;
+  filter: string;
+  active: boolean;
+}) => {
+  const { current, constructUrl } = useActionUrl();
+
+  const href =
+    type === "tag"
+      ? constructUrl({
+          tagSlugs: addOrRemoveElement(current.tagSlugs, filter),
+          lastVideoId: undefined,
+        })
+      : constructUrl({
+          durations: addOrRemoveElement(current.durations, filter),
+          lastVideoId: undefined,
+        });
+  console.log({ href });
+  return (
+    <TagButton
+      href={href}
+      styleVariant="sidebar"
+      label={label}
+      active={active}
+    />
+  );
+};
+
+const addOrRemoveElement = (arr?: string[], element: string) => {
+  if (arr?.includes(element)) {
+    return arr.filter((e) => e !== element).sort();
+  }
+
+  return [...(arr ?? []), element].sort();
 };
 
 export default Sidebar;

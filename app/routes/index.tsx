@@ -5,10 +5,10 @@ import { prisma } from "~/utils/prisma.server";
 import VideosGrid from "~/components/VideosGrid";
 import getVideos from "../lib/getVideos";
 import { useEffect, useState } from "react";
+import { UrlParamsSchema } from "~/utils/validators";
 import { z } from "zod";
-import type { TimeFilterOptions } from "../lib/getVideos";
-import useFilterParams from "~/hooks/useSearchParams";
-import { buildLoadMoreUrl } from "~/helpers/buildUrl";
+import useUrlState from "~/hooks/useUrlState";
+import useActionUrl from "~/hooks/useActionUrl";
 
 export function headers() {
   return {
@@ -17,67 +17,57 @@ export function headers() {
   };
 }
 
-const durationParams = z.array(
-  z.enum(["short", "medium", "long", "extralong"])
-);
-const lastVideoIdParam = z.number();
-
 export const loader: LoaderFunction = async ({ request }) => {
   const url = new URL(request.url);
-  const duration = url.searchParams.getAll(
-    "duration"
-  ) as unknown as TimeFilterOptions[];
-  const lastVideoId = url.searchParams.get("lastVideoId");
+  let lastVideoIdParam = url.searchParams.get("lastVideoId");
 
-  let getParams: {
-    durations?: TimeFilterOptions[];
-    lastVideoId?: number;
-  } = {};
+  try {
+    const { order, durations, by, lastVideoId } = UrlParamsSchema.parse({
+      order: url.searchParams.get("order") ?? undefined,
+      durations: url.searchParams.getAll("durations"),
+      by: url.searchParams.get("by") ?? undefined,
+      lastVideoId: lastVideoIdParam ? parseInt(lastVideoIdParam) : undefined,
+    });
 
-  if (duration) {
-    durationParams.parse(duration);
-    getParams["durations"] = duration;
-  }
-  if (lastVideoId) {
-    lastVideoIdParam.parse(parseInt(lastVideoId));
-    getParams["lastVideoId"] = parseInt(lastVideoId);
-  }
+    const [videos, totalVideosCount] = await getVideos({
+      order,
+      durations,
+      by,
+      lastVideoId,
+    });
 
-  const [videos, totalVideosCount] = await getVideos(getParams);
-
-  await prisma.$disconnect();
-
-  return json(
-    { totalVideosCount, videos },
-    {
-      status: 200,
-      headers: {
-        "cache-control":
-          "public, max-age=360, s-maxage=360, stale-while-revalidate",
-      },
+    return json(
+      { totalVideosCount, videos },
+      {
+        status: 200,
+        headers: {
+          "cache-control":
+            "public, max-age=360, s-maxage=360, stale-while-revalidate",
+        },
+      }
+    );
+  } catch (error) {
+    console.log(error);
+    if (error instanceof z.ZodError) {
+      return json(error.issues, { status: 500 });
     }
-  );
+    return json(error, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
+  }
 };
 
 export default function Index() {
   const { totalVideosCount, videos } = useLoaderData();
   const [liveVideos, setLiveVideos] = useState<typeof videos>(videos);
   const fetcher = useFetcher();
-  const { transitionState, durationFilter, nextDurationFilter } =
-    useFilterParams();
+  const { isLoading, ordering } = useUrlState();
+  const { constructUrl } = useActionUrl();
 
-  const loaderUrl = (lastVideoId: number) => {
-    return buildLoadMoreUrl(
-      `/`,
-      [],
-      nextDurationFilter?.length > 0 ? nextDurationFilter : durationFilter,
-      lastVideoId,
-      true
-    );
-  };
+  const loaderUrl = (lastVideoId: number) =>
+    constructUrl({ lastVideoId: lastVideoId }, true);
 
   useEffect(() => {
-    console.log(fetcher.data);
     if (fetcher.data && fetcher.data.videos?.length > 0) {
       setLiveVideos((prev) => [...prev, ...fetcher.data.videos]);
     }
@@ -91,13 +81,34 @@ export default function Index() {
     fetcher.load(loaderUrl(lastVideoId));
   };
 
+  let title;
+  if (ordering.by === "publishedAt") {
+    if (ordering.order === "desc") {
+      title = "Latest";
+    } else if (ordering.order === "asc") {
+      title = "Oldest";
+    }
+  } else if (ordering.by === "views") {
+    if (ordering.order === "desc") {
+      title = "Most Viewed";
+    } else if (ordering.order === "asc") {
+      title = "Least Viewed";
+    }
+  } else if (ordering.by === "likes") {
+    if (ordering.order === "desc") {
+      title = "Most Liked";
+    } else if (ordering.order === "asc") {
+      title = "Least Liked";
+    }
+  }
+
   return (
     <VideosGrid
       totalVideosCount={totalVideosCount}
       handleLoadMore={handleLoadMore}
-      title={"Latest Videos"}
+      title={`${title} videos`}
       videos={liveVideos}
-      loading={transitionState === "loading"}
+      loading={isLoading}
       loadMoreUrl={loaderUrl}
       loadingMore={fetcher.state === "loading"}
     />

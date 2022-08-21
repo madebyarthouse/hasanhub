@@ -50,7 +50,6 @@ const VideoGridItem = ({
   lazy?: boolean;
   layoutId?: string;
 }) => {
-  console.log(video.views);
   return (
     <article
       className="gap-5 h-full flex flex-col justify-between group"

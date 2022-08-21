@@ -2,22 +2,15 @@ import { z } from "zod";
 import type { LoaderFunction, MetaFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
-import getVideos from "~/lib/getVideos";
+import getVideos, { TagSlugsValidator } from "~/lib/getVideos";
 import { prisma } from "~/utils/prisma.server";
 import VideosGrid from "~/components/VideosGrid";
 import { useEffect, useState } from "react";
 import getActiveTagsBySlugs from "../../lib/getActiveTagsBySlugs";
 import type { Tag } from "@prisma/client";
-import type { TimeFilterOptions } from "../../lib/getVideos";
-import useFilterParams from "~/hooks/useSearchParams";
-import { buildLoadMoreUrl } from "~/helpers/buildUrl";
-
-const slugsParam = z.array(z.string());
-
-const durationParams = z.array(
-  z.enum(["short", "medium", "long", "extralong"])
-);
-const lastVideoIdParam = z.number();
+import { UrlParamsSchema } from "~/utils/validators";
+import useUrlState from "~/hooks/useUrlState";
+import useActionUrl from "~/hooks/useActionUrl";
 
 export function headers() {
   return {
@@ -28,7 +21,7 @@ export function headers() {
 
 export const meta: MetaFunction = ({ data, params }) => {
   const { activeTags }: { activeTags: Tag[] } = data;
-  const title = activeTags.map((tag) => tag.name).join(" / ");
+  const title = activeTags.map((tag) => tag.name).join(" and ");
   return {
     title: `${title} | HasanHub`,
   };
@@ -43,69 +36,62 @@ type LoaderData = {
 };
 export const loader: LoaderFunction = async ({ request, params }) => {
   const url = new URL(request.url);
-  const duration = url.searchParams.getAll(
-    "duration"
-  ) as unknown as TimeFilterOptions[];
-  const lastVideoId = url.searchParams.get("lastVideoId");
-
   const slugs = params["*"]?.split("/") ?? [];
-  slugsParam.parse(slugs);
+  let lastVideoIdParam = url.searchParams.get("lastVideoId");
 
-  let getParams: {
-    tagSlugs: string[];
-    durations?: TimeFilterOptions[];
-    lastVideoId?: number;
-  } = { tagSlugs: slugs };
+  try {
+    const { order, durations, by, lastVideoId } = UrlParamsSchema.parse({
+      order: url.searchParams.get("order") ?? undefined,
+      durations: url.searchParams.getAll("durations"),
+      by: url.searchParams.get("by") ?? undefined,
+      lastVideoId: lastVideoIdParam ? parseInt(lastVideoIdParam) : undefined,
+    });
 
-  if (duration) {
-    durationParams.parse(duration);
-    getParams["durations"] = duration;
-  }
-  if (lastVideoId) {
-    lastVideoIdParam.parse(parseInt(lastVideoId));
-    getParams["lastVideoId"] = parseInt(lastVideoId);
-  }
+    const tagSlugs = TagSlugsValidator.parse(slugs);
 
-  const [activeTags, [videos, totalVideosCount]] = await Promise.all([
-    getActiveTagsBySlugs(slugs),
-    getVideos(getParams),
-  ]);
+    const [activeTags, [videos, totalVideosCount]] = await Promise.all([
+      getActiveTagsBySlugs(slugs),
+      getVideos({
+        tagSlugs,
+        order,
+        by,
+        durations,
+        lastVideoId,
+      }),
+    ]);
 
-  await prisma.$disconnect();
-
-  return json(
-    { totalVideosCount, videos, activeTags },
-    {
-      status: 200,
-      headers: {
-        "cache-control":
-          "public, max-age=360, s-maxage=360, stale-while-revalidate",
-      },
+    return json(
+      { totalVideosCount, videos, activeTags },
+      {
+        status: 200,
+        headers: {
+          "cache-control":
+            "public, max-age=360, s-maxage=360, stale-while-revalidate",
+        },
+      }
+    );
+  } catch (error) {
+    console.log(error);
+    if (error instanceof z.ZodError) {
+      return json(error.issues, { status: 500 });
     }
-  );
+    return json(error, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
+  }
 };
 
 export default function TagPage() {
   const { videos, totalVideosCount, activeTags } = useLoaderData<LoaderData>();
   const [liveVideos, setLiveVideos] = useState<typeof videos>(videos);
   const fetcher = useFetcher();
-  const { transitionState, durationFilter, nextDurationFilter } =
-    useFilterParams();
+  const { isLoading, ordering } = useUrlState();
+  const { constructUrl } = useActionUrl();
 
-  const title = activeTags.map((tag) => tag.name).join(" / ");
-
-  const loaderUrl = (lastVideoId: number) => {
-    return buildLoadMoreUrl(
-      `/tags/`,
-      activeTags.map((tag) => tag.slug ?? ""),
-      nextDurationFilter.length > 0 ? nextDurationFilter : durationFilter,
-      lastVideoId,
-      false
-    );
-  };
+  const loaderUrl = (lastVideoId: number) =>
+    constructUrl({ lastVideoId: lastVideoId }, true);
 
   useEffect(() => {
-    console.log(fetcher.data);
     if (fetcher.data && fetcher.data.videos.length > 0) {
       setLiveVideos((prev) => [...prev, ...fetcher.data.videos]);
     }
@@ -119,13 +105,36 @@ export default function TagPage() {
     setLiveVideos(videos);
   }, [videos]);
 
+  let title;
+  if (ordering.by === "publishedAt") {
+    if (ordering.order === "desc") {
+      title = "Latest";
+    } else if (ordering.order === "asc") {
+      title = "Oldest";
+    }
+  } else if (ordering.by === "views") {
+    if (ordering.order === "desc") {
+      title = "Most viewed";
+    } else if (ordering.order === "asc") {
+      title = "Least viewed";
+    }
+  } else if (ordering.by === "likes") {
+    if (ordering.order === "desc") {
+      title = "Most liked";
+    } else if (ordering.order === "asc") {
+      title = "Least liked";
+    }
+  }
+
   return (
     <VideosGrid
       totalVideosCount={totalVideosCount}
       handleLoadMore={handleLoadMore}
-      title={title}
+      title={`${title} videos about ${activeTags
+        .map((tag) => tag.name)
+        .join(" and ")}`}
       videos={liveVideos}
-      loading={transitionState === "loading"}
+      loading={isLoading}
       loadMoreUrl={loaderUrl}
       loadingMore={fetcher.state === "loading"}
     />

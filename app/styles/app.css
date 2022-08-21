@@ -540,6 +540,11 @@ Ensure the default browser behavior of the `hidden` attribute.
   margin-right: auto;
 }
 
+.my-3 {
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
 .mb-5 {
   margin-bottom: 1.25rem;
 }
@@ -598,12 +603,6 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .w-3 {
   width: 0.75rem;
-}
-
-.min-w-min {
-  min-width: -webkit-min-content;
-  min-width: -moz-min-content;
-  min-width: min-content;
 }
 
 .min-w-max {
@@ -731,8 +730,30 @@ Ensure the default browser behavior of the `hidden` attribute.
   border-radius: 0.5rem;
 }
 
+.rounded-md {
+  border-radius: 0.375rem;
+}
+
+.rounded-r-none {
+  border-top-right-radius: 0px;
+  border-bottom-right-radius: 0px;
+}
+
+.rounded-l-none {
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px;
+}
+
 .border {
   border-width: 1px;
+}
+
+.border-r-0 {
+  border-right-width: 0px;
+}
+
+.border-l-0 {
+  border-left-width: 0px;
 }
 
 .border-twitchPurpleLight {
@@ -750,18 +771,26 @@ Ensure the default browser behavior of the `hidden` attribute.
   background-color: rgb(247 247 248 / var(--tw-bg-opacity));
 }
 
-.bg-twitchPurpleLight {
-  --tw-bg-opacity: 1;
-  background-color: rgb(145 71 255 / var(--tw-bg-opacity));
-}
-
 .bg-twitchPurple {
   --tw-bg-opacity: 1;
   background-color: rgb(119 44 232 / var(--tw-bg-opacity));
 }
 
+.bg-twitchPurpleLight {
+  --tw-bg-opacity: 1;
+  background-color: rgb(145 71 255 / var(--tw-bg-opacity));
+}
+
 .bg-opacity-80 {
   --tw-bg-opacity: 0.8;
+}
+
+.bg-opacity-60 {
+  --tw-bg-opacity: 0.6;
+}
+
+.bg-opacity-100 {
+  --tw-bg-opacity: 1;
 }
 
 .object-cover {
@@ -875,14 +904,14 @@ Ensure the default browser behavior of the `hidden` attribute.
   color: rgb(255 255 255 / var(--tw-text-opacity));
 }
 
-.text-twitchPurpleLight {
-  --tw-text-opacity: 1;
-  color: rgb(145 71 255 / var(--tw-text-opacity));
-}
-
 .text-twitchPurple {
   --tw-text-opacity: 1;
   color: rgb(119 44 232 / var(--tw-text-opacity));
+}
+
+.text-twitchPurpleLight {
+  --tw-text-opacity: 1;
+  color: rgb(145 71 255 / var(--tw-text-opacity));
 }
 
 .opacity-0 {
@@ -1018,11 +1047,6 @@ img {
   contain: content;
 }
 
-.hover\:text-white:hover {
-  --tw-text-opacity: 1;
-  color: rgb(255 255 255 / var(--tw-text-opacity));
-}
-
 .hover\:text-twitchPurple:hover {
   --tw-text-opacity: 1;
   color: rgb(119 44 232 / var(--tw-text-opacity));
@@ -1109,6 +1133,10 @@ img {
     gap: 0.75rem;
   }
 
+  .sm\:gap-10 {
+    gap: 2.5rem;
+  }
+
   .sm\:overflow-x-visible {
     overflow-x: visible;
   }
@@ -1123,6 +1151,11 @@ img {
 }
 
 @media (min-width: 768px) {
+  .md\:my-0 {
+    margin-top: 0px;
+    margin-bottom: 0px;
+  }
+
   .md\:grid-cols-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1131,12 +1164,20 @@ img {
     flex-direction: row;
   }
 
+  .md\:flex-col {
+    flex-direction: column;
+  }
+
   .md\:items-center {
     align-items: center;
   }
 
   .md\:justify-end {
     justify-content: flex-end;
+  }
+
+  .md\:justify-between {
+    justify-content: space-between;
   }
 
   .md\:text-5xl {
@@ -1291,6 +1332,11 @@ img {
   .betterhover\:hover\:bg-twitchPurple:hover {
     --tw-bg-opacity: 1;
     background-color: rgb(119 44 232 / var(--tw-bg-opacity));
+  }
+
+  .betterhover\:hover\:bg-twitchPurpleLight:hover {
+    --tw-bg-opacity: 1;
+    background-color: rgb(145 71 255 / var(--tw-bg-opacity));
   }
 
   .betterhover\:hover\:text-light:hover {

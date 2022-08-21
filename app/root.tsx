@@ -19,12 +19,14 @@ import { prisma } from "./utils/prisma.server";
 import { useTransition } from "@remix-run/react";
 import { withSentry } from "@sentry/remix";
 import { getStreamInfo } from "./lib/getStreamInfo.server";
+import useUrlState from "./hooks/useUrlState";
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
   title: "HasanHub",
   viewport: "width=device-width,initial-scale=1",
   description: "The HasanAbi Clips Industrial Complex App",
+  keywords: "hasanabi, hasanhub, hasan piker, streamer, youtube, clips, twitch",
   "msapplication-tileColor": "#da532c",
   "theme-color": "#ffffff",
   "yandex-verification": "45afda70569d2af8",
@@ -72,8 +74,6 @@ export function links() {
 }
 
 export const loader: LoaderFunction = async ({ params, request }) => {
-  const slugs = params["*"]?.split("/") ?? [];
-
   const [tags, [streamInfo, schedule]] = await Promise.all([
     prisma.$queryRaw`
       SELECT t.*, sum(v.views) AS view_count
@@ -86,34 +86,18 @@ export const loader: LoaderFunction = async ({ params, request }) => {
     getStreamInfo(),
   ]);
 
-  console.log(JSON.stringify({ params, request }));
-
   await prisma.$disconnect();
 
   return json({
     tags,
     streamInfo,
     schedule,
-    slugs,
   });
 };
 
 function App() {
-  const { tags, slugs, streamInfo, schedule } = useLoaderData();
-  const activeTags =
-    slugs.length > 0 ? tags.filter((tag) => slugs.includes(tag.slug)) : [];
-  const [searchParams] = useSearchParams();
-  const durationFilter = searchParams.getAll("duration") ?? ["all"];
-  const fetcher = useFetcher();
-  const transition = useTransition();
-  const nextSearchParams = new URLSearchParams(transition.location?.search);
-  const nextDuration = nextSearchParams.getAll("duration");
-
-  useEffect(() => {
-    if (transition.location) {
-      fetcher.load(transition.location.pathname);
-    }
-  }, [transition.location]);
+  const { tags, streamInfo, schedule } = useLoaderData();
+  const { durations, tagSlugs } = useUrlState();
 
   return (
     <html lang="en">
@@ -125,10 +109,8 @@ function App() {
         <Layout streamInfo={streamInfo} streamSchedule={schedule}>
           <Sidebar
             tags={tags}
-            activeTags={fetcher.data?.activeTags ?? activeTags}
-            durationFilter={
-              nextDuration.length > 0 ? nextDuration : durationFilter
-            }
+            activeTagSlugs={tagSlugs}
+            durationFilter={durations}
           />
           <Outlet />
         </Layout>
