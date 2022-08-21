@@ -122,7 +122,7 @@ const DynamicTagButton = ({
           durations: addOrRemoveElement(current.durations, filter),
           lastVideoId: undefined,
         });
-  console.log({ href });
+
   return (
     <TagButton
       href={href}

@@ -45,12 +45,9 @@ const getVideos = async (params: GetVideosArgs) => {
     conditions["tags"] = { some: { tag: { slug: { in: tagSlugs } } } };
   }
 
-  console.log({ by });
   const lastCondition = lastVideoId
     ? (await getLastVideo(lastVideoId))?.[by ?? "publishedAt"]
     : null;
-
-  console.log({ lastCondition });
 
   if (lastCondition) {
     if (order === "asc") {
