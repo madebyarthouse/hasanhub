@@ -27,7 +27,6 @@ const useActionUrl = () => {
         : index
         ? "?index&"
         : "/?";
-    console.log(merged?.tagSlugs, basePath);
 
     const searchParams = new URLSearchParams();
 
