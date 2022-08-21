@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { prisma } from "~/utils/prisma.server";
 import type { DurationListType, LastVideoIdType } from "~/utils/validators";
+import { OrderDirectionType, OrderByType } from "../utils/validators";
 import {
   DurationListValidator,
   LastVideoIdValidator,
@@ -44,19 +45,22 @@ const getVideos = async (params: GetVideosArgs) => {
     conditions["tags"] = { some: { tag: { slug: { in: tagSlugs } } } };
   }
 
-  if (by !== undefined) {
-    const lastCondition = lastVideoId
-      ? (await getLastVideo(lastVideoId))?.[by]
-      : null;
+  console.log({ by });
+  const lastCondition = lastVideoId
+    ? (await getLastVideo(lastVideoId))?.[by ?? "publishedAt"]
+    : null;
 
-    if (lastCondition) {
-      if (order === "asc") {
-        conditions[by] = { gt: lastCondition };
-      } else {
-        conditions[by] = { lt: lastCondition };
-      }
+  console.log({ lastCondition });
+
+  if (lastCondition) {
+    if (order === "asc") {
+      conditions[by ?? "publishedAt"] = { gt: lastCondition };
+    } else {
+      conditions[by ?? "publishedAt"] = { lt: lastCondition };
     }
   }
+
+  console.log({ conditions });
 
   if (durations) {
     const minMaxPairs =
