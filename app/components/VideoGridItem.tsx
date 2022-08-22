@@ -78,7 +78,7 @@ const VideoGridItem = ({
 
         <ul className="flex flex-row justify-between py-2 items-center w-full text-sm">
           <li>{video.publishedAt && formatDate(video.publishedAt)}</li>
-          <li>{video.views !== null && formatViewCount(video.views)}</li>
+          <li>{video.views !== null && formatViewCount(video.views)} views</li>
         </ul>
 
         <div className="flex flex-row space-x-3 items-center relative w-full">

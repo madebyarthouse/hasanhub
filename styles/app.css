@@ -41,3 +41,7 @@ html, body {
 img {
     contain: content;
 }
+
+::selection {
+    @apply bg-twitchPurpleLight saturate-50 text-white;
+}

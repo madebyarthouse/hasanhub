@@ -8,6 +8,7 @@ import {
   OrderByValdiator,
   OrderDirectionValidator,
 } from "~/utils/validators";
+import { VideoSyncStatus } from "@prisma/client";
 
 export const TagSlugsValidator = z.optional(z.array(z.string()));
 
@@ -38,8 +39,12 @@ const getVideos = async (params: GetVideosArgs) => {
     views?: object;
     likes?: object;
     OR?: Array<object>;
-    disabled?: boolean;
-  } = {};
+    disabled: boolean;
+    syncStatus: typeof VideoSyncStatus.Full;
+  } = {
+    disabled: false,
+    syncStatus: VideoSyncStatus.Full,
+  };
 
   if (tagSlugs) {
     conditions["tags"] = { some: { tag: { slug: { in: tagSlugs } } } };
@@ -72,7 +77,6 @@ const getVideos = async (params: GetVideosArgs) => {
     }
   }
 
-  conditions["disabled"] = false;
   return await prisma.$transaction([
     prisma.video.findMany({
       where: conditions,

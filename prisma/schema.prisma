@@ -12,21 +12,32 @@ datasource db {
   referentialIntegrity = "prisma"
 }
 
+enum VideoSyncStatus {
+  Snippet
+  Full
+}
+
+enum PublishStatus {
+  Published
+  Unpublished
+}
+
 model Channel {
-  id                 Int        @id @default(autoincrement())
-  title              String     @default("")
-  youtubeId          String     @unique @default("")
+  id                 Int           @id @default(autoincrement())
+  title              String        @default("")
+  youtubeId          String        @unique @default("")
   publishedAt        DateTime?
-  smallThumbnailUrl  String     @default("")
-  mediumThumbnailUrl String     @default("")
-  largeThumbnailUrl  String     @default("")
-  bannerUrl          String     @default("")
+  smallThumbnailUrl  String        @default("")
+  mediumThumbnailUrl String        @default("")
+  largeThumbnailUrl  String        @default("")
+  bannerUrl          String        @default("")
   viewCount          Int?
   subscriberCount    Int?
-  keywords           String     @default("") @db.VarChar(5000)
-  description        String     @default("") @db.VarChar(5000)
+  keywords           String        @default("") @db.VarChar(5000)
+  description        String        @default("") @db.VarChar(5000)
   videos             Video[]
   playlists          Playlist[]
+  publishStatus      PublishStatus @default(Published)
 }
 
 model Playlist {
@@ -57,11 +68,11 @@ model Video {
   favorites          Int?
   title              String     @default("")
   publishedAt        DateTime?
-  smallThumbnailUrl  String     @default("")
-  mediumThumbnailUrl String     @default("")
-  largeThumbnailUrl  String     @default("")
-  xlThumbnailUrl     String     @default("")
-  xxlThumbnailUrl    String     @default("")
+  smallThumbnailUrl  String?    @default("")
+  mediumThumbnailUrl String?    @default("")
+  largeThumbnailUrl  String?    @default("")
+  xlThumbnailUrl     String?    @default("")
+  xxlThumbnailUrl    String?    @default("")
   description        String     @default("") @db.VarChar(5000)
   channel            Channel?   @relation(fields: [channelId], references: [id])
   channelId          Int?
@@ -70,6 +81,9 @@ model Video {
   disabled           Boolean    @default(false)
   tags               TagVideo[]
   updatedAt          DateTime?  @updatedAt
+
+  syncStatus    VideoSyncStatus @default(Snippet)
+  publishStatus PublishStatus   @default(Published)
 
   @@index([channelId, playlistId])
 }
