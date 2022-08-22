@@ -43,7 +43,7 @@ const getVideos = async (params: GetVideosArgs) => {
     syncStatus: typeof VideoSyncStatus.Full;
   } = {
     disabled: false,
-    syncStatus: VideoSyncStatus.Full,
+    syncStatus: "Full",
   };
 
   if (tagSlugs) {
