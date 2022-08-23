@@ -1,3 +1,4 @@
+import type { Video } from "@prisma/client";
 import { PublishStatus, VideoSyncStatus } from "@prisma/client";
 import { json } from "@remix-run/node";
 import type { YoutubeVideoSearchItem } from "youtube.ts";
@@ -13,11 +14,11 @@ export async function loader({ request }) {
   let id = z.string().parse(url.searchParams.get("id"));
 
   debug(`Channel ID: ${id}`);
-  const [channel, latestVideos] = await Promise.all([
+  const [channel, channelVideos] = await Promise.all([
     prisma.channel.findUnique({
       where: { youtubeId: id },
     }),
-    getLatestVideosFromChannel(id),
+    getVideosFromChannel(id),
   ]);
 
   if (channel === null) {
@@ -31,71 +32,68 @@ export async function loader({ request }) {
 
   let nextPageToken;
   let videosResponse: YoutubeVideoSearchItem[] = [];
-  let resultsFetched = 0;
   let response;
   do {
     response = await getChannelVideos(channel.youtubeId, nextPageToken);
-
-    debug(response.items.length);
+    videosResponse = videosResponse.concat(response.items);
 
     nextPageToken = response.nextPageToken;
-    resultsFetched += response.pageInfo.resultsPerPage;
-    videosResponse = videosResponse.concat(response.items);
-  } while (
-    nextPageToken &&
-    resultsFetched < response.pageInfo.totalResults &&
-    !videosContainLatestOrDisabledVideos(videosResponse, latestVideos)
-  );
+  } while (nextPageToken);
 
   debug(`${videosResponse.length} videos from channel fetched.`);
 
-  const newVideosResponse = filterVideos(videosResponse, latestVideos);
+  const newVideosResponse = filterVideos(videosResponse, channelVideos);
 
   debug(`${newVideosResponse.length} new videos found.`);
 
   try {
-    const newVideos = await prisma.$transaction(
-      newVideosResponse.map((videoData) => {
-        return prisma.video.create({
-          data: {
-            title: decode(videoData.snippet.title),
-            youtubeId: videoData.id.videoId,
-            description: decode(videoData.snippet.description),
-            publishedAt: videoData.snippet.publishedAt,
-            smallThumbnailUrl: videoData.snippet.thumbnails.default.url,
-            mediumThumbnailUrl: videoData.snippet.thumbnails.medium.url,
-            largeThumbnailUrl: videoData.snippet.thumbnails.high.url,
-            syncStatus: VideoSyncStatus.Full,
-            publishStatus: PublishStatus.Published,
-            channelId: channel.id,
-          },
-        });
-      })
-    );
+    const transactions = newVideosResponse.map((videoData) => {
+      return prisma.video.upsert({
+        where: { youtubeId: videoData.id.videoId },
+        update: {},
+        create: {
+          title: decode(videoData.snippet.title),
+          youtubeId: videoData.id.videoId,
+          description: decode(videoData.snippet.description),
+          publishedAt: videoData.snippet.publishedAt,
+          smallThumbnailUrl: videoData.snippet.thumbnails.default.url,
+          mediumThumbnailUrl: videoData.snippet.thumbnails.medium.url,
+          largeThumbnailUrl: videoData.snippet.thumbnails.high.url,
+          syncStatus: VideoSyncStatus.Full,
+          publishStatus: PublishStatus.Published,
+          channelId: channel.id,
+        },
+      });
+    });
+
+    const newVideos = await batchTransactions(transactions, 50);
+
+    debug(newVideos.length);
 
     if (newVideos.length > 0) {
       const tags = await prisma.tag.findMany();
 
-      tags.map(async (tag) => {
-        const matchedVideos = matchTagWithVideos(tag, newVideos);
+      await Promise.all(
+        tags.map(async (tag) => {
+          const matchedVideos = matchTagWithVideos(tag, newVideos);
+          debug(`${tag.name} matched ${matchedVideos.length} videos`);
 
-        await prisma.tag.update({
-          where: { id: tag.id },
-          data: {
-            lastedMatchedAt: new Date(),
-            videos: {
-              createMany: {
-                data: matchedVideos.map((matchedVideo) => ({
-                  videoId: matchedVideo.id,
-                })),
-                skipDuplicates: true,
+          await prisma.tag.update({
+            where: { id: tag.id },
+            data: {
+              lastedMatchedAt: new Date(),
+              videos: {
+                createMany: {
+                  data: matchedVideos.map((matchedVideo) => ({
+                    videoId: matchedVideo.id,
+                  })),
+                  skipDuplicates: true,
+                },
               },
             },
-          },
-        });
-
-        debug(`${tag.name} matched ${matchedVideos.length} videos`);
-      });
+          });
+        })
+      );
     }
 
     debug(`${newVideos.length} videos added.`);
@@ -109,9 +107,7 @@ export async function loader({ request }) {
   }
 }
 
-const getLatestVideosFromChannel = async (
-  youtubeId: string
-): Promise<string[]> => {
+const getVideosFromChannel = async (youtubeId: string): Promise<string[]> => {
   const videos = await prisma.video.findMany({
     where: {
       channel: {
@@ -120,7 +116,6 @@ const getLatestVideosFromChannel = async (
     },
     orderBy: { publishedAt: "desc" },
     select: { youtubeId: true },
-    take: 100,
   });
 
   if (videos === null) {
@@ -128,13 +123,6 @@ const getLatestVideosFromChannel = async (
   } else {
     return videos.map((video) => video.youtubeId);
   }
-};
-
-const videosContainLatestOrDisabledVideos = (
-  videos: YoutubeVideoSearchItem[],
-  latestVideos: string[]
-) => {
-  return videos.some((video) => latestVideos.includes(video.id.videoId));
 };
 
 // Filter out videos which are already in database
@@ -145,4 +133,23 @@ const filterVideos = (
   return videos.filter((video) => {
     return !latestVideos.includes(video.id.videoId);
   });
+};
+
+const batchTransactions = async (
+  videos: ReturnType<typeof prisma.video.create>[],
+  batchSize: number
+) => {
+  const batches: typeof videos[] = [];
+  for (let i = 0; i < videos.length; i += batchSize) {
+    batches.push(videos.slice(i, i + batchSize));
+  }
+
+  let transactionResults: Video[] = [];
+  for (const batch of batches) {
+    transactionResults = transactionResults.concat(
+      await prisma.$transaction(batch)
+    );
+  }
+
+  return transactionResults;
 };
