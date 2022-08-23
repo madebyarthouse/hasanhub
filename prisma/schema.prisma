@@ -93,6 +93,7 @@ model Tag {
   name     String     @default("")
   synonyms String     @default("")
   slug     String?    @unique
+  lastedMatchedAt DateTime?
   videos   TagVideo[]
 }
 

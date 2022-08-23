@@ -4,12 +4,13 @@ import type { YoutubeVideoSearchItem } from "youtube.ts";
 import { z } from "zod";
 import { getChannelVideos } from "~/sync/clients/youtubeApi.server";
 import { prisma } from "~/utils/prisma.server";
+import { debug } from "~/utils/debug.server";
 
 export async function loader({ request }) {
   const url = new URL(request.url);
   let id = z.string().parse(url.searchParams.get("id"));
 
-  console.log(`Channel ID: ${id}`);
+  debug(`Channel ID: ${id}`);
   const [channel, latestVideos] = await Promise.all([
     prisma.channel.findUnique({
       where: { youtubeId: id },
@@ -18,11 +19,11 @@ export async function loader({ request }) {
   ]);
 
   if (channel === null) {
-    console.log(`Channel with Youtube ID = '${id}' not found.`);
+    debug(`Channel with Youtube ID = '${id}' not found.`);
     return json({ error: "Channel not found." });
   }
 
-  console.log(
+  debug(
     `Channel '${channel.title}' with Youtube ID = '${channel.youtubeId}' will be synced.`
   );
 
@@ -33,7 +34,7 @@ export async function loader({ request }) {
   do {
     response = await getChannelVideos(channel.youtubeId, nextPageToken);
 
-    console.log(response.items.length);
+    debug(response.items.length);
 
     nextPageToken = response.nextPageToken;
     resultsFetched += response.pageInfo.resultsPerPage;
@@ -44,11 +45,11 @@ export async function loader({ request }) {
     !videosContainLatestOrDisabledVideos(videosResponse, latestVideos)
   );
 
-  console.log(`${videosResponse.length} videos from channel fetched.`);
+  debug(`${videosResponse.length} videos from channel fetched.`);
 
   const newVideosResponse = filterVideos(videosResponse, latestVideos);
 
-  console.log(`${newVideosResponse.length} new videos found.`);
+  debug(`${newVideosResponse.length} new videos found.`);
 
   try {
     const updated = await prisma.video.createMany({
@@ -66,11 +67,11 @@ export async function loader({ request }) {
       })),
     });
 
-    console.log(`${updated.count} videos added.`);
+    debug(`${updated.count} videos added.`);
 
-    return json({});
+    return json({ videos: updated.count });
   } catch (e) {
-    console.log(e);
+    debug(e);
     return json({ error: e });
   } finally {
     prisma.$disconnect();

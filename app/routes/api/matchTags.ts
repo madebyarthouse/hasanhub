@@ -1,33 +1,57 @@
 import { prisma } from "~/utils/prisma.server";
 import type { Tag, Video } from "@prisma/client";
+import { json } from "@remix-run/node";
+import { debug } from "~/utils/debug.server";
 
 export async function loader({ params }) {
-  const responseString: String[] = [];
   try {
     const [tags, videos] = await Promise.all([
       prisma.tag.findMany(),
       prisma.video.findMany(),
     ]);
-    const tagVideoData = matchTagsAndVideos(tags, videos);
 
-    for (const [tagId, data] of Object.entries(tagVideoData)) {
-      if (data.length > 0) {
+    const matched = await Promise.all(
+      tags.map(async (tag) => {
+        const filteredVideos = videos.filter((video) => {
+          if (tag.lastedMatchedAt === null || video.publishedAt === null) {
+            return true;
+          }
+
+          return video.publishedAt > tag.lastedMatchedAt;
+        });
+
+        debug(`Videos for ${tag.name} filtered: ${filteredVideos.length}, `);
+
+        const matchedVideos = matchTagWithVideos(tag, filteredVideos);
+
         await prisma.tag.update({
-          where: { id: parseInt(tagId) },
+          where: { id: tag.id },
           data: {
-            videos: { createMany: { data: data, skipDuplicates: true } },
+            lastedMatchedAt: new Date(),
+            videos: {
+              createMany: {
+                data: matchedVideos.map((matchedVideo) => ({
+                  videoId: matchedVideo.id,
+                })),
+                skipDuplicates: true,
+              },
+            },
           },
         });
-      }
-    }
-  } catch (error) {
-    responseString.push(error as String);
+
+        debug(`${tag.name} matched ${matchedVideos.length} videos`);
+
+        return { [tag.name]: matchedVideos.length };
+      })
+    );
+
+    return json(Object.assign({}, ...matched));
+  } catch (e) {
+    debug(e);
+    return json({ error: e }, 500);
+  } finally {
     prisma.$disconnect();
   }
-
-  prisma.$disconnect();
-
-  return responseString.join("\n");
 }
 
 const splitMyString = (str: string, splitLength: number) => {
@@ -40,29 +64,20 @@ const splitMyString = (str: string, splitLength: number) => {
   return b;
 };
 
-const matchTagsAndVideos = (tags: Tag[], videos: Video[]) => {
-  let tagVideoIds: { [id: number]: { videoId: number }[] } = {};
+const matchTagWithVideos = (tag: Tag, videos: Video[]) => {
+  return videos.filter((video) => {
+    const sanitizedTitle: string = video.title
+      .toLowerCase()
+      .replace(/[^a-zA-Z0-9]/g, " ");
 
-  for (const tag of tags) {
     const synonyms = tag.synonyms.split(",");
 
-    tagVideoIds[tag.id] = [];
-    for (const video of videos) {
-      const sanitizedTitle: string = video.title
-        .toLowerCase()
-        .replace(/[^a-zA-Z0-9]/g, " ");
-
-      for (const synonym of synonyms) {
-        if (
-          splitMyString(sanitizedTitle, 1).includes(synonym) ||
-          splitMyString(sanitizedTitle, 2).includes(synonym) ||
-          splitMyString(sanitizedTitle, 3).includes(synonym)
-        ) {
-          tagVideoIds[tag.id].push({ videoId: video.id });
-          break;
-        }
-      }
-    }
-  }
-  return tagVideoIds;
+    return synonyms.some((synonym) => {
+      return (
+        splitMyString(sanitizedTitle, 1).includes(synonym) ||
+        splitMyString(sanitizedTitle, 2).includes(synonym) ||
+        splitMyString(sanitizedTitle, 3).includes(synonym)
+      );
+    });
+  });
 };

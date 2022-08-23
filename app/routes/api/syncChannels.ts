@@ -3,61 +3,65 @@ import { json } from "@remix-run/node";
 import { getChannel } from "../../sync/clients/youtubeApi.server";
 import { PublishStatus } from "@prisma/client";
 import type { YoutubeChannel } from "youtube.ts";
+import { debug } from "~/utils/debug.server";
 
 export async function loader({ params }) {
-  const [channels, playlists] = await Promise.all([
-    prisma.channel.findMany(),
-    prisma.playlist.findMany(),
-  ]);
+  try {
+    const [channels, playlists] = await Promise.all([
+      prisma.channel.findMany(),
+      prisma.playlist.findMany(),
+    ]);
 
-  console.log(`# of Channels to be synced: ${channels.length}`);
+    debug(`# of Channels to be synced: ${channels.length}`);
 
-  const channelsResponse = await Promise.all(
-    channels.map(async (video) => {
-      try {
-        return await getChannel(video.youtubeId);
-      } catch (e) {
-        console.log(`Video with ID ${video.youtubeId} could not be found.`);
-        console.log(`Video will be marked as unpublished.`);
+    const channelsResponse = await Promise.all(
+      channels.map(async (video) => {
+        try {
+          return await getChannel(video.youtubeId);
+        } catch (e) {
+          debug(`Video with ID ${video.youtubeId} could not be found.`);
+          debug(`Video will be marked as unpublished.`);
 
-        await prisma.channel.update({
-          where: { id: video.id },
+          await prisma.channel.update({
+            where: { id: video.id },
+            data: {
+              publishStatus: PublishStatus.Unpublished,
+            },
+          });
+
+          return null;
+        }
+      })
+    );
+
+    const channelsData = channelsResponse.filter(
+      (channel) => channel !== null
+    ) as YoutubeChannel[];
+
+    debug(`# of Channels found: ${channelsData.length}`);
+
+    const updated = await prisma.$transaction(
+      channelsData.map((channelData, index) => {
+        return prisma.channel.update({
+          where: { youtubeId: channelData.id },
           data: {
-            publishStatus: PublishStatus.Unpublished,
+            title: channelData.snippet.title,
+            description: channelData.snippet.description,
+            publishedAt: channelData.snippet.publishedAt,
+            smallThumbnailUrl: channelData.snippet.thumbnails.default.url,
+            mediumThumbnailUrl: channelData.snippet.thumbnails.medium.url,
+            largeThumbnailUrl: channelData.snippet.thumbnails.high.url,
+            publishStatus: PublishStatus.Published,
           },
         });
+      })
+    );
 
-        return null;
-      }
-    })
-  );
-
-  const channelsData = channelsResponse.filter(
-    (channel) => channel !== null
-  ) as YoutubeChannel[];
-
-  console.log(`# of Channels found: ${channelsData.length}`);
-
-  const updated = await prisma.$transaction(
-    channelsData.map((channelData, index) => {
-      return prisma.channel.update({
-        where: { youtubeId: channelData.id },
-        data: {
-          title: channelData.snippet.title,
-          description: channelData.snippet.description,
-          publishedAt: channelData.snippet.publishedAt,
-          smallThumbnailUrl: channelData.snippet.thumbnails.default.url,
-          mediumThumbnailUrl: channelData.snippet.thumbnails.medium.url,
-          largeThumbnailUrl: channelData.snippet.thumbnails.high.url,
-          publishStatus: PublishStatus.Published,
-        },
-      });
-    })
-  );
-
-  console.log(`# of Channels updated: ${updated.length}`);
-
-  prisma.$disconnect();
-
-  return json(updated.map((channel) => channel.title));
+    debug(`# of Channels updated: ${updated.length}`);
+    return json({ channelsSynced: updated.length });
+  } catch (error) {
+    return json({ error }, 500);
+  } finally {
+    prisma.$disconnect();
+  }
 }

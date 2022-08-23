@@ -1,14 +1,13 @@
 import { z } from "zod";
 import { prisma } from "~/utils/prisma.server";
 import type { DurationListType, LastVideoIdType } from "~/utils/validators";
-import { OrderDirectionType, OrderByType } from "../utils/validators";
 import {
   DurationListValidator,
   LastVideoIdValidator,
   OrderByValdiator,
   OrderDirectionValidator,
 } from "~/utils/validators";
-import { VideoSyncStatus } from "@prisma/client";
+import type { VideoSyncStatus } from "@prisma/client";
 
 export const TagSlugsValidator = z.optional(z.array(z.string()));
 
