@@ -1,4 +1,5 @@
 import { json } from "@remix-run/node";
+import { decode } from "html-entities";
 import { getChannel } from "~/sync/clients/youtubeRss.server";
 import { prisma } from "~/utils/prisma.server";
 
@@ -28,7 +29,7 @@ export async function loader({ params }) {
                 where: { youtubeId: video.id },
                 update: {},
                 create: {
-                  title: video.title,
+                  title: decode(video.title),
                   youtubeId: video.id,
                   publishedAt: video.pubDate,
                   channel: { connect: { id: channel.id } },
