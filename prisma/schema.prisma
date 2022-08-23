@@ -80,6 +80,7 @@ model Video {
   playlistId         Int?
   disabled           Boolean    @default(false)
   tags               TagVideo[]
+  createdAt          DateTime   @default(now())
   updatedAt          DateTime?  @updatedAt
 
   syncStatus    VideoSyncStatus @default(Snippet)

@@ -53,6 +53,7 @@ export async function loader({ params }) {
         } catch (e) {
           debug(`Video with ID ${video.youtubeId} could not be found.`);
           debug(`Video will be marked as unpublished.`);
+          debug(e?.message);
 
           await prisma.video.update({
             where: { id: video.id },

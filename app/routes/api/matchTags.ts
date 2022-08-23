@@ -2,6 +2,7 @@ import { prisma } from "~/utils/prisma.server";
 import { json } from "@remix-run/node";
 import { debug } from "~/utils/debug.server";
 import { matchTagWithVideos } from "~/sync/services/matching";
+import { Video } from "@prisma/client";
 
 export async function loader({ params }) {
   try {
@@ -10,21 +11,25 @@ export async function loader({ params }) {
       prisma.video.findMany(),
     ]);
 
-    const matched = await Promise.all(
-      tags.map(async (tag) => {
+    let taggedVideos: { [key: string]: number } = {};
+    await prisma.$transaction(
+      tags.map((tag) => {
         const filteredVideos = videos.filter((video) => {
           if (tag.lastedMatchedAt === null || video.publishedAt === null) {
             return true;
           }
 
-          return video.publishedAt > tag.lastedMatchedAt;
+          return video.createdAt >= tag.lastedMatchedAt;
         });
 
         debug(`Videos for ${tag.name} filtered: ${filteredVideos.length}, `);
 
         const matchedVideos = matchTagWithVideos(tag, filteredVideos);
+        taggedVideos[tag.name] = matchedVideos.length;
 
-        await prisma.tag.update({
+        debug(`${tag.name} matched ${matchedVideos.length} videos`);
+
+        return prisma.tag.update({
           where: { id: tag.id },
           data: {
             lastedMatchedAt: new Date(),
@@ -38,14 +43,10 @@ export async function loader({ params }) {
             },
           },
         });
-
-        debug(`${tag.name} matched ${matchedVideos.length} videos`);
-
-        return { [tag.name]: matchedVideos.length };
       })
     );
 
-    return json(Object.assign({}, ...matched));
+    return json(taggedVideos);
   } catch (e) {
     debug(e);
     return json({ error: e }, 500);
