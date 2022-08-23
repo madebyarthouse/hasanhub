@@ -3,8 +3,9 @@ import { json } from "@remix-run/node";
 import { getVideo } from "../../sync/clients/youtubeApi.server";
 import { PublishStatus, VideoSyncStatus } from "@prisma/client";
 import { parse, toSeconds } from "iso8601-duration";
-import { YoutubeVideo } from "youtube.ts";
+import type { YoutubeVideo } from "youtube.ts";
 import { debug } from "~/utils/debug.server";
+import { decode } from "html-entities";
 
 const minute = 1000 * 60;
 const hour = minute * 60;
@@ -76,8 +77,8 @@ export async function loader({ params }) {
         return prisma.video.update({
           where: { youtubeId: videoData.id },
           data: {
-            title: videoData.snippet.title,
-            description: videoData.snippet.description,
+            title: decode(videoData.snippet.title),
+            description: decode(videoData.snippet.description),
             publishedAt: videoData.snippet.publishedAt,
             smallThumbnailUrl: videoData.snippet.thumbnails.default.url,
             mediumThumbnailUrl: videoData.snippet.thumbnails.medium.url,
