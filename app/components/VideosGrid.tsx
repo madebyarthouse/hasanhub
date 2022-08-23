@@ -37,7 +37,7 @@ const VideosGrid = ({
   const lastVideoId = videos ? videos[videos.length - 1]?.id : null;
 
   return (
-    <section aria-label={title} className="w-full lg:w-3/4 xl:w-4/5">
+    <section aria-label={title} className="w-full lg:w-3/4 xl:w-4/5 relative">
       <div
         className={cx(
           "sticky top-0 w-full gap-1 text-left sm:gap-3 bg-light dark:bg-lightBlack z-20 transition-opacity flex flex-col md:flex-row md:items-center md:justify-between px-3 lg:px-0 mb-5 py-5"
@@ -135,11 +135,11 @@ const VideosGrid = ({
         </div>
       </div>
 
-      <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10 relative z-10">
-        {videos
-          .filter((video) => !video.disabled)
-          .map((video, index) =>
-            loading ? null : (
+      <div className="relative">
+        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10 relative z-10">
+          {videos
+            .filter((video) => !video.disabled)
+            .map((video, index) => (
               <li
                 style={{
                   animationDuration: `${Math.min(
@@ -149,40 +149,42 @@ const VideosGrid = ({
                   animationName: "fadeIn",
                 }}
                 key={video.youtubeId}
-                className="will-fade-scale"
+                className={cx("will-fade-scale transition-opacity", {
+                  "opacity-0": loading,
+                })}
               >
                 <VideoGridItem video={video} lazy={index === 0} />
               </li>
-            )
-          )}
-      </ul>
-      {loading ? (
-        <div className="flex justify-center">
-          <LoadingSpinner />
-        </div>
-      ) : (
-        <div className="w-full flex justify-center items-center my-10">
-          {totalVideosCount > videos.length ? (
-            loadingMore ? (
-              <LoadingSpinner />
-            ) : (
-              <a
-                href={loadMoreUrl(lastVideoId ?? -1)}
-                onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                  e.preventDefault();
+            ))}
+        </ul>
+        {loading ? (
+          <div className="flex justify-center absolute left-1/2 top-20 w-full -translate-x-1/2 ">
+            <LoadingSpinner />
+          </div>
+        ) : (
+          <div className="w-full flex justify-center items-center my-10">
+            {totalVideosCount > videos.length ? (
+              loadingMore ? (
+                <LoadingSpinner />
+              ) : (
+                <a
+                  href={loadMoreUrl(lastVideoId ?? -1)}
+                  onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                    e.preventDefault();
 
-                  handleLoadMore(lastVideoId ?? -1);
-                }}
-                className="bg-twitchPurpleLight text-light text-center font-bold betterhover:hover:bg-twitchPurpleLight px-4 py-2 rounded inline-block saturate-50"
-              >
-                Load more
-              </a>
-            )
-          ) : (
-            <span>All done</span>
-          )}
-        </div>
-      )}
+                    handleLoadMore(lastVideoId ?? -1);
+                  }}
+                  className="bg-twitchPurpleLight text-light text-center font-bold betterhover:hover:bg-twitchPurpleLight px-4 py-2 rounded inline-block saturate-50"
+                >
+                  Load more
+                </a>
+              )
+            ) : (
+              <span>All done</span>
+            )}
+          </div>
+        )}
+      </div>
     </section>
   );
 };
