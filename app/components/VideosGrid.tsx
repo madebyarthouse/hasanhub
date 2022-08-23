@@ -158,7 +158,14 @@ const VideosGrid = ({
             ))}
         </ul>
         {loading ? (
-          <div className="flex justify-center absolute left-1/2 top-20 w-full -translate-x-1/2 ">
+          <div
+            style={{
+              animationName: "fadeIn",
+              animationDelay: "250ms",
+              animationDuration: "500ms",
+            }}
+            className="flex absolute top-20 w-full justify-center opacity-0"
+          >
             <LoadingSpinner />
           </div>
         ) : (
