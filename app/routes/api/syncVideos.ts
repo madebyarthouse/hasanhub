@@ -20,6 +20,12 @@ export async function loader({ params }) {
           { syncStatus: VideoSyncStatus.Snippet },
           {
             AND: [
+              { publishedAt: { gt: new Date(Date.now() - day) } }, // published in the last day
+              { updatedAt: { lt: new Date(Date.now() - hour) } }, // but not updated in the last hour
+            ],
+          },
+          {
+            AND: [
               { publishedAt: { gt: new Date(Date.now() - week) } }, // published in the last week
               { updatedAt: { lt: new Date(Date.now() - day) } }, // but not updated in the last day
             ],
