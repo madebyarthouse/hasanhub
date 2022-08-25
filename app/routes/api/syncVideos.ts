@@ -6,6 +6,7 @@ import { parse, toSeconds } from "iso8601-duration";
 import type { YoutubeVideo } from "youtube.ts";
 import { debug } from "~/utils/debug.server";
 import { decode } from "html-entities";
+import type { Video } from "@prisma/client";
 
 const minute = 1000 * 60;
 const hour = minute * 60;
@@ -92,9 +93,15 @@ export async function loader({ params }) {
             largeThumbnailUrl: videoData.snippet.thumbnails.high.url,
             xlThumbnailUrl: videoData.snippet.thumbnails.standard?.url,
             xxlThumbnailUrl: videoData.snippet.thumbnails.maxres?.url,
-            comments: parseInt(videoData.statistics.commentCount) ?? null,
-            views: parseInt(videoData.statistics.viewCount) ?? null,
-            likes: parseInt(videoData.statistics.likeCount) ?? null,
+            comments: isNaN(parseInt(videoData.statistics.commentCount))
+              ? null
+              : parseInt(videoData.statistics.commentCount),
+            views: isNaN(parseInt(videoData.statistics.viewCount))
+              ? null
+              : parseInt(videoData.statistics.viewCount),
+            likes: isNaN(parseInt(videoData.statistics.likeCount))
+              ? null
+              : parseInt(videoData.statistics.likeCount),
             duration:
               toSeconds(parse(videoData.contentDetails.duration)) ?? null,
             syncStatus: VideoSyncStatus.Full,
@@ -111,8 +118,28 @@ export async function loader({ params }) {
       synced: updated.length,
     });
   } catch (error) {
+    debug(error);
     return json({ error }, 500);
   } finally {
     prisma.$disconnect();
   }
 }
+
+const batchTransactions = async (
+  videos: ReturnType<typeof prisma.video.update>[],
+  batchSize: number
+) => {
+  const batches: typeof videos[] = [];
+  for (let i = 0; i < videos.length; i += batchSize) {
+    batches.push(videos.slice(i, i + batchSize));
+  }
+
+  let transactionResults: Video[] = [];
+  for (const batch of batches) {
+    transactionResults = transactionResults.concat(
+      await prisma.$transaction(batch)
+    );
+  }
+
+  return transactionResults;
+};

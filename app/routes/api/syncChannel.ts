@@ -59,7 +59,7 @@ export async function loader({ request }) {
           smallThumbnailUrl: videoData.snippet.thumbnails.default.url,
           mediumThumbnailUrl: videoData.snippet.thumbnails.medium.url,
           largeThumbnailUrl: videoData.snippet.thumbnails.high.url,
-          syncStatus: VideoSyncStatus.Full,
+          syncStatus: VideoSyncStatus.Snippet,
           publishStatus: PublishStatus.Published,
           channelId: channel.id,
         },
