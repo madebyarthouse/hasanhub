@@ -1,14 +1,16 @@
+import { z } from "zod";
+import type { LoaderFunction, MetaFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import type { LoaderFunction } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
+import getVideos, { TagSlugsValidator } from "~/lib/getVideos";
 import { prisma } from "~/utils/prisma.server";
 import VideosGrid from "~/components/VideosGrid";
-import getVideos from "../lib/getVideos";
 import { useEffect, useState } from "react";
+import type { Tag } from "@prisma/client";
 import { UrlParamsSchema } from "~/utils/validators";
-import { z } from "zod";
 import useUrlState from "~/hooks/useUrlState";
 import useActionUrl from "~/hooks/useActionUrl";
+import getActiveTagsBySlugs from "~/lib/getActiveTagsBySlugs";
 
 export function headers() {
   return {
@@ -17,8 +19,27 @@ export function headers() {
   };
 }
 
-export const loader: LoaderFunction = async ({ request }) => {
+export const meta: MetaFunction = ({ data, parentsData }) => {
+  // const { tags, tagSlugs }: { tags: Tag[]; tagSlugs: string[] } =
+  //   parentsData["routes/__videos"];
+  const { activeTags } = data as LoaderData;
+  const title = activeTags.map((tag) => tag.name).join(" and ");
+  return {
+    title: `${title} | HasanHub`,
+  };
+};
+
+type GetVideoType = Awaited<ReturnType<typeof getVideos>>;
+
+type LoaderData = {
+  videos: GetVideoType[0];
+  totalVideosCount: GetVideoType[1];
+  tagSlugs: string[];
+  activeTags: Tag[];
+};
+export const loader: LoaderFunction = async ({ request, params }) => {
   const url = new URL(request.url);
+  const slugs = params["*"]?.split("/") ?? [];
   let lastVideoIdParam = url.searchParams.get("lastVideoId");
 
   try {
@@ -29,15 +50,21 @@ export const loader: LoaderFunction = async ({ request }) => {
       lastVideoId: lastVideoIdParam ? parseInt(lastVideoIdParam) : undefined,
     });
 
-    const [videos, totalVideosCount] = await getVideos({
-      order,
-      durations,
-      by,
-      lastVideoId,
-    });
+    const tagSlugs = TagSlugsValidator.parse(slugs);
+
+    const [activeTags, [videos, totalVideosCount]] = await Promise.all([
+      await getActiveTagsBySlugs(tagSlugs),
+      getVideos({
+        tagSlugs,
+        order,
+        by,
+        durations,
+        lastVideoId,
+      }),
+    ]);
 
     return json(
-      { totalVideosCount, videos },
+      { totalVideosCount, videos, activeTags, tagSlugs },
       {
         status: 200,
         headers: {
@@ -57,8 +84,8 @@ export const loader: LoaderFunction = async ({ request }) => {
   }
 };
 
-export default function Index() {
-  const { totalVideosCount, videos } = useLoaderData();
+export default function TagPage() {
+  const { videos, totalVideosCount, activeTags } = useLoaderData<LoaderData>();
   const [liveVideos, setLiveVideos] = useState<typeof videos>(videos);
   const fetcher = useFetcher();
   const { isLoading, ordering } = useUrlState();
@@ -68,18 +95,18 @@ export default function Index() {
     constructUrl({ lastVideoId: lastVideoId }, true);
 
   useEffect(() => {
-    if (fetcher.data && fetcher.data.videos?.length > 0) {
+    if (fetcher.data && fetcher.data.videos.length > 0) {
       setLiveVideos((prev) => [...prev, ...fetcher.data.videos]);
     }
   }, [fetcher.data]);
 
-  useEffect(() => {
-    setLiveVideos(videos);
-  }, [videos]);
-
   const handleLoadMore = async (lastVideoId: number) => {
     fetcher.load(loaderUrl(lastVideoId));
   };
+
+  useEffect(() => {
+    setLiveVideos(videos);
+  }, [videos]);
 
   let title;
   if (ordering.by === "publishedAt") {
@@ -90,15 +117,15 @@ export default function Index() {
     }
   } else if (ordering.by === "views") {
     if (ordering.order === "desc") {
-      title = "Most Viewed";
+      title = "Most viewed";
     } else if (ordering.order === "asc") {
-      title = "Least Viewed";
+      title = "Least viewed";
     }
   } else if (ordering.by === "likes") {
     if (ordering.order === "desc") {
-      title = "Most Liked";
+      title = "Most liked";
     } else if (ordering.order === "asc") {
-      title = "Least Liked";
+      title = "Least liked";
     }
   }
 
@@ -106,7 +133,9 @@ export default function Index() {
     <VideosGrid
       totalVideosCount={totalVideosCount}
       handleLoadMore={handleLoadMore}
-      title={`${title} videos`}
+      title={`${title} videos about ${activeTags
+        .map((tag) => tag.name)
+        .join(" and ")}`}
       videos={liveVideos}
       loading={isLoading}
       loadMoreUrl={loaderUrl}

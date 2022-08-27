@@ -46,7 +46,10 @@ const VideosGrid = ({
         <div className={cx("flex flex-col", { "opacity-0": loading })}>
           <h1 className={cx("text-4xl md:text-5xl mt-0")}>{title}</h1>
           <div className="text-sm font-semibold">
-            <strong className={cx("font-extrabold")}>{videos.length}</strong> of{" "}
+            <strong className={cx("font-extrabold")}>
+              {videos?.length ?? 0}
+            </strong>{" "}
+            of{" "}
             <strong className={cx("font-extrabold")}>{totalVideosCount}</strong>{" "}
             Videos shown
           </div>
@@ -72,7 +75,7 @@ const VideosGrid = ({
             <li>
               <Link
                 className={cx(
-                  "border-twitchPurpleLight duration-400 transition-colors border border-l-0 betterhover:hover:bg-twitchPurpleLight betterhover:hover:text-light saturate-50 px-3 py-2",
+                  "border-twitchPurpleLight duration-400 transition-colors border border-l-0 betterhover:hover:bg-twitchPurpleLight betterhover:hover:text-light saturate-50 px-3 py-2 rounded-lg rounded-l-none",
                   ordering.by === "views"
                     ? "bg-twitchPurpleLight text-light"
                     : "bg-light dark:bg-lightBlack text-twitchPurpleLight"
@@ -81,22 +84,7 @@ const VideosGrid = ({
                   ordering: { by: "views", order: ordering.order },
                 })}
               >
-                Views
-              </Link>
-            </li>
-            <li>
-              <Link
-                className={cx(
-                  "border-twitchPurpleLight duration-400 transition-colors border border-l-0 betterhover:hover:bg-twitchPurpleLight betterhover:hover:text-light saturate-50 px-3 py-2 rounded-lg rounded-l-none",
-                  ordering.by === "likes"
-                    ? "bg-twitchPurpleLight text-light"
-                    : "bg-light dark:bg-lightBlack text-twitchPurpleLight"
-                )}
-                to={constructUrl({
-                  ordering: { by: "likes", order: ordering.order },
-                })}
-              >
-                Likes
+                Popularity
               </Link>
             </li>
           </ul>
@@ -136,9 +124,9 @@ const VideosGrid = ({
       </div>
 
       <div className="relative">
-        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10 relative z-10">
+        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10 xl:gap-12 relative z-10">
           {videos
-            .filter((video) => !video.disabled)
+            ?.filter((video) => !video.disabled)
             .map((video, index) => (
               <li
                 style={{
@@ -170,7 +158,7 @@ const VideosGrid = ({
           </div>
         ) : (
           <div className="w-full flex justify-center items-center my-10">
-            {totalVideosCount > videos.length ? (
+            {totalVideosCount > videos?.length ? (
               loadingMore ? (
                 <LoadingSpinner />
               ) : (

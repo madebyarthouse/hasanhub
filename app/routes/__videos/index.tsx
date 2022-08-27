@@ -1,14 +1,12 @@
-import { z } from "zod";
-import type { LoaderFunction, MetaFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
+import type { LoaderFunction } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
-import getVideos, { TagSlugsValidator } from "~/lib/getVideos";
 import { prisma } from "~/utils/prisma.server";
 import VideosGrid from "~/components/VideosGrid";
+import getVideos from "../../lib/getVideos";
 import { useEffect, useState } from "react";
-import getActiveTagsBySlugs from "../../lib/getActiveTagsBySlugs";
-import type { Tag } from "@prisma/client";
 import { UrlParamsSchema } from "~/utils/validators";
+import { z } from "zod";
 import useUrlState from "~/hooks/useUrlState";
 import useActionUrl from "~/hooks/useActionUrl";
 
@@ -19,24 +17,8 @@ export function headers() {
   };
 }
 
-export const meta: MetaFunction = ({ data, params }) => {
-  const { activeTags }: { activeTags: Tag[] } = data;
-  const title = activeTags.map((tag) => tag.name).join(" and ");
-  return {
-    title: `${title} | HasanHub`,
-  };
-};
-
-type GetVideoType = Awaited<ReturnType<typeof getVideos>>;
-
-type LoaderData = {
-  videos: GetVideoType[0];
-  totalVideosCount: GetVideoType[1];
-  activeTags: Awaited<ReturnType<typeof getActiveTagsBySlugs>>;
-};
-export const loader: LoaderFunction = async ({ request, params }) => {
+export const loader: LoaderFunction = async ({ request }) => {
   const url = new URL(request.url);
-  const slugs = params["*"]?.split("/") ?? [];
   let lastVideoIdParam = url.searchParams.get("lastVideoId");
 
   try {
@@ -47,21 +29,15 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       lastVideoId: lastVideoIdParam ? parseInt(lastVideoIdParam) : undefined,
     });
 
-    const tagSlugs = TagSlugsValidator.parse(slugs);
-
-    const [activeTags, [videos, totalVideosCount]] = await Promise.all([
-      getActiveTagsBySlugs(slugs),
-      getVideos({
-        tagSlugs,
-        order,
-        by,
-        durations,
-        lastVideoId,
-      }),
-    ]);
+    const [videos, totalVideosCount] = await getVideos({
+      order,
+      durations,
+      by,
+      lastVideoId,
+    });
 
     return json(
-      { totalVideosCount, videos, activeTags },
+      { totalVideosCount, videos },
       {
         status: 200,
         headers: {
@@ -81,8 +57,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
 };
 
-export default function TagPage() {
-  const { videos, totalVideosCount, activeTags } = useLoaderData<LoaderData>();
+export default function Index() {
+  const { totalVideosCount, videos } = useLoaderData();
   const [liveVideos, setLiveVideos] = useState<typeof videos>(videos);
   const fetcher = useFetcher();
   const { isLoading, ordering } = useUrlState();
@@ -92,18 +68,18 @@ export default function TagPage() {
     constructUrl({ lastVideoId: lastVideoId }, true);
 
   useEffect(() => {
-    if (fetcher.data && fetcher.data.videos.length > 0) {
+    if (fetcher.data && fetcher.data.videos?.length > 0) {
       setLiveVideos((prev) => [...prev, ...fetcher.data.videos]);
     }
   }, [fetcher.data]);
 
-  const handleLoadMore = async (lastVideoId: number) => {
-    fetcher.load(loaderUrl(lastVideoId));
-  };
-
   useEffect(() => {
     setLiveVideos(videos);
   }, [videos]);
+
+  const handleLoadMore = async (lastVideoId: number) => {
+    fetcher.load(loaderUrl(lastVideoId));
+  };
 
   let title;
   if (ordering.by === "publishedAt") {
@@ -114,15 +90,15 @@ export default function TagPage() {
     }
   } else if (ordering.by === "views") {
     if (ordering.order === "desc") {
-      title = "Most viewed";
+      title = "Most Viewed";
     } else if (ordering.order === "asc") {
-      title = "Least viewed";
+      title = "Least Viewed";
     }
   } else if (ordering.by === "likes") {
     if (ordering.order === "desc") {
-      title = "Most liked";
+      title = "Most Liked";
     } else if (ordering.order === "asc") {
-      title = "Least liked";
+      title = "Least Liked";
     }
   }
 
@@ -130,9 +106,7 @@ export default function TagPage() {
     <VideosGrid
       totalVideosCount={totalVideosCount}
       handleLoadMore={handleLoadMore}
-      title={`${title} videos about ${activeTags
-        .map((tag) => tag.name)
-        .join(" and ")}`}
+      title={`${title} videos`}
       videos={liveVideos}
       loading={isLoading}
       loadMoreUrl={loaderUrl}

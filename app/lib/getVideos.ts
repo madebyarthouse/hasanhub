@@ -8,7 +8,6 @@ import {
   OrderDirectionValidator,
 } from "~/utils/validators";
 import type { PublishStatus, VideoSyncStatus } from "@prisma/client";
-import { debug } from "~/utils/debug.server";
 
 export const TagSlugsValidator = z.optional(z.array(z.string()));
 
@@ -48,7 +47,7 @@ const getVideos = async (params: GetVideosArgs) => {
     publishStatus: "Published",
   };
 
-  if (tagSlugs) {
+  if (tagSlugs && tagSlugs.length > 0) {
     conditions["tags"] = { some: { tag: { slug: { in: tagSlugs } } } };
   }
 
@@ -63,8 +62,6 @@ const getVideos = async (params: GetVideosArgs) => {
       conditions[by ?? "publishedAt"] = { lt: lastCondition };
     }
   }
-
-  debug({ conditions });
 
   if (durations) {
     const minMaxPairs =

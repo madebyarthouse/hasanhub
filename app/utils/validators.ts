@@ -24,9 +24,7 @@ export const LastVideoIdValidator = z.optional(
 );
 
 export type OrderByType = z.infer<typeof OrderByValdiator>;
-export const OrderByValdiator = z.optional(
-  z.enum(["publishedAt", "views", "likes"])
-);
+export const OrderByValdiator = z.optional(z.enum(["publishedAt", "views"]));
 
 export const UrlParamsSchema = z.object({
   durations: z.optional(DurationListValidator),

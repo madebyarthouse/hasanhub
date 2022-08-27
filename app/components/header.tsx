@@ -21,7 +21,7 @@ const Header = ({
   streamSchedule: StreamSchedule;
 }) => {
   return (
-    <header className="px-5 lg:px-10 xl:px-14 my-6  gap-5 grid grid-cols-1 grid-rows-[auto_auto_auto] sm:grid-cols-2 sm:grid-rows-[auto_auto] xl:grid-rows-1 lg:grid-cols-[25%_auto] xl:grid-cols-[20%_auto_auto]">
+    <header className="px-5 lg:px-10 xl:px-14 my-6  gap-y-10 gap-x-5 grid grid-cols-1 grid-rows-[auto_auto_auto] sm:grid-cols-2 sm:grid-rows-[auto_auto] xl:grid-rows-1 lg:grid-cols-[25%_auto] xl:grid-cols-[20%_auto_auto]">
       <Link
         to="/"
         prefetch="render"
@@ -35,7 +35,7 @@ const Header = ({
         </h1>
       </Link>
 
-      <div className="col-span-1 row-start-3 sm:col-span-2 sm:row-start-2 xl:row-start-1 xl:col-start-2 xl:col-span-1 w-full text-center xl:text-left lg:text-sm xl:max-w-[60ch]">
+      <div className="col-span-1 row-start-3 sm:col-span-2 sm:row-start-2 xl:row-start-1 xl:col-start-2 xl:col-span-1 w-full  xl:max-w-[60ch] flex items-center justify-center xl:justify-start text-center xl:text-left text-base md:text-lg">
         {streamInfo.data?.length > 0 ? (
           <a
             className="hover:text-twitchPurple dark:hover:text-twitchPurpleLight saturate-50"

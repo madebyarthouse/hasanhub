@@ -1,5 +1,5 @@
-import { Tag } from "@prisma/client";
-import { json, LoaderFunction, MetaFunction } from "@remix-run/node";
+import type { LoaderFunction, MetaFunction } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import {
   Links,
   LiveReload,
@@ -7,19 +7,11 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useFetcher,
   useLoaderData,
-  useSearchParams,
 } from "@remix-run/react";
-import { useEffect } from "react";
 import Layout from "./components/layout";
-import Sidebar from "./components/sidebar";
 import styles from "./styles/app.css";
-import { prisma } from "./utils/prisma.server";
-import { useTransition } from "@remix-run/react";
-import { withSentry } from "@sentry/remix";
 import { getStreamInfo } from "./lib/getStreamInfo.server";
-import useUrlState from "./hooks/useUrlState";
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
@@ -73,31 +65,17 @@ export function links() {
   ];
 }
 
-export const loader: LoaderFunction = async ({ params, request }) => {
-  const [tags, [streamInfo, schedule]] = await Promise.all([
-    prisma.$queryRaw`
-      SELECT t.*, sum(v.views) AS view_count
-      FROM Tag t
-        JOIN TagVideo tv ON tv.tagId = t.id
-        JOIN Video v ON tv.videoId = v.id
-      GROUP BY t.id
-      ORDER BY view_count DESC
-    `,
-    getStreamInfo(),
-  ]);
-
-  await prisma.$disconnect();
+export async function loader() {
+  const [streamInfo, schedule] = await getStreamInfo();
 
   return json({
-    tags,
     streamInfo,
     schedule,
   });
-};
+}
 
 function App() {
-  const { tags, streamInfo, schedule } = useLoaderData();
-  const { durations, tagSlugs } = useUrlState();
+  const { streamInfo, schedule } = useLoaderData<typeof loader>();
 
   return (
     <html lang="en">
@@ -107,11 +85,6 @@ function App() {
       </head>
       <body>
         <Layout streamInfo={streamInfo} streamSchedule={schedule}>
-          <Sidebar
-            tags={tags}
-            activeTagSlugs={tagSlugs}
-            durationFilter={durations}
-          />
           <Outlet />
         </Layout>
         <ScrollRestoration />
@@ -129,4 +102,4 @@ function App() {
   );
 }
 
-export default withSentry(App);
+export default App;
