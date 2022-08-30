@@ -68,7 +68,7 @@ const Header = ({
                     streamSchedule.data?.["segments"][0]["start_time"]
                   )}
                 </strong>{" "}
-                <br />"{streamSchedule.data?.["segments"][0]["title"]}"
+                <br />"{streamSchedule.data?.["segments"][0]["title"]}".
               </p>
             </a>
           )
