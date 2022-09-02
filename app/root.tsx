@@ -26,8 +26,7 @@ export const meta: MetaFunction = () => ({
 
 export function headers() {
   return {
-    "Cache-Control":
-      "public, max-age=60, s-maxage=60, stale-while-revalidate=360",
+    "Cache-Control": "max-age=60, s-maxage=60, stale-while-revalidate=360",
   };
 }
 
@@ -83,8 +82,7 @@ export async function loader() {
     {
       status: 200,
       headers: {
-        "cache-control":
-          "public, max-age=60, s-maxage=60, stale-while-revalidate=360",
+        "cache-control": "max-age=60, s-maxage=60, stale-while-revalidate=360",
       },
     }
   );

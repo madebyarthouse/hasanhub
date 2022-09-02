@@ -8,7 +8,7 @@ import { prisma } from "~/utils/prisma.server";
 
 export function headers() {
   return {
-    "cache-control": `public, max-age=${60 * 60 * 24 * 3}, s-maxage=${
+    "cache-control": `max-age=${60 * 60 * 24 * 3}, s-maxage=${
       60 * 60 * 24
     }, stale-while-revalidate=${60 * 60 * 24 * 7}`,
   };
@@ -36,7 +36,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       {
         status: 200,
         headers: {
-          "cache-control": `public, max-age=${60 * 60 * 24 * 3}, s-maxage=${
+          "cache-control": `max-age=${60 * 60 * 24 * 3}, s-maxage=${
             60 * 60 * 24
           }, stale-while-revalidate=${60 * 60 * 24 * 7}`,
         },
