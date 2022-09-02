@@ -17,7 +17,7 @@ export async function loader(): Promise<TagsForSidebar> {
     {
       status: 200,
       headers: {
-        "cache-control": `s-maxage=${60 * 60 * 24}, stale-while-revalidate=${
+        "Cache-Control": `s-maxage=${60 * 60 * 24}, stale-while-revalidate=${
           60 * 60 * 24 * 7
         }`,
       },

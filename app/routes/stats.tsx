@@ -53,7 +53,7 @@ export async function loader() {
     return json(await getAggregationData(), {
       status: 200,
       headers: {
-        "cache-control": `max-age=${60 * 60}, s-maxage=${
+        "Cache-Control": `max-age=${60 * 60}, s-maxage=${
           60 * 60
         }, stale-while-revalidate=${60 * 60 * 24}`,
       },

@@ -29,7 +29,7 @@ export const loader = async () => {
   return new Response(sitemap, {
     status: 200,
     headers: {
-      "cache-control": "max-age=0, s-maxage=86400",
+      "Cache-Control": "max-age=0, s-maxage=86400",
       "Content-Type": "application/xml",
       "xml-version": "1.0",
       encoding: "UTF-8",

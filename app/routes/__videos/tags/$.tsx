@@ -67,7 +67,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       {
         status: 200,
         headers: {
-          "cache-control":
+          "Cache-Control":
             "max-age=120, s-maxage=120, stale-while-revalidate=360",
         },
       }

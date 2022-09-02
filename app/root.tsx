@@ -94,7 +94,7 @@ export async function loader() {
     {
       status: 200,
       headers: {
-        "cache-control": "max-age=60, s-maxage=60, stale-while-revalidate=360",
+        "Cache-Control": "max-age=60, s-maxage=60, stale-while-revalidate=360",
       },
     }
   );

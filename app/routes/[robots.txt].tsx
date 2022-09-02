@@ -18,7 +18,7 @@ ${block}
   return new Response(robotText, {
     status: 200,
     headers: {
-      "cache-control": "max-age=0, s-maxage=86400",
+      "Cache-Control": "max-age=0, s-maxage=86400",
       "Content-Type": "text/plain",
     },
   });
