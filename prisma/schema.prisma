@@ -38,6 +38,8 @@ model Channel {
   videos             Video[]
   playlists          Playlist[]
   publishStatus      PublishStatus @default(Published)
+
+  @@index([youtubeId])
 }
 
 model Playlist {
@@ -86,7 +88,9 @@ model Video {
   syncStatus    VideoSyncStatus @default(Snippet)
   publishStatus PublishStatus   @default(Published)
 
-  @@index([channelId, playlistId])
+  @@index([channelId])
+  @@index([playlistId])
+  @@index([youtubeId])
 }
 
 model Tag {
@@ -96,6 +100,8 @@ model Tag {
   slug     String?    @unique
   lastedMatchedAt DateTime?
   videos   TagVideo[]
+
+  @@index([slug])
 }
 
 model TagVideo {
@@ -105,5 +111,7 @@ model TagVideo {
   video   Video? @relation(fields: [videoId], references: [id])
   videoId Int?
 
+  @@index([tagId])
+  @@index([videoId])
   @@unique([tagId, videoId])
 }
