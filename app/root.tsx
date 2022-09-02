@@ -24,6 +24,13 @@ export const meta: MetaFunction = () => ({
   "yandex-verification": "45afda70569d2af8",
 });
 
+export function headers() {
+  return {
+    "Cache-Control":
+      "public, max-age=60, s-maxage=60, stale-while-revalidate=360",
+  };
+}
+
 export function links() {
   return [
     { rel: "stylesheet", href: styles },
@@ -68,10 +75,19 @@ export function links() {
 export async function loader() {
   const [streamInfo, schedule] = await getStreamInfo();
 
-  return json({
-    streamInfo,
-    schedule,
-  });
+  return json(
+    {
+      streamInfo,
+      schedule,
+    },
+    {
+      status: 200,
+      headers: {
+        "cache-control":
+          "public, max-age=60, s-maxage=60, stale-while-revalidate=360",
+      },
+    }
+  );
 }
 
 function App() {
