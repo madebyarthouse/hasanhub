@@ -13,7 +13,7 @@ import useActionUrl from "~/hooks/useActionUrl";
 export function headers() {
   return {
     "Cache-Control":
-      "public, max-age=60, s-maxage=60, stale-while-revalidate=360",
+      "public, max-age=120, s-maxage=120, stale-while-revalidate=360",
   };
 }
 
@@ -42,7 +42,7 @@ export const loader: LoaderFunction = async ({ request }) => {
         status: 200,
         headers: {
           "cache-control":
-            "public, max-age=60, s-maxage=60, stale-while-revalidate=360",
+            "public, max-age=120, s-maxage=120, stale-while-revalidate=360",
         },
       }
     );
