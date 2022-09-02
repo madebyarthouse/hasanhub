@@ -79,6 +79,7 @@ const getVideos = async (params: GetVideosArgs) => {
   return await prisma.$transaction([
     prisma.video.findMany({
       select: {
+        id: true,
         largeThumbnailUrl: true,
         title: true,
         publishedAt: true,

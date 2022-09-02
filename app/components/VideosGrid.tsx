@@ -34,7 +34,7 @@ const VideosGrid = ({
 }: Props) => {
   const { ordering } = useUrlState();
   const { constructUrl } = useActionUrl();
-  const lastVideoId = videos ? videos[videos.length - 1]?.id : null;
+  const lastVideoId = videos.length > 0 ? videos[videos.length - 1].id : null;
 
   return (
     <section aria-label={title} className="w-full relative">
