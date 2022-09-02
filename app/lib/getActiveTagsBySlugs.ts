@@ -5,6 +5,11 @@ const getActiveTagsBySlugs = async (tagSlugs: string[] | undefined) => {
         where: {
           slug: { in: tagSlugs },
         },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
       })
     : [];
 };

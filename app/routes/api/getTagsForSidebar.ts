@@ -7,7 +7,7 @@ type TagsForSidebar = (Tag & { viewsCount: number })[];
 export async function loader(): Promise<TagsForSidebar> {
   return json(
     await prisma.$queryRaw`
-      SELECT t.*, sum(v.views) AS view_count
+      SELECT t.id, t.name, t.slug, sum(v.views) AS view_count
       FROM Tag t
         JOIN TagVideo tv ON tv.tagId = t.id
         JOIN Video v ON tv.videoId = v.id

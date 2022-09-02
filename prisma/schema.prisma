@@ -91,6 +91,10 @@ model Video {
   @@index([channelId])
   @@index([playlistId])
   @@index([youtubeId])
+  @@index([publishedAt])
+  @@index([syncStatus])
+  @@index([publishStatus])
+  @@index([views])
 }
 
 model Tag {

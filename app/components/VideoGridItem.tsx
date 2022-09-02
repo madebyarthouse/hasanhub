@@ -93,7 +93,7 @@ const VideoGridItem = ({
             <img
               alt=""
               className="rounded-full"
-              src={video.channel?.mediumThumbnailUrl ?? ""}
+              src={video.channel?.smallThumbnailUrl ?? ""}
               width={32}
               height={32}
               loading={lazy ? "lazy" : "eager"}

@@ -78,9 +78,17 @@ const getVideos = async (params: GetVideosArgs) => {
 
   return await prisma.$transaction([
     prisma.video.findMany({
+      select: {
+        largeThumbnailUrl: true,
+        title: true,
+        publishedAt: true,
+        views: true,
+        channel: { select: { title: true, smallThumbnailUrl: true } },
+        tags: { select: { tag: { select: { slug: true, name: true } } } },
+      },
       where: conditions,
       take: take ?? 25,
-      include: { channel: true, tags: { include: { tag: true } } },
+      // include: { channel: true, tags: { include: { tag: true } } },
       orderBy: {
         [by ?? "publishedAt"]: order ?? "desc",
       },

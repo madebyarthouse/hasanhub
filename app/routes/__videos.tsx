@@ -22,6 +22,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   try {
     const response = await fetch(`${url.origin}/api/getTagsForSidebar`);
     const data = await response.json();
+
     const tagSlugs = TagSlugsValidator.parse(slugs);
 
     return json(

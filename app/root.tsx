@@ -76,8 +76,20 @@ export async function loader() {
 
   return json(
     {
-      streamInfo,
-      schedule,
+      streamInfo: streamInfo.data?.length
+        ? {
+            user_login: streamInfo.data[0].user_login,
+            user_name: streamInfo.data[0].user_name,
+            title: streamInfo.data[0].title,
+          }
+        : null,
+      schedule: schedule.data?.segments.length
+        ? {
+            broadcaster_name: schedule.data.broadcaster_name,
+            start_time: schedule.data.segments[0].start_time,
+            title: schedule.data.segments[0].title,
+          }
+        : null,
     },
     {
       status: 200,
