@@ -43,8 +43,8 @@ export default function VideosLayout() {
   const { tags } = useLoaderData();
   const { durations, tagSlugs } = useUrlState();
   return (
-    <div className="flex flex-col lg:flex-row relative">
-      <div className="w-full lg:sticky lg:overflow-y-auto lg:max-h-screen  lg:top-0 lg:w-1/4 xl:w-1/5  py-5 px-3 lg:px-0">
+    <div className="flex flex-col lg:flex-row relative w-full">
+      <div className="w-full lg:sticky lg:overflow-y-auto lg:max-h-screen  lg:top-0 lg:w-1/4 xl:w-1/5  py-5 px-3 lg:px-0 overflow-x-auto">
         <Sidebar
           tags={tags}
           activeTagSlugs={tagSlugs}
