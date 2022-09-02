@@ -11,12 +11,12 @@ const Layout = ({
   streamSchedule: StreamSchedule;
 }) => {
   return (
-    <>
+    <div className="flex flex-col gap-10">
       <Header streamInfo={streamInfo} streamSchedule={streamSchedule} />
-      <main className="mx-auto items-start px-0 lg:px-10 xl:px-14">
+      <main className="mx-auto items-start px-5 lg:px-10 xl:px-14">
         {children}
       </main>
-    </>
+    </div>
   );
 };
 

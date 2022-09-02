@@ -14,7 +14,7 @@ const TagButton = ({
 }) => {
   return (
     <>
-      <div className="min-w-max">
+      <div className="min-w-min">
         <Link
           to={href}
           className={cx(

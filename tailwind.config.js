@@ -12,7 +12,8 @@ module.exports = {
       },
       screens: {
         'betterhover': {'raw': '(hover: hover)'},
-      }
+        '2xl': '1440px',
+      },
     },
   },
   plugins: [],

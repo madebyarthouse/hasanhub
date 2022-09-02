@@ -28,7 +28,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       {
         status: 200,
         headers: {
-          "cache-control": `public, max-age=${60 * 60 * 24}, s-maxage=${
+          "cache-control": `public, max-age=${60 * 60 * 24 * 3}, s-maxage=${
             60 * 60 * 24
           }, stale-while-revalidate=${60 * 60 * 24 * 7}`,
         },
@@ -43,14 +43,18 @@ export default function VideosLayout() {
   const { tags } = useLoaderData();
   const { durations, tagSlugs } = useUrlState();
   return (
-    <div className="flex flex-col lg:flex-row relative lg:gap-14">
-      <Sidebar
-        tags={tags}
-        activeTagSlugs={tagSlugs}
-        durationFilter={durations}
-      />
+    <div className="flex flex-col lg:flex-row relative">
+      <div className="w-full lg:sticky lg:overflow-y-auto lg:max-h-screen  lg:top-0 lg:w-1/4 xl:w-1/5  py-5 px-3 lg:px-0">
+        <Sidebar
+          tags={tags}
+          activeTagSlugs={tagSlugs}
+          durationFilter={durations}
+        />
+      </div>
 
-      <Outlet />
+      <div className="lg:pl-14 w-full lg:w-3/4 xl:w-4/5">
+        <Outlet />
+      </div>
     </div>
   );
 }

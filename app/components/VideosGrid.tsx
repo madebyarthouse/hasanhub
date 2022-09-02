@@ -37,7 +37,7 @@ const VideosGrid = ({
   const lastVideoId = videos ? videos[videos.length - 1]?.id : null;
 
   return (
-    <section aria-label={title} className="w-full lg:w-3/4 xl:w-4/5 relative">
+    <section aria-label={title} className="w-full relative">
       <div
         className={cx(
           "sticky top-0 w-full gap-1 text-left sm:gap-3 bg-light dark:bg-lightBlack z-20 transition-opacity flex flex-col md:flex-row md:items-center md:justify-between px-3 lg:px-0 mb-5 py-5"
@@ -55,7 +55,7 @@ const VideosGrid = ({
           </div>
         </div>
 
-        <div className="flex flex-row gap-1 sm:gap-10 justify-between lg:flex-row md:justify-end my-3 md:my-0">
+        <div className="flex flex-row gap-1 sm:gap-10 justify-between lg:flex-row md:justify-end my-3 md:my-0 ">
           <ul className="flex flex-row">
             <li>
               <Link
@@ -123,8 +123,8 @@ const VideosGrid = ({
         </div>
       </div>
 
-      <div className="relative">
-        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10 xl:gap-12 relative z-10">
+      <div className="relative lg:mx-[2px]">
+        <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-10 xl:gap-12 2xl:gap-14 relative z-10">
           {videos
             ?.filter((video) => !video.disabled)
             .map((video, index) => (
