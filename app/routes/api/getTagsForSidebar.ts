@@ -17,9 +17,9 @@ export async function loader(): Promise<TagsForSidebar> {
     {
       status: 200,
       headers: {
-        "cache-control": `public, max-age=${60 * 60 * 24}, s-maxage=${
-          60 * 60 * 24
-        }, stale-while-revalidate=${60 * 60 * 24 * 7}`,
+        "cache-control": `s-maxage=${60 * 60 * 24}, stale-while-revalidate=${
+          60 * 60 * 24 * 7
+        }`,
       },
     }
   ) as unknown as TagsForSidebar;

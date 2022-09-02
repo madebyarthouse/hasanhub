@@ -4,6 +4,7 @@ import { Outlet, useLoaderData } from "@remix-run/react";
 import Sidebar from "~/components/sidebar";
 import useUrlState from "~/hooks/useUrlState";
 import { TagSlugsValidator } from "~/lib/getVideos";
+import { debug } from "~/utils/debug.server";
 import { prisma } from "~/utils/prisma.server";
 
 export function headers() {
@@ -15,17 +16,12 @@ export function headers() {
 }
 
 export const loader: LoaderFunction = async ({ request, params }) => {
+  const url = new URL(request.url);
   const slugs = params["*"]?.split("/") ?? [];
 
   try {
-    const data = await prisma.$queryRaw`
-      SELECT t.*, sum(v.views) AS view_count
-      FROM Tag t
-        JOIN TagVideo tv ON tv.tagId = t.id
-        JOIN Video v ON tv.videoId = v.id
-      GROUP BY t.id
-      ORDER BY view_count DESC
-    `;
+    const response = await fetch(`${url.origin}/api/getTagsForSidebar`);
+    const data = await response.json();
     const tagSlugs = TagSlugsValidator.parse(slugs);
 
     return json(
@@ -43,6 +39,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       }
     );
   } catch (e) {
+    debug(e);
     return json({ error: e });
   }
 };
