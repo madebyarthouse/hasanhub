@@ -1,22 +1,4 @@
-import { prisma } from "~/utils/prisma.server";
-
 export const loader = async () => {
-  const tags = await prisma.tag.findMany();
-  const slugCombinations = tags
-    .map((tag) => {
-      return `Allow: /tags/${tag.slug}`;
-    })
-    .join("\n");
-
-  const allowAssets = `Allow: /build/*.css
-Allow: /build/*.js
-Allow: /build/*.jpg
-Allow: /build/*.jpeg
-Allow: /build/*.png
-Allow: /build/*.gif`;
-
-  const allowPlausible = `Allow: /stats/js/script.js`;
-
   const block = `Sitemap: https://hasanhub.com/sitemap.xml
 Allow: /$
 Allow: /tags/*/$
@@ -36,6 +18,7 @@ ${block}
   return new Response(robotText, {
     status: 200,
     headers: {
+      "cache-control": "max-age=0, s-maxage=86400",
       "Content-Type": "text/plain",
     },
   });
