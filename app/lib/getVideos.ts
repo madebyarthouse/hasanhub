@@ -80,6 +80,7 @@ const getVideos = async (params: GetVideosArgs) => {
     prisma.video.findMany({
       select: {
         id: true,
+        youtubeId: true,
         largeThumbnailUrl: true,
         title: true,
         publishedAt: true,
