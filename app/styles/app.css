@@ -939,21 +939,12 @@ video {
   padding-right: 1.25rem;
 }
 
-.py-3 {
-  padding-top: 0.75rem;
-  padding-bottom: 0.75rem;
-}
-
 .pb-3 {
   padding-bottom: 0.75rem;
 }
 
 .pl-0 {
   padding-left: 0px;
-}
-
-.pb-5 {
-  padding-bottom: 1.25rem;
 }
 
 .text-left {
@@ -1353,10 +1344,6 @@ img {
 
   .lg\:flex {
     display: flex;
-  }
-
-  .lg\:max-h-\[calc\(100vh-2\.5rem\)\] {
-    max-height: calc(100vh - 2.5rem);
   }
 
   .lg\:max-h-screen {

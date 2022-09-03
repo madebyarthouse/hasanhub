@@ -85,6 +85,7 @@ export async function loader() {
         : null,
       schedule: schedule.data?.segments.length
         ? {
+            broadcaster_login: schedule.data.broadcaster_login,
             broadcaster_name: schedule.data.broadcaster_name,
             start_time: schedule.data.segments[0].start_time,
             title: schedule.data.segments[0].title,

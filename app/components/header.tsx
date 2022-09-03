@@ -19,6 +19,7 @@ const Header = ({
 }: {
   streamInfo?: { user_login: string; user_name: string; title: string };
   streamSchedule: {
+    broadcaster_login: string;
     broadcaster_name: string;
     start_time: string;
     title: string;
@@ -60,7 +61,7 @@ const Header = ({
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-twitchPurple dark:hover:text-twitchPurpleLight saturate-50"
-              href={`https://twitch.tv/${streamSchedule.data["broadcaster_login"]}`}
+              href={`https://twitch.tv/${streamSchedule["broadcaster_login"]}`}
             >
               <p>
                 <strong className="text-twitchPurple dark:text-twitchPurpleLight saturate-50">
