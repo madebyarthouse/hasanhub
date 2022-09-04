@@ -120,12 +120,6 @@ export default function TagPage() {
     } else if (ordering.order === "asc") {
       title = "Least viewed";
     }
-  } else if (ordering.by === "likes") {
-    if (ordering.order === "desc") {
-      title = "Most liked";
-    } else if (ordering.order === "asc") {
-      title = "Least liked";
-    }
   }
 
   return (

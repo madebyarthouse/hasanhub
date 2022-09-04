@@ -93,12 +93,6 @@ export default function Index() {
     } else if (ordering.order === "asc") {
       title = "Least Viewed";
     }
-  } else if (ordering.by === "likes") {
-    if (ordering.order === "desc") {
-      title = "Most Liked";
-    } else if (ordering.order === "asc") {
-      title = "Least Liked";
-    }
   }
 
   return (
