@@ -10,18 +10,9 @@ const formatDate = (date: string | Date) => {
 };
 
 const formatViewCount = (views: number) => {
-  if (views < 1000) {
-    return views;
-  } else if (views < 1000000) {
-    const thousands = Math.floor(views / 1000);
-    const hundreds = Math.floor((views % 1000) / 100);
-    return `${thousands}.${hundreds}k`;
-  } else {
-    const millions = Math.floor(views / 1000000);
-    const thousands = Math.floor((views % 1000000) / 10000);
+  const formater = Intl.NumberFormat("en-US", { notation: "compact" });
 
-    return `${millions}.${thousands}m`;
-  }
+  return formater.format(views);
 };
 
 const formatDuration = (duration: number) => {
