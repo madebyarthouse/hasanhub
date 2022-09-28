@@ -47,7 +47,7 @@ const VideoGridItem = ({
       key={video.youtubeId}
     >
       <div className="px-3 lg:px-0">
-        <div className="aspect-video relative shadow-md dark:shadow-slate-800 ">
+        <div className="aspect-video  relative shadow-md dark:shadow-slate-800 ">
           <a
             rel="noreferrer"
             target="_blank"
@@ -78,7 +78,7 @@ const VideoGridItem = ({
           <a
             rel="noreferrer"
             target="_blank"
-            className="flex flex-row items-center gap-x-3 p-3 pl-0 overflow-clip overflow-hidden"
+            className="flex flex-row items-center gap-x-3 p-3 pl-0 overflow-clip"
             href={`https://www.youtube.com/channel/${video.channel?.youtubeId}`}
           >
             <img

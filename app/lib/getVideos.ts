@@ -86,7 +86,7 @@ const getVideos = async (params: GetVideosArgs) => {
         publishedAt: true,
         views: true,
         duration: true,
-        channel: { select: { id: true, title: true, smallThumbnailUrl: true } },
+        channel: { select: { id: true, title: true, smallThumbnailUrl: true, youtubeId: true } },
         tags: {
           select: { tag: { select: { id: true, slug: true, name: true } } },
         },
