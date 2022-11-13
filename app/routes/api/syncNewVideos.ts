@@ -1,3 +1,4 @@
+import { PublishStatus } from "@prisma/client";
 import { json } from "@remix-run/node";
 import { decode } from "html-entities";
 import { getChannel } from "~/sync/clients/youtubeRss.server";
@@ -8,7 +9,14 @@ export async function loader() {
   try {
     const [channels, videos] = await Promise.all([
       prisma.channel.findMany({
-        select: { id: true, youtubeId: true, title: true },
+        select: {
+          id: true,
+          youtubeId: true,
+          title: true,
+        },
+        where: {
+          publishStatus: PublishStatus.Published,
+        },
       }),
       prisma.video.findMany({
         select: { id: true, youtubeId: true },
@@ -21,7 +29,6 @@ export async function loader() {
       ...channels.map(async (channel) => {
         try {
           const channelResponse = await getChannel(channel.youtubeId);
-
           const updated = await prisma.$transaction(
             channelResponse.items
               .filter((item) => !videosYoutubeIds.includes(item.id))
@@ -41,6 +48,7 @@ export async function loader() {
 
           return { channel: { title: channel.title }, videos: updated };
         } catch (error) {
+          console.log(channel.title);
           errors.push(error);
           console.error(error);
           return null;
