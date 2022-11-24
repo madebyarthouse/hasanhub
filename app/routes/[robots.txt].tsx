@@ -1,8 +1,9 @@
 export const loader = async () => {
   const block = `Sitemap: https://hasanhub.com/sitemap.xml
-Allow: /$
-Allow: /tags/*/$
-Disallow: /tags/*/*`;
+    Allow: /$
+    Allow: /tags/*/$
+    Disallow: /tags/*/*
+    Disallow: /*?*lastVideoId=`;
 
   const robotText = `
 User-agent: Googlebot
