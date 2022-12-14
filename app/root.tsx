@@ -11,7 +11,16 @@ import {
 } from "@remix-run/react";
 import Layout from "./ui/layout";
 import styles from "./styles/app.css";
-import { getStreamInfo } from "./lib/get-stream-info.server";
+import {
+  dehydrate,
+  Hydrate,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
+
+import { useDehydratedState } from "use-dehydrated-state";
+import { useState } from "react";
+import { fetchStreamInfo } from "./queries/fetch-stream-data";
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
@@ -72,26 +81,12 @@ export function links() {
 }
 
 export async function loader() {
-  const [streamInfo, schedule] = await getStreamInfo();
+  const queryClient = new QueryClient();
+
+  await queryClient.prefetchQuery(["streamInfo"], fetchStreamInfo);
 
   return json(
-    {
-      streamInfo: streamInfo.data?.length
-        ? {
-            user_login: streamInfo.data[0].user_login,
-            user_name: streamInfo.data[0].user_name,
-            title: streamInfo.data[0].title,
-          }
-        : null,
-      schedule: schedule.data?.segments.length
-        ? {
-            broadcaster_login: schedule.data.broadcaster_login,
-            broadcaster_name: schedule.data.broadcaster_name,
-            start_time: schedule.data.segments[0].start_time,
-            title: schedule.data.segments[0].title,
-          }
-        : null,
-    },
+    { dehydratedState: dehydrate(queryClient) },
     {
       status: 200,
       headers: {
@@ -102,30 +97,35 @@ export async function loader() {
 }
 
 function App() {
-  const { streamInfo, schedule } = useLoaderData<typeof loader>();
+  const [queryClient] = useState(() => new QueryClient());
+  const dehydratedState = useDehydratedState();
 
   return (
-    <html lang="en">
-      <head>
-        <Meta />
-        <Links />
-      </head>
-      <body>
-        <Layout streamInfo={streamInfo} streamSchedule={schedule}>
-          <Outlet />
-        </Layout>
-        <ScrollRestoration />
-        <Scripts />
-        <LiveReload />
+    <QueryClientProvider client={queryClient}>
+      <Hydrate state={dehydratedState}>
+        <html lang="en">
+          <head>
+            <Meta />
+            <Links />
+          </head>
+          <body>
+            <Layout>
+              <Outlet />
+            </Layout>
+            <ScrollRestoration />
+            <Scripts />
+            <LiveReload />
 
-        <script
-          defer
-          src="/stats/js/script.js"
-          data-api="/stats/api/event"
-          data-domain="hasanhub.com"
-        />
-      </body>
-    </html>
+            <script
+              defer
+              src="/stats/js/script.js"
+              data-api="/stats/api/event"
+              data-domain="hasanhub.com"
+            />
+          </body>
+        </html>
+      </Hydrate>
+    </QueryClientProvider>
   );
 }
 

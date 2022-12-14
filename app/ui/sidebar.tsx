@@ -1,7 +1,10 @@
-import type { Tag } from "@prisma/client";
 import TagButton from "./tag-button";
-import type { DurationListType, DurationType } from "~/utils/validators";
+import type { DurationType } from "~/utils/validators";
 import useActionUrl from "~/hooks/use-action-url";
+import useUrlState from "~/hooks/use-url-state";
+import { useQuery } from "@tanstack/react-query";
+import { fetchTagsForSidebar } from "~/queries/fetch-tags-for-sidebar";
+import cx from "classnames";
 
 const durationFilterData: { value: DurationType; label: string }[] = [
   { value: "short", label: "< 3min" },
@@ -10,15 +13,14 @@ const durationFilterData: { value: DurationType; label: string }[] = [
   { value: "extralong", label: "> 30 min" },
 ];
 
-const Sidebar = ({
-  tags,
-  activeTagSlugs,
-  durationFilter,
-}: {
-  tags: Tag[];
-  activeTagSlugs: string[];
-  durationFilter: DurationListType | undefined;
-}) => {
+const Sidebar = () => {
+  const { durations, tagSlugs } = useUrlState();
+
+  const { data: tags } = useQuery({
+    queryKey: ["tagsForSidear"],
+    queryFn: fetchTagsForSidebar,
+  });
+
   return (
     <>
       <aside
@@ -36,7 +38,7 @@ const Sidebar = ({
                 <DynamicTagButton
                   type="duration"
                   label={label}
-                  active={durationFilter?.includes(value) ?? false}
+                  active={durations?.includes(value) ?? false}
                   filter={value}
                 />
               </li>
@@ -45,12 +47,19 @@ const Sidebar = ({
 
           {/* Tags  */}
           <ul className="grid pb-3  lg:pb-0  grid-flow-col grid-rows-2 sm:grid-rows-4 lg:flex lg:flex-row flex-nowrap lg:flex-wrap gap-y-2 gap-x-3 text-base overflow-x-auto lg:overflow-x-visible">
-            {tags.map((tag, index) => (
-              <li className="min-w-max" key={tag.id}>
+            {tags?.map((tag, index) => (
+              <li
+                style={{
+                  animationDuration: `${Math.min(50 + index * 50, 1500)}ms`,
+                  animationName: "fadeIn",
+                }}
+                className={cx("will-fade-scale transition-opacity min-w-max")}
+                key={tag.id}
+              >
                 <DynamicTagButton
                   type="tag"
                   label={tag.name}
-                  active={activeTagSlugs?.includes(tag.slug ?? "")}
+                  active={tagSlugs?.includes(tag.slug ?? "")}
                   filter={tag.slug ?? ""}
                 />
               </li>

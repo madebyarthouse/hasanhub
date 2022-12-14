@@ -1,4 +1,6 @@
 import { Link } from "@remix-run/react";
+import { useQuery } from "@tanstack/react-query";
+import { fetchStreamInfo } from "~/queries/fetch-stream-data";
 ("~/lib/getStreamInfo.server");
 
 const formatDate = (date: string | Date) => {
@@ -13,18 +15,16 @@ const formatDate = (date: string | Date) => {
   return date.toLocaleDateString() + " " + date.toLocaleTimeString();
 };
 
-const Header = ({
-  streamInfo,
-  streamSchedule,
-}: {
-  streamInfo?: { user_login: string; user_name: string; title: string };
-  streamSchedule: {
-    broadcaster_login: string;
-    broadcaster_name: string;
-    start_time: string;
-    title: string;
-  };
-}) => {
+const Header = () => {
+  const { data } = useQuery({
+    queryKey: ["streamInfo"],
+    queryFn: fetchStreamInfo,
+  });
+
+  console.log(data);
+
+  const { streamInfo, schedule } = data ?? { streamInfo: null, schedule: null };
+
   return (
     <header className="px-5 lg:px-10 xl:px-14 my-6  gap-y-10 gap-x-5 lg:gap-x-14 grid grid-cols-1 grid-rows-[auto_auto_auto] sm:grid-cols-2 sm:grid-rows-[auto_auto] xl:grid-rows-1 lg:grid-cols-[25%_auto] xl:grid-cols-[20%_auto_auto]">
       <Link
@@ -56,22 +56,22 @@ const Header = ({
             </p>
           </a>
         ) : (
-          streamSchedule && (
+          schedule && (
             <a
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-twitchPurple dark:hover:text-twitchPurpleLight saturate-50"
-              href={`https://twitch.tv/${streamSchedule["broadcaster_login"]}`}
+              href={`https://twitch.tv/${schedule["broadcaster_login"]}`}
             >
               <p>
                 <strong className="text-twitchPurple dark:text-twitchPurpleLight saturate-50">
-                  {streamSchedule["broadcaster_name"]}
+                  {schedule["broadcaster_name"]}
                 </strong>{" "}
                 is live at{" "}
                 <strong className="text-twitchPurple dark:text-twitchPurpleLight saturate-50">
-                  {formatDate(streamSchedule["start_time"])}
+                  {formatDate(schedule["start_time"])}
                 </strong>{" "}
-                <br />"{streamSchedule["title"]}".
+                <br />"{schedule["title"]}".
               </p>
             </a>
           )
