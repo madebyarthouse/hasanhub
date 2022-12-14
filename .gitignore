@@ -7,7 +7,7 @@ node_modules
 
 /build/
 /public/build
-api
+/api
 
 .DS_Store
 .pscale.yml
