@@ -1,5 +1,5 @@
 import type { Channel, Tag, TagVideo, Video } from "@prisma/client";
-import Taglist from "./Taglist";
+import Taglist from "./taglist";
 
 const formatDate = (date: string | Date) => {
   if (typeof date === "string") {

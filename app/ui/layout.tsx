@@ -1,5 +1,5 @@
-import type { StreamInfo, StreamSchedule } from "~/lib/getStreamInfo.server";
-import Header from "~/components/header";
+import type { StreamInfo, StreamSchedule } from "~/lib/get-stream-info.server";
+import Header from "~/ui/header";
 
 const Layout = ({
   children,

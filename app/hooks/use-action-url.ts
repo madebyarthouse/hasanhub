@@ -1,4 +1,4 @@
-import useUrlState from "~/hooks/useUrlState";
+import useUrlState from "~/hooks/use-url-state";
 import type { DurationType } from "~/utils/validators";
 import type { OrderByType, OrderDirectionType } from "../utils/validators";
 

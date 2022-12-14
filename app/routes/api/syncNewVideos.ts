@@ -1,7 +1,7 @@
 import { PublishStatus } from "@prisma/client";
 import { json } from "@remix-run/node";
 import { decode } from "html-entities";
-import { getChannel } from "~/sync/clients/youtubeRss.server";
+import { getChannel } from "~/sync/clients/youtube-rss.server";
 import { prisma } from "~/utils/prisma.server";
 
 export async function loader() {

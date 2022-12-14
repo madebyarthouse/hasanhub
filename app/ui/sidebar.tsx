@@ -1,7 +1,7 @@
 import type { Tag } from "@prisma/client";
-import TagButton from "./tagButton";
+import TagButton from "./tag-button";
 import type { DurationListType, DurationType } from "~/utils/validators";
-import useActionUrl from "~/hooks/useActionUrl";
+import useActionUrl from "~/hooks/use-action-url";
 
 const durationFilterData: { value: DurationType; label: string }[] = [
   { value: "short", label: "< 3min" },

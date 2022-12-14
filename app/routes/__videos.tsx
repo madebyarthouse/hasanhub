@@ -1,9 +1,9 @@
 import type { LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Outlet, useLoaderData } from "@remix-run/react";
-import Sidebar from "~/components/sidebar";
-import useUrlState from "~/hooks/useUrlState";
-import { TagSlugsValidator } from "~/lib/getVideos";
+import Sidebar from "~/ui/sidebar";
+import useUrlState from "~/hooks/use-url-state";
+import { TagSlugsValidator } from "~/lib/get-videos";
 import { debug } from "~/utils/debug.server";
 import { prisma } from "~/utils/prisma.server";
 

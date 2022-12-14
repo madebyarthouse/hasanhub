@@ -1,5 +1,5 @@
 import Parser from "rss-parser";
-import { YTRSSChannelResponseValidator } from "../validators/youtubeRss.server";
+import { YTRSSChannelResponseValidator } from "../validators/youtube-rss.server";
 
 const parser = new Parser();
 

@@ -9,9 +9,9 @@ import {
   ScrollRestoration,
   useLoaderData,
 } from "@remix-run/react";
-import Layout from "./components/layout";
+import Layout from "./ui/layout";
 import styles from "./styles/app.css";
-import { getStreamInfo } from "./lib/getStreamInfo.server";
+import { getStreamInfo } from "./lib/get-stream-info.server";
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",

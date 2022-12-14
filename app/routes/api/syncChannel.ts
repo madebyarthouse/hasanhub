@@ -3,7 +3,7 @@ import { PublishStatus, VideoSyncStatus } from "@prisma/client";
 import { json } from "@remix-run/node";
 import type { YoutubeVideoSearchItem } from "youtube.ts";
 import { z } from "zod";
-import { getChannelVideos } from "~/sync/clients/youtubeApi.server";
+import { getChannelVideos } from "~/sync/clients/youtube-api.server";
 import { prisma } from "~/utils/prisma.server";
 import { debug } from "~/utils/debug.server";
 import { matchTagWithVideos } from "~/sync/services/matching";

@@ -2,13 +2,13 @@ import { json } from "@remix-run/node";
 import type { LoaderFunction } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { prisma } from "~/utils/prisma.server";
-import VideosGrid from "~/components/VideosGrid";
-import getVideos from "../../lib/getVideos";
+import VideosGrid from "~/ui/videos-grid";
+import getVideos from "../../lib/get-videos";
 import { useEffect, useState } from "react";
 import { UrlParamsSchema } from "~/utils/validators";
 import { z } from "zod";
-import useUrlState from "~/hooks/useUrlState";
-import useActionUrl from "~/hooks/useActionUrl";
+import useUrlState from "~/hooks/use-url-state";
+import useActionUrl from "~/hooks/use-action-url";
 
 export function headers() {
   return {

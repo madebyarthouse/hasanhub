@@ -2,15 +2,15 @@ import { z } from "zod";
 import type { LoaderFunction, MetaFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
-import getVideos, { TagSlugsValidator } from "~/lib/getVideos";
+import getVideos, { TagSlugsValidator } from "~/lib/get-videos";
 import { prisma } from "~/utils/prisma.server";
-import VideosGrid from "~/components/VideosGrid";
+import VideosGrid from "~/ui/videos-grid";
 import { useEffect, useState } from "react";
 import type { Tag } from "@prisma/client";
 import { UrlParamsSchema } from "~/utils/validators";
-import useUrlState from "~/hooks/useUrlState";
-import useActionUrl from "~/hooks/useActionUrl";
-import getActiveTagsBySlugs from "~/lib/getActiveTagsBySlugs";
+import useUrlState from "~/hooks/use-url-state";
+import useActionUrl from "~/hooks/use-action-url";
+import getActiveTagsBySlugs from "~/lib/get-active-tags-by-slugs";
 
 export function headers() {
   return {

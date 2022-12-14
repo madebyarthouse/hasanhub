@@ -1,9 +1,9 @@
 import type { Channel, Tag, TagVideo, Video } from "@prisma/client";
-import VideoGridItem from "./VideoGridItem";
+import VideoGridItem from "./video-grid-item";
 import cx from "classnames";
-import LoadingSpinner from "./loadingSpinner";
-import useUrlState from "~/hooks/useUrlState";
-import useActionUrl from "~/hooks/useActionUrl";
+import LoadingSpinner from "./loading-spinner";
+import useUrlState from "~/hooks/use-url-state";
+import useActionUrl from "~/hooks/use-action-url";
 import { Link } from "@remix-run/react";
 
 type VideoType = Video & {

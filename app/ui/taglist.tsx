@@ -1,5 +1,5 @@
 import type { Tag } from "@prisma/client";
-import TagButton from "./tagButton";
+import TagButton from "./tag-button";
 
 const Taglist = ({ tags }: { tags: Tag[] }) => {
   return (

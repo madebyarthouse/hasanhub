@@ -1,6 +1,6 @@
 import { prisma } from "~/utils/prisma.server";
 import { json } from "@remix-run/node";
-import { getChannel } from "../../sync/clients/youtubeApi.server";
+import { getChannel } from "../../sync/clients/youtube-api.server";
 import { PublishStatus } from "@prisma/client";
 import type { YoutubeChannel } from "youtube.ts";
 import { debug } from "~/utils/debug.server";

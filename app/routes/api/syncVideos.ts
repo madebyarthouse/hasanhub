@@ -1,6 +1,6 @@
 import { prisma } from "~/utils/prisma.server";
 import { json } from "@remix-run/node";
-import { getVideo } from "../../sync/clients/youtubeApi.server";
+import { getVideo } from "../../sync/clients/youtube-api.server";
 import { PublishStatus, VideoSyncStatus } from "@prisma/client";
 import { parse, toSeconds } from "iso8601-duration";
 import type { YoutubeVideo } from "youtube.ts";
