@@ -31,8 +31,16 @@ const GetVideosValidator = z.object({
 });
 
 export const loader = async ({ request, params }: LoaderArgs) => {
+  const url = new URL(request.url);
   const { order, durations, by, lastVideoId, tagSlugs, take } =
-    GetVideosValidator.parse(params);
+    GetVideosValidator.parse({
+      tagSlugs: url.searchParams.getAll("tagSlugs") ?? undefined,
+      take: url.searchParams.get("take") ?? undefined,
+      by: url.searchParams.get("by") ?? undefined,
+      order: url.searchParams.get("order") ?? undefined,
+      durations: url.searchParams.getAll("durations") ?? undefined,
+      lastVideoId: url.searchParams.get("lastVideoId") ?? undefined,
+    });
 
   let conditions: {
     tags?: object;
@@ -103,7 +111,6 @@ export const loader = async ({ request, params }: LoaderArgs) => {
         },
         where: conditions,
         take: take ?? 25,
-        // include: { channel: true, tags: { include: { tag: true } } },
         orderBy: {
           [by ?? "publishedAt"]: order ?? "desc",
         },

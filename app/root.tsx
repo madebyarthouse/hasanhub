@@ -7,7 +7,6 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useLoaderData,
 } from "@remix-run/react";
 import Layout from "./ui/layout";
 import styles from "./styles/app.css";
@@ -17,11 +16,10 @@ import {
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
-
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useDehydratedState } from "use-dehydrated-state";
 import { useState } from "react";
 import { fetchStreamInfo } from "./queries/fetch-stream-data";
-import { getBaseUrl } from "./utils/get-base-url";
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
@@ -123,6 +121,7 @@ function App() {
               data-api="/stats/api/event"
               data-domain="hasanhub.com"
             />
+            <ReactQueryDevtools initialIsOpen={false} />
           </body>
         </html>
       </Hydrate>

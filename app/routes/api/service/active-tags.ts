@@ -19,8 +19,8 @@ const getActiveTagsBySlugs = async (tagSlugs: string[] | undefined) => {
 };
 
 export const loader = async ({ request, params }: LoaderArgs) => {
-  const slugs = params["*"]?.split("/") ?? [];
-  const tagSlugs = TagSlugsValidator.parse(slugs);
+  const url = new URL(request.url);
+  const tagSlugs = TagSlugsValidator.parse(url.searchParams.getAll("tagSlugs"));
 
   return json(await getActiveTagsBySlugs(tagSlugs), {
     status: 200,

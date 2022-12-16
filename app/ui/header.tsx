@@ -19,6 +19,7 @@ const Header = () => {
   const { data } = useQuery({
     queryKey: ["streamInfo"],
     queryFn: fetchStreamInfo,
+    staleTime: 1000 * 60,
   });
 
   const { streamInfo, schedule } = data ?? { streamInfo: null, schedule: null };

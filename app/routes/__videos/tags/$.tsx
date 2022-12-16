@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { LoaderFunction, MetaFunction } from "@remix-run/node";
+import type { LoaderArgs, LoaderFunction, MetaFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import getVideos, { TagSlugsValidator } from "~/lib/get-videos";
@@ -10,7 +10,14 @@ import type { Tag } from "@prisma/client";
 import { UrlParamsSchema } from "~/utils/validators";
 import useUrlState from "~/hooks/use-url-state";
 import useActionUrl from "~/hooks/use-action-url";
-import getActiveTagsBySlugs from "~/lib/get-active-tags-by-slugs";
+import {
+  hydrate,
+  dehydrate,
+  QueryClient,
+  useQuery,
+} from "@tanstack/react-query";
+import { fetchActiveTags } from "~/queries/fetch-active-tags";
+import { debug } from "~/utils/debug.server";
 
 export function headers() {
   return {
@@ -18,25 +25,22 @@ export function headers() {
   };
 }
 
-export const meta: MetaFunction = ({ data, parentsData }) => {
-  // const { tags, tagSlugs }: { tags: Tag[]; tagSlugs: string[] } =
-  //   parentsData["routes/__videos"];
-  const { activeTags } = data as LoaderData;
-  const title = activeTags.map((tag) => tag.name).join(" and ");
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  if (!data) return { title: "HasanHub" };
+
+  const { tagSlugs } = data;
+
+  const queryClient = new QueryClient();
+  hydrate(queryClient, data.dehydratedState);
+  const activeTags = queryClient.getQueryData<Tag[]>(["activeTags", tagSlugs]);
+
+  const title = activeTags?.map((tag) => tag.name).join(" and ");
   return {
     title: `${title} | HasanHub`,
   };
 };
 
-type GetVideoType = Awaited<ReturnType<typeof getVideos>>;
-
-type LoaderData = {
-  videos: GetVideoType[0];
-  totalVideosCount: GetVideoType[1];
-  tagSlugs: string[];
-  activeTags: Tag[];
-};
-export const loader: LoaderFunction = async ({ request, params }) => {
+export const loader = async ({ request, params }: LoaderArgs) => {
   const url = new URL(request.url);
   const slugs = params["*"]?.split("/") ?? [];
   let lastVideoIdParam = url.searchParams.get("lastVideoId");
@@ -51,19 +55,26 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
     const tagSlugs = TagSlugsValidator.parse(slugs);
 
-    const [activeTags, [videos, totalVideosCount]] = await Promise.all([
-      await getActiveTagsBySlugs(tagSlugs),
-      getVideos({
-        tagSlugs,
-        order,
-        by,
-        durations,
-        lastVideoId,
-      }),
-    ]);
+    const queryClient = new QueryClient();
+    await queryClient.prefetchQuery(["activeTags", tagSlugs], () => {
+      return tagSlugs ? fetchActiveTags(tagSlugs) : [];
+    });
+
+    const [videos, totalVideosCount] = await getVideos({
+      tagSlugs,
+      order,
+      by,
+      durations,
+      lastVideoId,
+    });
 
     return json(
-      { totalVideosCount, videos, activeTags, tagSlugs },
+      {
+        totalVideosCount,
+        videos,
+        dehydratedState: dehydrate(queryClient),
+        tagSlugs,
+      },
       {
         status: 200,
         headers: {
@@ -73,22 +84,23 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       }
     );
   } catch (error) {
-    console.log(error);
-    if (error instanceof z.ZodError) {
-      return json(error.issues, { status: 500 });
-    }
-    return json(error, { status: 500 });
+    debug(error);
+
+    throw json(error, { status: 500 });
   } finally {
     await prisma.$disconnect();
   }
 };
 
 export default function TagPage() {
-  const { videos, totalVideosCount, activeTags } = useLoaderData<LoaderData>();
+  const { videos, totalVideosCount, tagSlugs } = useLoaderData<typeof loader>();
   const [liveVideos, setLiveVideos] = useState<typeof videos>(videos);
   const fetcher = useFetcher();
   const { isLoading, ordering } = useUrlState();
   const { constructUrl } = useActionUrl();
+  const { data: activeTags } = useQuery(["activeTags", tagSlugs], () => {
+    return tagSlugs ? fetchActiveTags(tagSlugs) : [];
+  });
 
   const loaderUrl = (lastVideoId: number) =>
     constructUrl({ lastVideoId: lastVideoId }, true);
@@ -127,7 +139,7 @@ export default function TagPage() {
       totalVideosCount={totalVideosCount}
       handleLoadMore={handleLoadMore}
       title={`${title} videos about ${activeTags
-        .map((tag) => tag.name)
+        ?.map((tag) => tag.name)
         .join(" and ")}`}
       videos={liveVideos}
       loading={isLoading}
