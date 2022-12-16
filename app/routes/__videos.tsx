@@ -2,9 +2,6 @@ import type { LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Outlet, useLoaderData } from "@remix-run/react";
 import Sidebar from "~/ui/sidebar";
-import useUrlState from "~/hooks/use-url-state";
-import { TagSlugsValidator } from "~/lib/get-videos";
-import { debug } from "~/utils/debug.server";
 import { dehydrate, QueryClient } from "@tanstack/react-query";
 import { fetchTagsForSidebar } from "~/queries/fetch-tags-for-sidebar";
 
