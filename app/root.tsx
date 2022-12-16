@@ -21,6 +21,7 @@ import {
 import { useDehydratedState } from "use-dehydrated-state";
 import { useState } from "react";
 import { fetchStreamInfo } from "./queries/fetch-stream-data";
+import { getBaseUrl } from "./utils/get-base-url";
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
@@ -83,6 +84,7 @@ export function links() {
 export async function loader() {
   const queryClient = new QueryClient();
 
+  console.log(getBaseUrl());
   await queryClient.prefetchQuery(["streamInfo"], fetchStreamInfo);
 
   return json(
