@@ -6,7 +6,6 @@ html, body {
     @apply bg-light text-lightBlack dark:bg-lightBlack dark:text-light antialiased;
     font-family: Inter, Helvetica, sans-serif;
 }
-
 .will-fade-scale {
     will-change: transform, opacity;
 }

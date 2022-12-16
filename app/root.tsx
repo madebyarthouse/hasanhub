@@ -84,7 +84,6 @@ export function links() {
 export async function loader() {
   const queryClient = new QueryClient();
 
-  console.log(getBaseUrl());
   await queryClient.prefetchQuery(["streamInfo"], fetchStreamInfo);
 
   return json(
