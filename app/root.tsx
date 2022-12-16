@@ -29,7 +29,7 @@ export const meta: MetaFunction = () => ({
   description: "The HasanAbi Clips Industrial Complex App",
   keywords: "hasanabi, hasanhub, hasan piker, streamer, youtube, clips, twitch",
   "msapplication-tileColor": "#da532c",
-  "theme-color": "#ffffff",
+  "theme-color": { content: "#1f1f23", media: "(prefers-color-scheme: dark)" },
   "yandex-verification": "45afda70569d2af8",
 });
 
