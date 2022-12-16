@@ -21,8 +21,6 @@ const Header = () => {
     queryFn: fetchStreamInfo,
   });
 
-  console.log(data);
-
   const { streamInfo, schedule } = data ?? { streamInfo: null, schedule: null };
 
   return (
