@@ -19,6 +19,9 @@ const Sidebar = () => {
   const { data: tags } = useQuery({
     queryKey: ["tagsForSidear"],
     queryFn: fetchTagsForSidebar,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 
   return (

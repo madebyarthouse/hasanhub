@@ -13,7 +13,7 @@ const getTagSlugsFromPathname = (location?: string | null) => {
     return [];
   }
 
-  return location.replace("/tags/", "").split("/");
+  return location.replace("/tags/", "").split("/").filter(Boolean);
 };
 
 type UrlStateType = {
@@ -44,34 +44,25 @@ const useUrlState = () => {
 
   useEffect(() => {
     const nextSearchParams = new URLSearchParams(transition.location?.search);
-
-    let lastVideoIdParam = searchParams.get("lastVideoId");
-    let nextLastVideoIdParam = nextSearchParams.get("lastVideoId");
-
     const tagSlugs = getTagSlugsFromPathname(location?.pathname);
     const nextTagSlugs = getTagSlugsFromPathname(
       transition?.location?.pathname
     );
 
-    const { order, durations, by, lastVideoId } = UrlParamsSchema.parse({
+    const { order, durations, by } = UrlParamsSchema.parse({
       order: searchParams.get("order") ?? undefined,
       durations: searchParams.getAll("durations"),
       by: searchParams.get("by") ?? undefined,
-      lastVideoId: lastVideoIdParam ? parseInt(lastVideoIdParam) : undefined,
     });
 
     const {
       order: nextOrder,
       durations: nextDurations,
       by: nextBy,
-      lastVideoId: nextLastVideoId,
     } = UrlParamsSchema.parse({
       order: nextSearchParams.get("order") ?? undefined,
       durations: nextSearchParams.getAll("durations"),
       by: nextSearchParams.get("by") ?? undefined,
-      lastVideoId: nextLastVideoIdParam
-        ? parseInt(nextLastVideoIdParam)
-        : undefined,
     });
 
     setUrlState({
@@ -80,7 +71,6 @@ const useUrlState = () => {
         order: nextOrder ?? order ?? "desc",
         by: nextBy ?? by ?? "publishedAt",
       },
-      lastVideoId: nextLastVideoId ?? lastVideoId,
       tagSlugs: nextTagSlugs.length !== 0 ? nextTagSlugs : tagSlugs,
     });
   }, [location, transition.location, searchParams]);

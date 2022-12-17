@@ -27,7 +27,11 @@ const GetVideosValidator = z.object({
   by: OrderByValdiator,
   order: OrderDirectionValidator,
   durations: z.optional(DurationListValidator),
-  lastVideoId: LastVideoIdValidator,
+  lastVideoId: z.preprocess(
+    (value) =>
+      typeof value === "string" ? parseInt(value as string, 10) : value,
+    LastVideoIdValidator
+  ),
 });
 
 export const loader = async ({ request, params }: LoaderArgs) => {
@@ -61,17 +65,17 @@ export const loader = async ({ request, params }: LoaderArgs) => {
     conditions["tags"] = { some: { tag: { slug: { in: tagSlugs } } } };
   }
 
-  const lastCondition = lastVideoId
-    ? (await getLastVideo(lastVideoId))?.[by ?? "publishedAt"]
-    : null;
+  // const lastCondition = lastVideoId
+  //   ? (await getLastVideo(lastVideoId))?.[by ?? "publishedAt"]
+  //   : null;
 
-  if (lastCondition) {
-    if (order === "asc") {
-      conditions[by ?? "publishedAt"] = { gt: lastCondition };
-    } else {
-      conditions[by ?? "publishedAt"] = { lt: lastCondition };
-    }
-  }
+  // if (lastCondition) {
+  //   if (order === "asc") {
+  //     conditions[by ?? "publishedAt"] = { gt: lastCondition };
+  //   } else {
+  //     conditions[by ?? "publishedAt"] = { lt: lastCondition };
+  //   }
+  // }
 
   if (durations) {
     const minMaxPairs =
@@ -87,38 +91,35 @@ export const loader = async ({ request, params }: LoaderArgs) => {
   }
 
   return json(
-    await prisma.$transaction([
-      prisma.video.findMany({
-        select: {
-          id: true,
-          youtubeId: true,
-          largeThumbnailUrl: true,
-          title: true,
-          publishedAt: true,
-          views: true,
-          duration: true,
-          channel: {
-            select: {
-              id: true,
-              title: true,
-              smallThumbnailUrl: true,
-              youtubeId: true,
-            },
-          },
-          tags: {
-            select: { tag: { select: { id: true, slug: true, name: true } } },
+    await prisma.video.findMany({
+      select: {
+        id: true,
+        youtubeId: true,
+        largeThumbnailUrl: true,
+        title: true,
+        publishedAt: true,
+        views: true,
+        duration: true,
+        channel: {
+          select: {
+            id: true,
+            title: true,
+            smallThumbnailUrl: true,
+            youtubeId: true,
           },
         },
-        where: conditions,
-        take: take ?? 25,
-        orderBy: {
-          [by ?? "publishedAt"]: order ?? "desc",
+        tags: {
+          select: { tag: { select: { id: true, slug: true, name: true } } },
         },
-      }),
-      prisma.video.count({
-        where: conditions,
-      }),
-    ]),
+      },
+      skip: lastVideoId ? 1 : 0,
+      cursor: lastVideoId ? { id: lastVideoId } : undefined,
+      where: conditions,
+      take: take ?? 25,
+      orderBy: {
+        [by ?? "publishedAt"]: order ?? "desc",
+      },
+    }),
     {
       status: 200,
       headers: {
@@ -129,12 +130,12 @@ export const loader = async ({ request, params }: LoaderArgs) => {
   );
 };
 
-const getLastVideo = async (lastVideoId: LastVideoIdType) => {
-  return await prisma.video.findUnique({
-    where: { id: lastVideoId },
-    select: { publishedAt: true, views: true, likes: true },
-  });
-};
+// const getLastVideo = async (lastVideoId: LastVideoIdType) => {
+//   return await prisma.video.findUnique({
+//     where: { id: lastVideoId },
+//     select: { publishedAt: true, views: true, likes: true },
+//   });
+// };
 
 const getMinxMaxForTimeFilter = (durations?: DurationListType) => {
   return durations?.map((duration) => {

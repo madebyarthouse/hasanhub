@@ -1,58 +1,107 @@
-import type { Channel, Tag, TagVideo, Video } from "@prisma/client";
 import VideoGridItem from "./video-grid-item";
 import cx from "classnames";
 import LoadingSpinner from "./loading-spinner";
 import useUrlState from "~/hooks/use-url-state";
 import useActionUrl from "~/hooks/use-action-url";
 import { Link } from "@remix-run/react";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { fetchActiveTags } from "~/queries/fetch-active-tags";
+import { fetchVideos } from "~/queries/fetch-videos";
+import { Fragment } from "react";
 
-type VideoType = Video & {
-  channel: Channel | null;
-  tags: (TagVideo & {
-    tag: Tag | null;
-  })[];
-};
-
-type Props = {
-  videos: VideoType[];
-  title: string;
-  totalVideosCount: number;
-  handleLoadMore: (lastVideoId: number) => Promise<void>;
-  loadMoreUrl: (lastVideoId: number) => string;
-  loading?: boolean;
-  loadingMore?: boolean;
-};
-
-const VideosGrid = ({
-  videos,
-  title,
-  handleLoadMore,
-  totalVideosCount,
-  loading = false,
-  loadingMore = false,
-  loadMoreUrl,
-}: Props) => {
-  const { ordering } = useUrlState();
+const VideosGrid = () => {
+  const { isLoading, ordering, tagSlugs, durations } = useUrlState();
   const { constructUrl } = useActionUrl();
-  const lastVideoId = videos.length > 0 ? videos[videos.length - 1].id : null;
+
+  const { data: activeTags } = useQuery(
+    ["activeTags", tagSlugs],
+    () => {
+      return tagSlugs ? fetchActiveTags(tagSlugs) : [];
+    },
+    {
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+    }
+  );
+
+  const {
+    data: videosData,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetching,
+    isFetchingNextPage,
+    status,
+  } = useInfiniteQuery({
+    queryKey: [
+      "videos",
+      ...tagSlugs,
+      ...(durations ?? []),
+      ordering.by,
+      ordering.order,
+    ],
+    queryFn: async ({ pageParam = undefined }) => {
+      return fetchVideos({
+        tagSlugs,
+        durations,
+        order: ordering.order,
+        by: ordering.by,
+        lastVideoId: pageParam,
+      });
+    },
+    getNextPageParam: (lastPage, pages) => lastPage[lastPage.length - 1].id,
+  });
+
+  console.log({
+    videosData,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetching,
+    isFetchingNextPage,
+    status,
+  });
+
+  let title;
+  if (ordering.by === "publishedAt") {
+    if (ordering.order === "desc") {
+      title = "Latest";
+    } else if (ordering.order === "asc") {
+      title = "Oldest";
+    }
+  } else if (ordering.by === "views") {
+    if (ordering.order === "desc") {
+      title = "Most Viewed";
+    } else if (ordering.order === "asc") {
+      title = "Least Viewed";
+    }
+  }
+
+  let fullTitle =
+    tagSlugs.length > 0
+      ? `${title} videos about ${activeTags
+          ?.map((tag) => tag.name)
+          .join(" and ")}`
+      : `${title} videos`;
 
   return (
-    <section aria-label={title} className="w-full relative">
+    <section aria-label={fullTitle} className="w-full relative">
       <div
         className={cx(
           "sticky top-0 w-full gap-1 text-left sm:gap-3 bg-light dark:bg-lightBlack z-20 transition-opacity flex flex-col md:flex-row md:items-center md:justify-between px-3 lg:px-0 mb-5 py-5"
         )}
       >
-        <div className={cx("flex flex-col", { "opacity-0": loading })}>
-          <h1 className={cx("text-4xl md:text-5xl mt-0")}>{title}</h1>
-          <div className="text-sm font-semibold">
+        <div className={cx("flex flex-col", { "opacity-0": isLoading })}>
+          <h1 className={cx("text-4xl md:text-5xl mt-0")}>{fullTitle}</h1>
+          {/* <div className="text-sm font-semibold">
             <strong className={cx("font-extrabold")}>
               {videos?.length ?? 0}
             </strong>{" "}
             of{" "}
             <strong className={cx("font-extrabold")}>{totalVideosCount}</strong>{" "}
             Videos shown
-          </div>
+          </div> */}
         </div>
 
         <div className="flex flex-row gap-1 sm:gap-10 justify-between lg:flex-row md:justify-end my-3 md:my-0 ">
@@ -125,27 +174,29 @@ const VideosGrid = ({
 
       <div className="relative lg:mx-[2px]">
         <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-10 xl:gap-12 2xl:gap-14 relative z-10">
-          {videos
-            ?.filter((video) => !video.disabled)
-            .map((video, index) => (
-              <li
-                style={{
-                  animationDuration: `${Math.min(
-                    300 + (index % 25) * 150,
-                    1500
-                  )}ms`,
-                  animationName: "fadeIn",
-                }}
-                key={video.youtubeId}
-                className={cx("will-fade-scale transition-opacity", {
-                  "opacity-0": loading,
-                })}
-              >
-                <VideoGridItem video={video} lazy={index === 0} />
-              </li>
-            ))}
+          {videosData?.pages.map((page, pageIdx) => (
+            <Fragment key={pageIdx}>
+              {page.map((video, index) => (
+                <li
+                  style={{
+                    animationDuration: `${Math.min(
+                      300 + (index % 25) * 150,
+                      1500
+                    )}ms`,
+                    animationName: "fadeIn",
+                  }}
+                  key={video.youtubeId}
+                  className={cx("will-fade-scale transition-opacity", {
+                    "opacity-0": isLoading,
+                  })}
+                >
+                  <VideoGridItem video={video} lazy={index === 0} />
+                </li>
+              ))}
+            </Fragment>
+          ))}
         </ul>
-        {loading ? (
+        {isLoading ? (
           <div
             style={{
               animationName: "fadeIn",
@@ -158,24 +209,19 @@ const VideosGrid = ({
           </div>
         ) : (
           <div className="w-full flex justify-center items-center my-10">
-            {totalVideosCount > videos?.length ? (
-              loadingMore ? (
-                <LoadingSpinner />
-              ) : (
-                <a
-                  href={loadMoreUrl(lastVideoId ?? -1)}
-                  onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                    e.preventDefault();
-
-                    handleLoadMore(lastVideoId ?? -1);
-                  }}
-                  className="bg-twitchPurpleLight text-light text-center font-bold betterhover:hover:bg-twitchPurpleLight px-4 py-2 rounded inline-block saturate-50"
-                >
-                  Load more
-                </a>
-              )
+            {isFetchingNextPage ? (
+              <LoadingSpinner />
             ) : (
-              <span>All done</span>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+
+                  fetchNextPage();
+                }}
+                className="bg-twitchPurpleLight text-light text-center font-bold betterhover:hover:bg-twitchPurpleLight px-4 py-2 rounded inline-block saturate-50"
+              >
+                Load more
+              </button>
             )}
           </div>
         )}

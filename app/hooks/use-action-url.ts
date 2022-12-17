@@ -10,7 +10,6 @@ const useActionUrl = () => {
       tagSlugs?: string[];
       durations?: DurationType[];
       ordering?: { by?: OrderByType; order?: OrderDirectionType };
-      lastVideoId?: number;
     },
     index = false
   ) => {
@@ -40,10 +39,6 @@ const useActionUrl = () => {
 
     if (merged.ordering.by && merged.ordering.by !== "publishedAt") {
       searchParams.append("by", merged.ordering.by);
-    }
-
-    if (merged.lastVideoId) {
-      searchParams.append("lastVideoId", merged.lastVideoId.toString());
     }
 
     return `${basePath}${searchParams.toString()}`;

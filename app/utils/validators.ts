@@ -13,9 +13,6 @@ export const DurationListValidator = z.array(DurationValidator, {
   invalid_type_error: "durationList must be an array of strings",
 });
 
-export type OrderDirectionType = z.infer<typeof OrderDirectionValidator>;
-export const OrderDirectionValidator = z.optional(z.enum(["asc", "desc"]));
-
 export type LastVideoIdType = z.infer<typeof LastVideoIdValidator>;
 export const LastVideoIdValidator = z.optional(
   z.number({
@@ -23,8 +20,13 @@ export const LastVideoIdValidator = z.optional(
   })
 );
 
+export type OrderDirectionType = z.infer<typeof OrderDirectionValidator>;
+export const OrderDirectionValidator = z.enum(["asc", "desc"]).default("desc");
+
 export type OrderByType = z.infer<typeof OrderByValdiator>;
-export const OrderByValdiator = z.optional(z.enum(["publishedAt", "views"]));
+export const OrderByValdiator = z
+  .enum(["publishedAt", "views"])
+  .default("publishedAt");
 
 export const UrlParamsSchema = z.object({
   durations: z.optional(DurationListValidator),

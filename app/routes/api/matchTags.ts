@@ -4,7 +4,7 @@ import { debug } from "~/utils/debug.server";
 import { matchTagWithVideos } from "~/sync/services/matching";
 import type { Tag } from "@prisma/client";
 
-export async function loader({ params }) {
+export async function loader() {
   try {
     const [tags, videos] = await Promise.all([
       prisma.tag.findMany(),

@@ -1,3 +1,4 @@
+import type { SerializeFrom } from "@remix-run/node";
 import type { GetVideosArgs, loader } from "~/routes/api/service/videos";
 import { getBaseUrl } from "~/utils/get-base-url";
 
@@ -7,7 +8,7 @@ export const fetchVideos = async (params: GetVideosArgs) => {
   params.durations?.forEach((duration) =>
     searchParams.append("durations", duration)
   );
-  params.order && searchParams.append("by", params.order);
+  params.order && searchParams.append("order", params.order);
   params.by && searchParams.append("by", params.by);
   params.take && searchParams.append("take", params.take.toString());
   params.lastVideoId &&
@@ -20,5 +21,6 @@ export const fetchVideos = async (params: GetVideosArgs) => {
   if (!response.ok) {
     throw new Error(`Failed to fetch videos`);
   }
-  return (await response.json()) as ReturnType<typeof loader>;
+
+  return (await response.json()) as SerializeFrom<typeof loader>;
 };
