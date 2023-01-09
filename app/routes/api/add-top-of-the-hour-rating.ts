@@ -6,7 +6,7 @@ import { prisma } from "~/utils/prisma.server";
 const requestValidator = z.object({
   rating: z.number().min(0).max(5),
   streamUuid: z.string(),
-  timestamp: z.string(),
+  timestamp: z.number(),
   secret: z.string(),
 });
 
@@ -24,7 +24,7 @@ export async function action(args: DataFunctionArgs) {
         data: {
           rating: validatedData.rating,
           streamUuid: validatedData.streamUuid,
-          ratedAt: new Date(parseInt(validatedData.timestamp) * 1000),
+          ratedAt: new Date(validatedData.timestamp * 1000),
         },
       });
 
