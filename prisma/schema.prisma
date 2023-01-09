@@ -119,3 +119,11 @@ model TagVideo {
   @@index([videoId])
   @@unique([tagId, videoId])
 }
+
+model TopOfTheHourRating {
+  id      Int    @id @default(autoincrement())
+  rating  Float
+  streamUuid String
+  ratedAt DateTime
+  createdAt DateTime   @default(now())
+}
