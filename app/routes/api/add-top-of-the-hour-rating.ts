@@ -4,7 +4,7 @@ import { z } from "zod";
 import { prisma } from "~/utils/prisma.server";
 
 const requestValidator = z.object({
-  rating: z.number().min(0).max(5),
+  rating: z.number(),
   streamUuid: z.string(),
   timestamp: z.number(),
   secret: z.string(),
