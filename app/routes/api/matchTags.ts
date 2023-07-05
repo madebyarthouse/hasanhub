@@ -8,7 +8,12 @@ export async function loader({ params }) {
   try {
     const [tags, videos] = await Promise.all([
       prisma.tag.findMany(),
-      prisma.video.findMany(),
+      prisma.video.findMany({
+        take: 5000, // Only match last 5000 videos
+        orderBy: {
+          createdAt: "desc",
+        },
+      }),
     ]);
 
     let taggedVideos: { [key: string]: number } = {};
