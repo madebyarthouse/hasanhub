@@ -59,7 +59,7 @@ export async function loader({ params }) {
     return json(taggedVideos);
   } catch (e) {
     debug(e);
-    return json({ error: e }, 500);
+    return json({ error: JSON.stringify(e) }, 500);
   } finally {
     prisma.$disconnect();
   }
