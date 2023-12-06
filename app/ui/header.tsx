@@ -80,12 +80,12 @@ const Header = ({
 
       <div className="col-span-1 row-start-2 sm:row-start-1 sm:col-start-2 sm:col-span-1 xl:col-start-3 flex flex-row gap-2 justify-center md:justify-end items-center text-sm md:text-base">
         <a
-          href="https://twitter.com/chrcit"
+          href="https://twitter.com/hasanhub_com"
           target="_blank"
           rel="noreferrer"
           className="bg-twitchPurpleLight saturate-50 text-light text-center font-bold betterhover:hover:bg-twitchPurple px-4 py-2 rounded"
         >
-          Made by @chrcit
+          @hasanhub_com
         </a>
         <a
           href="https://buymeacoffee.com/chrcit"
@@ -93,7 +93,7 @@ const Header = ({
           rel="noreferrer"
           className="bg-twitchPurpleLight saturate-50 text-light text-center font-bold betterhover:hover:bg-twitchPurple px-4 py-2 rounded"
         >
-          Buy me a coffee
+          Donate
         </a>
       </div>
     </header>
