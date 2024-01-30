@@ -1,8 +1,9 @@
 {
-  "name": "remix-template-vercel",
+  "name": "hasanhub",
   "private": true,
   "description": "",
   "license": "",
+  "version": "1.1",
   "sideEffects": false,
   "scripts": {
     "build": "npm run build:css && npm run generate:prisma && remix build",
@@ -14,9 +15,9 @@
   "dependencies": {
     "@prisma/client": "^4.0",
     "@radix-ui/react-toggle-group": "^0.1.5",
-    "@remix-run/node": "^1.7",
-    "@remix-run/react": "^1.7",
-    "@remix-run/vercel": "^1.7",
+    "@remix-run/node": "^1.19.3",
+    "@remix-run/react": "^1.19.3",
+    "@remix-run/vercel": "^1.19.3",
     "@sentry/remix": "^7.5",
     "@vercel/node": "^1.15.2",
     "classnames": "^2.3.1",
@@ -31,9 +32,9 @@
     "zod": "^3.16.0"
   },
   "devDependencies": {
-    "@remix-run/dev": "^1.7",
-    "@remix-run/eslint-config": "^1.7",
-    "@remix-run/serve": "^1.7",
+    "@remix-run/dev": "^1.19.3",
+    "@remix-run/eslint-config": "^1.19.3",
+    "@remix-run/serve": "^1.19.3",
     "@types/react": "^17.0.45",
     "@types/react-dom": "^17.0.17",
     "autoprefixer": "^10.4.7",
@@ -45,6 +46,6 @@
     "typescript": "^4.6.4"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=18"
   }
 }
