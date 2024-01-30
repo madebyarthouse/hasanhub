@@ -3,7 +3,7 @@
   "private": true,
   "description": "",
   "license": "",
-  "version": "1.1",
+  "version": "1.1.0",
   "sideEffects": false,
   "scripts": {
     "build": "npm run build:css && npm run generate:prisma && remix build",
