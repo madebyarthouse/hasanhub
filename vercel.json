@@ -11,19 +11,19 @@
   ],
   "crons": [
     {
-      "path": "/api/api/syncChannels",
+      "path": "/api/syncChannels",
       "schedule": "27 * * * *"
     },
     {
-      "path": "/api/api/syncNewVideos",
+      "path": "/api/syncNewVideos",
       "schedule": "0/5 * * * *"
     },
     {
-      "path": "/api/api/syncVideos",
+      "path": "/api/syncVideos",
       "schedule": "1/5 * * * *"
     },
     {
-      "path": "/api/api/matchTags",
+      "path": "/api/matchTags",
       "schedule": "4/10 * * * *"
     }
   ]
