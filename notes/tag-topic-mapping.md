@@ -87,7 +87,6 @@ Hogs
 'James Lindsay',
 'CRT',
 
-
 Popculture
 'Johnny Depp',
 'Amber Heard',
@@ -100,7 +99,6 @@ Popculture
 PUA / Manosphere
 'Incel',
 'Andrew Tate',
-
 
 Community / Parasocial
 'Hank Pecker',

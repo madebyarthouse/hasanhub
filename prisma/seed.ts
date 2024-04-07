@@ -173,11 +173,11 @@ async function main() {
   });
 
   const newChannels = channelsData.filter(
-    (c) => !existingChannels.find((e) => e.youtubeId === c.youtubeId),
+    (c) => !existingChannels.find((e) => e.youtubeId === c.youtubeId)
   );
 
   const newTags = tagsData.filter(
-    (t) => !existingTags.find((e) => e.slug === t.slug),
+    (t) => !existingTags.find((e) => e.slug === t.slug)
   );
 
   if (newChannels.length > 0) {

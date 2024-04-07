@@ -7,7 +7,13 @@ import type { Tag } from "@prisma/client";
 export async function loader({ params }) {
   try {
     const [tags, videos] = await Promise.all([
-      prisma.tag.findMany(),
+      prisma.tag.findMany({
+        include: {
+          videos: {
+            select: { id: true },
+          },
+        },
+      }),
       prisma.video.findMany({
         take: 5000, // Only match last 5000 videos
         orderBy: {
@@ -34,17 +40,28 @@ export async function loader({ params }) {
 
         debug(`${tag.name} matched ${matchedVideos.length} videos`);
 
-        if (matchedVideos.length > 0) {
+        const videoIds = tag.videos.map((tagVideo) => tagVideo.id);
+
+        const newTagVideos = matchedVideos.filter(
+          (matchedVideo) => !videoIds.includes(matchedVideo.id)
+        );
+
+        if (newTagVideos.length > 0) {
+          debug(
+            `New videos for tag ${tag.name}: ${newTagVideos.length}, updating tag.`
+          );
+        }
+
+        if (newTagVideos.length > 0) {
           return prisma.tag.update({
             where: { id: tag.id },
             data: {
               lastedMatchedAt: new Date(),
               videos: {
                 createMany: {
-                  data: matchedVideos.map((matchedVideo) => ({
+                  data: newTagVideos.map((matchedVideo) => ({
                     videoId: matchedVideo.id,
                   })),
-                  skipDuplicates: true,
                 },
               },
             },
@@ -74,14 +91,14 @@ const batchTransactions = async (
   tags: ReturnType<typeof prisma.tag.update>[],
   batchSize: number
 ) => {
-  const batches: typeof tags[] = [];
+  const batches: (typeof tags)[] = [];
   for (let i = 0; i < tags.length; i += batchSize) {
     batches.push(tags.slice(i, i + batchSize));
   }
 
   let transactionResults: Tag[] = [];
   for (const batch of batches) {
-    console.log(batch.length);
+    debug(batch.length);
     transactionResults = transactionResults.concat(
       await prisma.$transaction(batch)
     );

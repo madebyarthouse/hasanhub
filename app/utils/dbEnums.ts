@@ -1,9 +1,9 @@
 export const publishStatus = {
-    Published: 'Published',
-    Unpublished: 'Unpublished',
+  Published: "Published",
+  Unpublished: "Unpublished",
 };
 
 export const videoSyncStatus = {
-    Snippet: 'Snippet',
-    Full: 'Full',
+  Snippet: "Snippet",
+  Full: "Full",
 };

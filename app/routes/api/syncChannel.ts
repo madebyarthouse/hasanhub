@@ -78,20 +78,45 @@ export async function loader({ request }) {
           const matchedVideos = matchTagWithVideos(tag, newVideos);
           debug(`${tag.name} matched ${matchedVideos.length} videos`);
 
-          await prisma.tag.update({
-            where: { id: tag.id },
-            data: {
-              lastedMatchedAt: new Date(),
-              videos: {
-                createMany: {
-                  data: matchedVideos.map((matchedVideo) => ({
-                    videoId: matchedVideo.id,
-                  })),
-                  skipDuplicates: true,
+          const tagVideos = await prisma.tagVideo.findMany({
+            where: { tagId: tag.id },
+            select: { videoId: true },
+          });
+
+          const tagVideoIds = tagVideos.map((tagVideo) => tagVideo.videoId);
+
+          const newTagVideos = matchedVideos.filter(
+            (matchedVideo) => !tagVideoIds.includes(matchedVideo.id)
+          );
+
+          if (newTagVideos.length > 0) {
+            debug(
+              `New videos for tag ${tag.name}: ${newTagVideos.length}, updating tag.`
+            );
+          }
+
+          if (matchedVideos.length > 0) {
+            return prisma.tag.update({
+              where: { id: tag.id },
+              data: {
+                lastedMatchedAt: new Date(),
+                videos: {
+                  createMany: {
+                    data: newTagVideos.map((matchedVideo) => ({
+                      videoId: matchedVideo.id,
+                    })),
+                  },
                 },
               },
-            },
-          });
+            });
+          } else {
+            return prisma.tag.update({
+              where: { id: tag.id },
+              data: {
+                lastedMatchedAt: new Date(),
+              },
+            });
+          }
         })
       );
     }
@@ -139,7 +164,7 @@ const batchTransactions = async (
   videos: ReturnType<typeof prisma.video.create>[],
   batchSize: number
 ) => {
-  const batches: typeof videos[] = [];
+  const batches: (typeof videos)[] = [];
   for (let i = 0; i < videos.length; i += batchSize) {
     batches.push(videos.slice(i, i + batchSize));
   }

@@ -1,7 +1,5 @@
 module.exports = {
-  content: [
-    "./app/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ["./app/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
       colors: {
@@ -11,10 +9,10 @@ module.exports = {
         twitchPurpleLight: "#9147ff",
       },
       screens: {
-        'betterhover': {'raw': '(hover: hover)'},
-        '2xl': '1440px',
+        betterhover: { raw: "(hover: hover)" },
+        "2xl": "1440px",
       },
     },
   },
   plugins: [],
-}
+};

@@ -1,6 +1,7 @@
 # Hasanhub
 
 ## Refresh access token
+
 ```bash
 curl -X POST 'https://id.twitch.tv/oauth2/token' \
 -H 'Content-Type: application/x-www-form-urlencoded' \

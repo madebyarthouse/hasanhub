@@ -67,4 +67,3 @@ export async function loader({ params }) {
     prisma.$disconnect();
   }
 }
-
