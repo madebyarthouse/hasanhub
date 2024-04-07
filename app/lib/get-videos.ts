@@ -43,8 +43,8 @@ const getVideos = async (params: GetVideosArgs) => {
     publishStatus: typeof publishStatus.Published;
   } = {
     disabled: false,
-    syncStatus: "Full",
-    publishStatus: "Published",
+    syncStatus: videoSyncStatus.Full,
+    publishStatus: publishStatus.Published,
   };
 
   if (tagSlugs && tagSlugs.length > 0) {

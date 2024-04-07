@@ -5,8 +5,8 @@ import { parse, toSeconds } from "iso8601-duration";
 import type { YoutubeVideo } from "youtube.ts";
 import { debug } from "~/utils/debug.server";
 import { decode } from "html-entities";
-import type { Video } from "@prisma/client";
 import { publishStatus, videoSyncStatus } from "~/utils/dbEnums";
+import { chunkAndMergePromises } from "~/utils";
 
 const minute = 1000 * 60;
 const hour = minute * 60;
@@ -65,7 +65,7 @@ export async function loader({ params }) {
           await prisma.video.update({
             where: { id: video.id },
             data: {
-              publishStatus: PublishStatus.Unpublished,
+              publishStatus: publishStatus.Unpublished,
             },
           });
 
@@ -80,7 +80,7 @@ export async function loader({ params }) {
 
     debug(`# of Videos found: ${videosData.length}`);
 
-    const updated = await prisma.$transaction(
+    const updated = await chunkAndMergePromises(
       videosData.map((videoData, index) => {
         return prisma.video.update({
           where: { youtubeId: videoData.id },
@@ -108,7 +108,8 @@ export async function loader({ params }) {
             publishStatus: publishStatus.Published,
           },
         });
-      })
+      }),
+      5
     );
 
     debug(`# of Videos updated: ${updated.length}`);
@@ -124,22 +125,3 @@ export async function loader({ params }) {
     prisma.$disconnect();
   }
 }
-
-const batchTransactions = async (
-  videos: ReturnType<typeof prisma.video.update>[],
-  batchSize: number
-) => {
-  const batches: typeof videos[] = [];
-  for (let i = 0; i < videos.length; i += batchSize) {
-    batches.push(videos.slice(i, i + batchSize));
-  }
-
-  let transactionResults: Video[] = [];
-  for (const batch of batches) {
-    transactionResults = transactionResults.concat(
-      await prisma.$transaction(batch)
-    );
-  }
-
-  return transactionResults;
-};

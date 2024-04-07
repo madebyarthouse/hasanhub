@@ -8,5 +8,23 @@
       "source": "/stats/api/event",
       "destination": "https://plausible.io/api/event"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/api/syncChannels",
+      "schedule": "27 * * * * *"
+    },
+    {
+      "path": "/api/api/syncNewVideos",
+      "schedule": "0/5 * * * * *"
+    },
+    {
+      "path": "/api/api/syncVideos",
+      "schedule": "1/5 * * * * *"
+    },
+    {
+      "path": "/api/api/matchTags",
+      "schedule": "4/10 * * * * *"
+    }
   ]
 }
