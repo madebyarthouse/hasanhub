@@ -1,6 +1,6 @@
-import { PublishStatus } from "@prisma/client";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
+import { publishStatus } from "~/utils/dbEnums";
 import { prisma } from "~/utils/prisma.server";
 
 const getAggregationData = async () => {
@@ -12,7 +12,7 @@ const getAggregationData = async () => {
           views: true,
         },
         where: {
-          publishStatus: PublishStatus.Published,
+          publishStatus: publishStatus.Published,
         },
       }),
       prisma.video.aggregate({
@@ -21,7 +21,7 @@ const getAggregationData = async () => {
           views: true,
         },
         where: {
-          publishStatus: PublishStatus.Published,
+          publishStatus: publishStatus.Published,
           channelId: 224,
         },
       }),

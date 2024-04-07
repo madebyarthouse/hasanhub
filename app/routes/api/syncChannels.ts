@@ -1,9 +1,9 @@
 import { prisma } from "~/utils/prisma.server";
 import { json } from "@remix-run/node";
 import { getChannel } from "../../sync/clients/youtube-api.server";
-import { PublishStatus } from "@prisma/client";
 import type { YoutubeChannel } from "youtube.ts";
 import { debug } from "~/utils/debug.server";
+import { publishStatus } from "~/utils/dbEnums";
 
 export async function loader({ params }) {
   try {
@@ -51,7 +51,7 @@ export async function loader({ params }) {
             smallThumbnailUrl: channelData.snippet.thumbnails.default.url,
             mediumThumbnailUrl: channelData.snippet.thumbnails.medium.url,
             largeThumbnailUrl: channelData.snippet.thumbnails.high.url,
-            publishStatus: PublishStatus.Published,
+            publishStatus: publishStatus.Published,
           },
         });
       })

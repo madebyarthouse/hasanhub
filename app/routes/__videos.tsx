@@ -46,7 +46,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 export default function VideosLayout() {
-  const { tags } = useLoaderData();
+  const { tags } = useLoaderData<typeof loader>();
   const { durations, tagSlugs } = useUrlState();
   return (
     <div className="flex flex-col lg:flex-row relative w-full">

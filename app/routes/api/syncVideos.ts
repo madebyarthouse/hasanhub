@@ -1,12 +1,12 @@
 import { prisma } from "~/utils/prisma.server";
 import { json } from "@remix-run/node";
 import { getVideo } from "../../sync/clients/youtube-api.server";
-import { PublishStatus, VideoSyncStatus } from "@prisma/client";
 import { parse, toSeconds } from "iso8601-duration";
 import type { YoutubeVideo } from "youtube.ts";
 import { debug } from "~/utils/debug.server";
 import { decode } from "html-entities";
 import type { Video } from "@prisma/client";
+import { publishStatus, videoSyncStatus } from "~/utils/dbEnums";
 
 const minute = 1000 * 60;
 const hour = minute * 60;
@@ -18,7 +18,7 @@ export async function loader({ params }) {
     const videos = await prisma.video.findMany({
       where: {
         OR: [
-          { syncStatus: VideoSyncStatus.Snippet },
+          { syncStatus: videoSyncStatus.Snippet },
           {
             AND: [
               { publishedAt: { gt: new Date(Date.now() - day) } }, // published in the last day
@@ -104,8 +104,8 @@ export async function loader({ params }) {
               : parseInt(videoData.statistics.likeCount),
             duration:
               toSeconds(parse(videoData.contentDetails.duration)) ?? null,
-            syncStatus: VideoSyncStatus.Full,
-            publishStatus: PublishStatus.Published,
+            syncStatus: videoSyncStatus.Full,
+            publishStatus: publishStatus.Published,
           },
         });
       })

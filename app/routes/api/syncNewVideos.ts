@@ -1,7 +1,7 @@
-import { PublishStatus } from "@prisma/client";
 import { json } from "@remix-run/node";
 import { decode } from "html-entities";
 import { getChannel } from "~/sync/clients/youtube-rss.server";
+import { publishStatus } from "~/utils/dbEnums";
 import { prisma } from "~/utils/prisma.server";
 
 export async function loader() {
@@ -15,7 +15,7 @@ export async function loader() {
           title: true,
         },
         where: {
-          publishStatus: PublishStatus.Published,
+          publishStatus: publishStatus.Published,
         },
       }),
       prisma.video.findMany({

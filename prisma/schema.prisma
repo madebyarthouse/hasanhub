@@ -3,41 +3,30 @@
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["referentialIntegrity"]
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
-  provider             = "mysql"
-  url                  = env("DATABASE_URL")
-  referentialIntegrity = "prisma"
-}
-
-enum VideoSyncStatus {
-  Snippet
-  Full
-}
-
-enum PublishStatus {
-  Published
-  Unpublished
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model Channel {
-  id                 Int           @id @default(autoincrement())
-  title              String        @default("")
-  youtubeId          String        @unique @default("")
+  id                 Int        @id @default(autoincrement())
+  title              String     @default("")
+  youtubeId          String     @unique @default("")
   publishedAt        DateTime?
-  smallThumbnailUrl  String        @default("")
-  mediumThumbnailUrl String        @default("")
-  largeThumbnailUrl  String        @default("")
-  bannerUrl          String        @default("")
+  smallThumbnailUrl  String     @default("")
+  mediumThumbnailUrl String     @default("")
+  largeThumbnailUrl  String     @default("")
+  bannerUrl          String     @default("")
   viewCount          Int?
   subscriberCount    Int?
-  keywords           String        @default("") @db.VarChar(5000)
-  description        String        @default("") @db.VarChar(5000)
+  keywords           String     @default("")
+  description        String     @default("")
   videos             Video[]
   playlists          Playlist[]
-  publishStatus      PublishStatus @default(Published)
+  publishStatus      String     @default("Published")
 
   @@index([youtubeId])
 }
@@ -52,7 +41,7 @@ model Playlist {
   largeThumbnailUrl  String    @default("")
   xlThumbnailUrl     String    @default("")
   xxlThumbnailUrl    String    @default("")
-  description        String    @default("") @db.VarChar(5000)
+  description        String    @default("")
   videos             Video[]
   channel            Channel?  @relation(fields: [channelId], references: [id])
   channelId          Int?
@@ -75,7 +64,7 @@ model Video {
   largeThumbnailUrl  String?    @default("")
   xlThumbnailUrl     String?    @default("")
   xxlThumbnailUrl    String?    @default("")
-  description        String     @default("") @db.VarChar(5000)
+  description        String     @default("")
   channel            Channel?   @relation(fields: [channelId], references: [id])
   channelId          Int?
   playlist           Playlist?  @relation(fields: [playlistId], references: [id])
@@ -85,8 +74,8 @@ model Video {
   createdAt          DateTime   @default(now())
   updatedAt          DateTime?  @updatedAt
 
-  syncStatus    VideoSyncStatus @default(Snippet)
-  publishStatus PublishStatus   @default(Published)
+  syncStatus    String @default("Snippet")
+  publishStatus String @default("Published")
 
   @@index([channelId])
   @@index([playlistId])
@@ -98,12 +87,12 @@ model Video {
 }
 
 model Tag {
-  id       Int        @id @default(autoincrement())
-  name     String     @default("")
-  synonyms String     @default("")
-  slug     String?    @unique
+  id              Int        @id @default(autoincrement())
+  name            String     @default("")
+  synonyms        String     @default("")
+  slug            String?    @unique
   lastedMatchedAt DateTime?
-  videos   TagVideo[]
+  videos          TagVideo[]
 
   @@index([slug])
 }
@@ -115,15 +104,15 @@ model TagVideo {
   video   Video? @relation(fields: [videoId], references: [id])
   videoId Int?
 
+  @@unique([tagId, videoId])
   @@index([tagId])
   @@index([videoId])
-  @@unique([tagId, videoId])
 }
 
 model TopOfTheHourRating {
-  id      Int    @id @default(autoincrement())
-  rating  Float
+  id         Int      @id @default(autoincrement())
+  rating     Float
   streamUuid String
-  ratedAt DateTime
-  createdAt DateTime   @default(now())
+  ratedAt    DateTime
+  createdAt  DateTime @default(now())
 }
