@@ -1,9 +1,10 @@
 import { prisma } from "~/utils/prisma.server";
 import { json } from "@remix-run/node";
 import { getChannel } from "../../sync/clients/youtube-api.server";
-import { PublishStatus } from "@prisma/client";
 import type { YoutubeChannel } from "youtube.ts";
 import { debug } from "~/utils/debug.server";
+import { publishStatus } from "~/utils/dbEnums";
+import { chunkAndMergePromises } from "~/utils";
 
 export async function loader({ params }) {
   try {
@@ -25,7 +26,7 @@ export async function loader({ params }) {
           await prisma.channel.update({
             where: { id: video.id },
             data: {
-              publishStatus: PublishStatus.Unpublished,
+              publishStatus: publishStatus.Unpublished,
             },
           });
 
@@ -40,7 +41,7 @@ export async function loader({ params }) {
 
     debug(`# of Channels found: ${channelsData.length}`);
 
-    const updated = await prisma.$transaction(
+    const updated = await chunkAndMergePromises(
       channelsData.map((channelData, index) => {
         return prisma.channel.update({
           where: { youtubeId: channelData.id },
@@ -51,10 +52,11 @@ export async function loader({ params }) {
             smallThumbnailUrl: channelData.snippet.thumbnails.default.url,
             mediumThumbnailUrl: channelData.snippet.thumbnails.medium.url,
             largeThumbnailUrl: channelData.snippet.thumbnails.high.url,
-            publishStatus: PublishStatus.Published,
+            publishStatus: publishStatus.Published,
           },
         });
-      })
+      }),
+      5
     );
 
     debug(`# of Channels updated: ${updated.length}`);
@@ -65,3 +67,4 @@ export async function loader({ params }) {
     prisma.$disconnect();
   }
 }
+

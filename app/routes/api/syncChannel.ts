@@ -1,5 +1,4 @@
 import type { Video } from "@prisma/client";
-import { PublishStatus, VideoSyncStatus } from "@prisma/client";
 import { json } from "@remix-run/node";
 import type { YoutubeVideoSearchItem } from "youtube.ts";
 import { z } from "zod";
@@ -8,6 +7,7 @@ import { prisma } from "~/utils/prisma.server";
 import { debug } from "~/utils/debug.server";
 import { matchTagWithVideos } from "~/sync/services/matching";
 import { decode } from "html-entities";
+import { publishStatus, videoSyncStatus } from "~/utils/dbEnums";
 
 export async function loader({ request }) {
   const url = new URL(request.url);
@@ -59,8 +59,8 @@ export async function loader({ request }) {
           smallThumbnailUrl: videoData.snippet.thumbnails.default.url,
           mediumThumbnailUrl: videoData.snippet.thumbnails.medium.url,
           largeThumbnailUrl: videoData.snippet.thumbnails.high.url,
-          syncStatus: VideoSyncStatus.Snippet,
-          publishStatus: PublishStatus.Published,
+          syncStatus: videoSyncStatus.Snippet,
+          publishStatus: publishStatus.Published,
           channelId: channel.id,
         },
       });

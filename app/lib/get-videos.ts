@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { publishStatus, videoSyncStatus } from "~/utils/dbEnums";
 import { prisma } from "~/utils/prisma.server";
 import type { DurationListType, LastVideoIdType } from "~/utils/validators";
 import {
@@ -7,7 +8,6 @@ import {
   OrderByValdiator,
   OrderDirectionValidator,
 } from "~/utils/validators";
-import type { PublishStatus, VideoSyncStatus } from "@prisma/client";
 
 export const TagSlugsValidator = z.optional(z.array(z.string()));
 
@@ -39,12 +39,12 @@ const getVideos = async (params: GetVideosArgs) => {
     likes?: object;
     OR?: Array<object>;
     disabled: boolean;
-    syncStatus: typeof VideoSyncStatus.Full;
-    publishStatus: typeof PublishStatus.Published;
+    syncStatus: typeof videoSyncStatus.Full;
+    publishStatus: typeof publishStatus.Published;
   } = {
     disabled: false,
-    syncStatus: "Full",
-    publishStatus: "Published",
+    syncStatus: videoSyncStatus.Full,
+    publishStatus: publishStatus.Published,
   };
 
   if (tagSlugs && tagSlugs.length > 0) {
