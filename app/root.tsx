@@ -15,9 +15,10 @@ import { getStreamInfo } from "./lib/get-stream-info.server";
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
-  title: "HasanHub",
+  title: "HasanHub – All clips from Hasanabi streams",
   viewport: "width=device-width,initial-scale=1",
-  description: "The HasanAbi Clips Industrial Complex App",
+  description:
+    "The HasanAbi Clips Industrial Complex App. All clips from over 80 Hasan Piker channels.",
   keywords: "hasanabi, hasanhub, hasan piker, streamer, youtube, clips, twitch",
   "msapplication-tileColor": "#da532c",
   "theme-color": "#ffffff",
@@ -109,6 +110,11 @@ function App() {
       <head>
         <Meta />
         <Links />
+        <meta
+          name="keywords"
+          content="hasanabi, hasanhub, hasan piker, streamer, youtube, clips, twitch"
+        />
+        <meta name="og:image" content="https://hasanhub.com/og.png" />
       </head>
       <body>
         <Layout streamInfo={streamInfo} streamSchedule={schedule}>

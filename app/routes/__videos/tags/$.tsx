@@ -25,6 +25,7 @@ export const meta: MetaFunction = ({ data, parentsData }) => {
   const title = activeTags.map((tag) => tag.name).join(" and ");
   return {
     title: `${title} | HasanHub`,
+    description: `All Hasanabi clips about ${title}.`,
   };
 };
 
