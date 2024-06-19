@@ -18,7 +18,7 @@ export const meta: MetaFunction = () => ({
   title: "HasanHub – All clips from Hasanabi streams",
   viewport: "width=device-width,initial-scale=1",
   description:
-    "The HasanAbi Clips Industrial Complex App. All clips from over 80 Hasan Piker channels.",
+    "The HasanAbi Clips Industrial Complex App. All clips from 70+ Hasan Piker channels.",
   keywords: "hasanabi, hasanhub, hasan piker, streamer, youtube, clips, twitch",
   "msapplication-tileColor": "#da532c",
   "theme-color": "#ffffff",
