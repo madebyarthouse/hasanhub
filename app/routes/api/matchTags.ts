@@ -2,10 +2,31 @@ import { prisma } from "~/utils/prisma.server";
 import { json } from "@remix-run/node";
 import { debug } from "~/utils/debug.server";
 import { matchTagWithVideos } from "~/sync/services/matching";
-import type { Tag } from "@prisma/client";
+import type { Tag, Video } from "@prisma/client";
 
 export const config = {
   maxDuration: 120,
+};
+
+const fetchVideosChunked = async (take: number, chunkSize: number) => {
+  const videos: Video[] = [];
+  for (let i = 0; i < take; i += chunkSize) {
+    debug(`Fetching videos ${i} - ${i + chunkSize}`);
+    const chunk = await prisma.video.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip: i,
+      take: chunkSize,
+    });
+
+    videos.push(...chunk);
+
+    if (chunk.length < chunkSize) {
+      break;
+    }
+  }
+  return videos;
 };
 
 export async function loader({ params }) {
@@ -14,16 +35,12 @@ export async function loader({ params }) {
       prisma.tag.findMany({
         include: {
           videos: {
-            select: { id: true },
+            take: 20000,
+            select: { videoId: true },
           },
         },
       }),
-      prisma.video.findMany({
-        take: 5000, // Only match last 5000 videos
-        orderBy: {
-          createdAt: "desc",
-        },
-      }),
+      fetchVideosChunked(100000, 5000),
     ]);
 
     let taggedVideos: { [key: string]: number } = {};
@@ -42,18 +59,23 @@ export async function loader({ params }) {
         const matchedVideos = matchTagWithVideos(tag, filteredVideos);
         taggedVideos[tag.name] = matchedVideos.length;
 
-        debug(`${tag.name} matched ${matchedVideos.length} videos`);
+        debug(`"${tag.name}" matched ${matchedVideos.length} videos`);
 
-        const videoIds = tag.videos.map((tagVideo) => tagVideo.id);
-
+        const videoIds = tag.videos.map((tagVideo) => tagVideo.videoId);
+        debug(`Skipping ${videoIds.length} already matched videos`);
+        debug(videoIds);
+        debug(matchedVideos.map((matchedVideo) => matchedVideo.id));
         const newTagVideos = matchedVideos.filter(
           (matchedVideo) => !videoIds.includes(matchedVideo.id)
         );
 
         if (newTagVideos.length > 0) {
-          debug(
-            `New videos for tag ${tag.name}: ${newTagVideos.length}, updating tag.`
-          );
+          debug(`New videos for tag "${tag.name}": ${newTagVideos.length}.`);
+          // debug(
+          //   newTagVideos.map((matchedVideo) => ({
+          //     videoId: matchedVideo.id,
+          //   }))
+          // );
         }
 
         if (newTagVideos.length > 0) {
@@ -102,7 +124,6 @@ const batchTransactions = async (
 
   let transactionResults: Tag[] = [];
   for (const batch of batches) {
-    debug(batch.length);
     transactionResults = transactionResults.concat(
       await prisma.$transaction(batch)
     );
