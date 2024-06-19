@@ -9,6 +9,10 @@ import { matchTagWithVideos } from "~/sync/services/matching";
 import { decode } from "html-entities";
 import { publishStatus, videoSyncStatus } from "~/utils/dbEnums";
 
+export const config = {
+  maxDuration: 120,
+};
+
 export async function loader({ request }) {
   const url = new URL(request.url);
   let id = z.string().parse(url.searchParams.get("id"));
