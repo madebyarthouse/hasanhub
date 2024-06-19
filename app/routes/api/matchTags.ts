@@ -4,6 +4,10 @@ import { debug } from "~/utils/debug.server";
 import { matchTagWithVideos } from "~/sync/services/matching";
 import type { Tag } from "@prisma/client";
 
+export const config = {
+  maxDuration: 120,
+};
+
 export async function loader({ params }) {
   try {
     const [tags, videos] = await Promise.all([
