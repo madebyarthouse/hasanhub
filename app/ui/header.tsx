@@ -93,7 +93,7 @@ const Header = ({
           rel="noreferrer"
           className="bg-twitchPurpleLight saturate-50 text-light text-center font-bold betterhover:hover:bg-twitchPurple px-4 py-2 rounded"
         >
-          Donate
+          Buy me a coffee
         </a>
       </div>
     </header>
