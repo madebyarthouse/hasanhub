@@ -60,7 +60,7 @@ const VideosGrid = ({
             <li>
               <Link
                 className={cx(
-                  "border-twitchPurpleLight duration-400 transition-colors border border-r-0  betterhover:hover:bg-twitchPurpleLight betterhover:hover:text-light saturate-50 px-3 py-2 rounded-lg rounded-r-none",
+                  "border-twitchPurpleLight duration-400 transition-colors border border-r-0  betterhover:hover:bg-twitchPurpleLight betterhover:hover:text-light saturate-50 px-3 py-2 rounded-lg text-sm sm:text-base rounded-r-none",
                   ordering.by === "publishedAt"
                     ? "bg-twitchPurpleLight text-light"
                     : "bg-light dark:bg-lightBlack text-twitchPurpleLight"
@@ -75,7 +75,7 @@ const VideosGrid = ({
             <li>
               <Link
                 className={cx(
-                  "border-twitchPurpleLight duration-400 transition-colors border border-l-0 betterhover:hover:bg-twitchPurpleLight betterhover:hover:text-light saturate-50 px-3 py-2 rounded-lg rounded-l-none",
+                  "border-twitchPurpleLight duration-400 transition-colors border border-l-0 betterhover:hover:bg-twitchPurpleLight betterhover:hover:text-light saturate-50 px-3 py-2 rounded-lg rounded-l-none text-sm sm:text-base",
                   ordering.by === "views"
                     ? "bg-twitchPurpleLight text-light"
                     : "bg-light dark:bg-lightBlack text-twitchPurpleLight"
@@ -92,7 +92,7 @@ const VideosGrid = ({
             <li>
               <Link
                 className={cx(
-                  "border-twitchPurpleLight duration-400 transition-colors border border-r-0 betterhover:hover:bg-twitchPurpleLight betterhover:hover:text-light saturate-50 px-3 py-2 rounded-lg rounded-r-none",
+                  "border-twitchPurpleLight duration-400 transition-colors border border-r-0 betterhover:hover:bg-twitchPurpleLight betterhover:hover:text-light saturate-50 px-3 py-2 rounded-lg rounded-r-none text-sm sm:text-base",
                   ordering.order === "asc"
                     ? "bg-twitchPurpleLight text-light"
                     : "bg-light dark:bg-lightBlack text-twitchPurpleLight"
@@ -107,7 +107,7 @@ const VideosGrid = ({
             <li>
               <Link
                 className={cx(
-                  "border-twitchPurpleLight duration-400 transition-colors border border-l-0 betterhover:hover:bg-twitchPurpleLight betterhover:hover:text-light saturate-50 px-3 py-2 rounded-lg rounded-l-none",
+                  "border-twitchPurpleLight duration-400 transition-colors border border-l-0 betterhover:hover:bg-twitchPurpleLight betterhover:hover:text-light saturate-50 px-3 py-2 rounded-lg rounded-l-none text-sm sm:text-base",
                   ordering.order === "desc"
                     ? "bg-twitchPurpleLight text-light"
                     : "bg-light dark:bg-lightBlack text-twitchPurpleLight"
