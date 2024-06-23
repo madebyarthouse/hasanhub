@@ -78,7 +78,7 @@ const VideoGridItem = ({
           <a
             rel="noreferrer"
             target="_blank"
-            className="flex flex-row items-center gap-x-3 p-3 pl-0 overflow-clip"
+            className="flex flex-row items-center gap-x-3 w-full p-3 pl-0 overflow-clip"
             href={`https://www.youtube.com/channel/${video.channel?.youtubeId}`}
           >
             <img
