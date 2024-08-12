@@ -25,7 +25,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     );
     const data = await response.json();
 
-    const tagSlugs = TagSlugsValidator.parse(slugs);
+    const tagSlugs = TagSlugsValidator.parse(slugs) ?? [];
 
     return json(
       {
