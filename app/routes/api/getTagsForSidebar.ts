@@ -5,7 +5,8 @@ import { prisma } from "~/utils/prisma.server";
 type TagsForSidebar = (Tag & { viewsCount: number })[];
 
 export async function loader() {
-  const response = (await prisma.$queryRaw`
+  try {
+    const response = (await prisma.$queryRaw`
       SELECT t.id, t.name, t.slug, sum(v.views) AS viewsCount
       FROM Tag t
         JOIN TagVideo tv ON tv.tagId = t.id
@@ -14,17 +15,21 @@ export async function loader() {
       ORDER BY viewsCount DESC
     `) as unknown as TagsForSidebar;
 
-  const tags = response.map((tag) => ({
-    ...tag,
-    viewsCount: Number(tag.viewsCount),
-  }));
+    const tags = response.map((tag) => ({
+      ...tag,
+      viewsCount: Number(tag.viewsCount),
+    }));
 
-  return json(tags, {
-    status: 200,
-    headers: {
-      "Cache-Control": `s-maxage=${60 * 60 * 24}, stale-while-revalidate=${
-        60 * 60 * 24 * 7
-      }`,
-    },
-  });
+    return json(tags, {
+      status: 200,
+      headers: {
+        "Cache-Control": `s-maxage=${60 * 60 * 24}, stale-while-revalidate=${
+          60 * 60 * 24 * 7
+        }`,
+      },
+    });
+  } catch (e) {
+    console.log(e);
+    return json([]);
+  }
 }

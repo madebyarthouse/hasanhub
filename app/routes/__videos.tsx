@@ -5,7 +5,6 @@ import Sidebar from "~/ui/sidebar";
 import useUrlState from "~/hooks/use-url-state";
 import { TagSlugsValidator } from "~/lib/get-videos";
 import { debug } from "~/utils/debug.server";
-import { prisma } from "~/utils/prisma.server";
 
 export function headers() {
   return {
@@ -16,11 +15,14 @@ export function headers() {
 }
 
 export const loader: LoaderFunction = async ({ request, params }) => {
-  const url = new URL(request.url);
   const slugs = params["*"]?.split("/") ?? [];
 
   try {
-    const response = await fetch(`${url.origin}/api/getTagsForSidebar`);
+    const response = await fetch(
+      `${
+        process.env.VERCEL_URL ?? "http://localhost:3000"
+      }/api/getTagsForSidebar`
+    );
     const data = await response.json();
 
     const tagSlugs = TagSlugsValidator.parse(slugs);
