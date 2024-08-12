@@ -29,7 +29,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
     return json(
       {
-        tags: data,
+        tags: data ?? [],
         tagSlugs,
       },
       {
