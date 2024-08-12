@@ -45,7 +45,7 @@ const Sidebar = ({
 
           {/* Tags  */}
           <ul className="grid pb-3  lg:pb-0  grid-flow-col grid-rows-2 sm:grid-rows-4 lg:flex lg:flex-row flex-nowrap lg:flex-wrap gap-y-2 gap-x-3 text-base overflow-x-auto lg:overflow-x-visible">
-            {tags.map((tag, index) => (
+            {tags?.map((tag, index) => (
               <li className="min-w-max" key={tag.id}>
                 <DynamicTagButton
                   type="tag"
