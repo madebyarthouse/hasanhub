@@ -77,7 +77,7 @@ export async function loader({ request }) {
     if (newVideos.length > 0) {
       const tags = await prisma.tag.findMany();
 
-      await Promise.all(
+      await Promise.allSettled(
         tags.map(async (tag) => {
           const matchedVideos = matchTagWithVideos(tag, newVideos);
           debug(`${tag.name} matched ${matchedVideos.length} videos`);
