@@ -21,7 +21,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     const response = await fetch(
       `${
         process.env.VERCEL_URL ?? "http://localhost:3000"
-      }/api/getTagsForSidebar`
+      }/api/get-tags-for-sidebar`
     );
     const data = await response.json();
 

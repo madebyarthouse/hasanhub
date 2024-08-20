@@ -15,14 +15,12 @@ export async function loader() {
       ORDER BY viewsCount DESC
     `) as unknown as TagsForSidebar;
 
-    console.log(response);
-
     const tags = response.map((tag) => ({
       ...tag,
       viewsCount: Number(tag.viewsCount),
     }));
 
-    return json(tags ?? [], {
+    return json(tags, {
       status: 200,
       headers: {
         "Cache-Control": `s-maxage=${60 * 60 * 24}, stale-while-revalidate=${
@@ -33,7 +31,7 @@ export async function loader() {
   } catch (e) {
     console.log(e);
     return json([], {
-      status: 200,
+      status: 500,
     });
   }
 }

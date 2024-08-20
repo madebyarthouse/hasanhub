@@ -29,6 +29,7 @@ export async function loader() {
       ...channels.map(async (channel) => {
         try {
           const channelResponse = await getChannel(channel.youtubeId);
+
           const updated = await prisma.$transaction(
             channelResponse.items
               .filter((item) => !videosYoutubeIds.includes(item.id))

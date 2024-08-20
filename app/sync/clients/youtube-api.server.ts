@@ -7,7 +7,7 @@ export const getChannel = async (youtubeId: string) => {
 };
 
 export const getVideo = async (youtubeId: string) => {
-  return client.videos.get(`https://www.youtube.com/watch?v=${youtubeId}`);
+  return client.videos.get(`https://youtube.com/watch?v=${youtubeId}`);
 };
 
 export const getChannelVideos = async (
