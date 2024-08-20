@@ -19,7 +19,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   try {
     const response = await fetch(
-      `${
+      `https://${
         process.env.VERCEL_URL ?? "http://localhost:3000"
       }/api/get-tags-for-sidebar`
     );
