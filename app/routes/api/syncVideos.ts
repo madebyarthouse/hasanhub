@@ -22,7 +22,7 @@ export async function loader({ params }) {
           {
             AND: [
               { publishedAt: { gt: new Date(Date.now() - day) } }, // published in the last day
-              { updatedAt: { lt: new Date(Date.now() - hour) } }, // but not updated in the last hour
+              { updatedAt: { lt: new Date(Date.now() - hour * 4) } }, // but not updated in the 3 hours
             ],
           },
           {
@@ -34,13 +34,13 @@ export async function loader({ params }) {
           {
             AND: [
               { publishedAt: { gt: new Date(Date.now() - week * 4) } }, // published in the last 4 weeks
-              { updatedAt: { lt: new Date(Date.now() - week) } }, // but not updated in the last week
+              { updatedAt: { lt: new Date(Date.now() - week * 2) } }, // but not updated in the 2 weeks
             ],
           },
           {
             AND: [
               { publishedAt: { gt: new Date(Date.now() - week * 12) } }, // published in the last 12 weeks
-              { updatedAt: { lt: new Date(Date.now() - week * 4) } }, // but not updated in the last 4 week
+              { updatedAt: { lt: new Date(Date.now() - week * 6) } }, // but not updated in the last 4 week
             ],
           },
         ],
@@ -107,6 +107,7 @@ export async function loader({ params }) {
               : null,
             syncStatus: videoSyncStatus.Full,
             publishStatus: publishStatus.Published,
+            updatedAt: new Date(),
           },
         });
       }),
