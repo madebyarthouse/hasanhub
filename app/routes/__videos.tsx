@@ -24,12 +24,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       }/api/get-tags-for-sidebar`
     );
     const data = await response.json();
-    console.log(
-      `${
-        process.env.VERCEL_URL ?? "http://localhost:3000"
-      }/api/get-tags-for-sidebar`
-    );
-    console.log(data);
 
     const tagSlugs = TagSlugsValidator.parse(slugs) ?? [];
 
