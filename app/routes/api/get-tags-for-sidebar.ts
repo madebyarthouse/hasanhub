@@ -23,9 +23,12 @@ export async function loader() {
     return json(tags, {
       status: 200,
       headers: {
-        "Cache-Control": `s-maxage=${60 * 60 * 24}, stale-while-revalidate=${
-          60 * 60 * 24 * 7
-        }`,
+        "Cache-Control":
+          tags.length > 0
+            ? `s-maxage=${60 * 60 * 24}, stale-while-revalidate=${
+                60 * 60 * 24 * 7
+              }`
+            : `no-cache, max-age=0, no-store, must-revalidate`,
       },
     });
   } catch (e) {
