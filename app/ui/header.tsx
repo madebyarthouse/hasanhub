@@ -27,18 +27,29 @@ const Header = ({
 }) => {
   return (
     <header className="px-5 lg:px-10 xl:px-14 my-6  gap-y-10 gap-x-5 lg:gap-x-14 grid grid-cols-1 grid-rows-[auto_auto_auto] sm:grid-cols-2 sm:grid-rows-[auto_auto] xl:grid-rows-1 lg:grid-cols-[25%_auto] xl:grid-cols-[20%_auto_auto]">
-      <Link
-        to="/"
-        prefetch="render"
-        className="col-span-1 sm:col-span-1 flex items-center justify-center sm:justify-start"
-      >
-        <h1 className="text-[2.5rem] font-bold sm:text-left group text-center inline-block w-min whitespace-nowrap">
-          <span>Hasan</span>
-          <span className="dark:text-lightBlack text-light inline-block bg-twitchPurpleLight group-hover:bg-twitchPurple px-2 py-1 ml-2 rounded-lg saturate-50">
-            Hub
-          </span>
-        </h1>
-      </Link>
+      <div className="flex flex-col gap-2 items-center">
+        <Link
+          to="/"
+          prefetch="render"
+          className="col-span-1 sm:col-span-1 flex items-center justify-center sm:justify-start"
+        >
+          <h1 className="text-[2.5rem] font-bold sm:text-left group text-center inline-block w-min whitespace-nowrap">
+            <span>Hasan</span>
+            <span className="dark:text-lightBlack text-light inline-block bg-twitchPurpleLight group-hover:bg-twitchPurple px-2 py-1 ml-2 rounded-lg saturate-50">
+              Hub
+            </span>
+          </h1>
+        </Link>
+        <div className="flex flex-row gap-2 items-center">
+          Made by{" "}
+          <a
+            href="https://chrcit.com/projects/hasanhub-com"
+            className="underline underline-offset-2 font-semibold"
+          >
+            chrcit
+          </a>
+        </div>
+      </div>
 
       <div className="col-span-1 row-start-3 sm:col-span-2 sm:row-start-2 xl:row-start-1 xl:col-start-2 xl:col-span-1 w-full  xl:max-w-[60ch] flex items-center justify-center xl:justify-start text-center xl:text-left text-base md:text-lg">
         {streamInfo ? (
