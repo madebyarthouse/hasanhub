@@ -14,14 +14,15 @@ export function headers() {
   };
 }
 
-const BASE_URL = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : "http://localhost:3000";
-
 export const loader: LoaderFunction = async ({ request, params }) => {
   const slugs = params["*"]?.split("/") ?? [];
 
+  const BASE_URL = process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "http://localhost:3000";
+
   try {
+    console.log(BASE_URL);
     const response = await fetch(`${BASE_URL}/api/get-tags-for-sidebar`);
     const data = await response.json();
 
