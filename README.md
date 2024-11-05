@@ -17,7 +17,7 @@ The political streamer Hasanabi allows his fans to clip his stream VODs, upload 
 Due to this there are 100+ different YouTube channels dedicated to him. Some of these fan channels have over 200.000 subscribers. 
 
 His community is ideal for such an application due to the sheer number of channels.
-But it could be useful for other creators/communites which have multiple channels and/or
+But it could be useful for other creators/communites which have multiple channels and/or a larger backlog.
 
 ## Stack
 - Typescript
