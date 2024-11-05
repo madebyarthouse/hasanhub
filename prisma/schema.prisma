@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Channel {
+  id                 Int        @id @default(autoincrement())
+  title              String     @default("")
+  youtubeId          String     @unique @default("")
+  publishedAt        DateTime?
+  smallThumbnailUrl  String     @default("")
+  mediumThumbnailUrl String     @default("")
+  largeThumbnailUrl  String     @default("")
+  bannerUrl          String     @default("")
+  viewCount          Int?
+  subscriberCount    Int?
+  keywords           String     @default("")
+  description        String     @default("")
+  videos             Video[]
+  playlists          Playlist[]
+  publishStatus      String     @default("Published")
+
+  @@index([youtubeId])
+}
+
+model Playlist {
+  id                 Int       @id @default(autoincrement())
+  title              String    @default("")
+  publishedAt        DateTime?
+  youtubeId          String    @unique @default("")
+  smallThumbnailUrl  String    @default("")
+  mediumThumbnailUrl String    @default("")
+  largeThumbnailUrl  String    @default("")
+  xlThumbnailUrl     String    @default("")
+  xxlThumbnailUrl    String    @default("")
+  description        String    @default("")
+  videos             Video[]
+  channel            Channel?  @relation(fields: [channelId], references: [id])
+  channelId          Int?
+
+  @@index([channelId])
+}
+
+model Video {
+  id                 Int        @id @default(autoincrement())
+  youtubeId          String     @unique @default("")
+  duration           Int?
+  views              Int?
+  likes              Int?
+  comments           Int?
+  favorites          Int?
+  title              String     @default("")
+  publishedAt        DateTime?
+  smallThumbnailUrl  String?    @default("")
+  mediumThumbnailUrl String?    @default("")
+  largeThumbnailUrl  String?    @default("")
+  xlThumbnailUrl     String?    @default("")
+  xxlThumbnailUrl    String?    @default("")
+  description        String     @default("")
+  channel            Channel?   @relation(fields: [channelId], references: [id])
+  channelId          Int?
+  playlist           Playlist?  @relation(fields: [playlistId], references: [id])
+  playlistId         Int?
+  disabled           Boolean    @default(false)
+  tags               TagVideo[]
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime?  @updatedAt
+
+  syncStatus    String @default("Snippet")
+  publishStatus String @default("Published")
+
+  @@index([channelId])
+  @@index([playlistId])
+  @@index([youtubeId])
+  @@index([publishedAt])
+  @@index([syncStatus])
+  @@index([publishStatus])
+  @@index([views])
+}
+
+model Tag {
+  id              Int        @id @default(autoincrement())
+  name            String     @default("")
+  synonyms        String     @default("")
+  slug            String?    @unique
+  lastedMatchedAt DateTime?
+  videos          TagVideo[]
+
+  @@index([slug])
+}
+
+model TagVideo {
+  id      Int    @id @default(autoincrement())
+  tag     Tag?   @relation(fields: [tagId], references: [id])
+  tagId   Int?
+  video   Video? @relation(fields: [videoId], references: [id])
+  videoId Int?
+
+  @@unique([tagId, videoId])
+  @@index([tagId])
+  @@index([videoId])
+}
+
+model TopOfTheHourRating {
+  id         Int      @id @default(autoincrement())
+  rating     Float
+  streamUuid String
+  ratedAt    DateTime
+  createdAt  DateTime @default(now())
+}

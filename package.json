@@ -1,0 +1,54 @@
+{
+  "name": "hasanhub",
+  "private": true,
+  "description": "",
+  "license": "",
+  "version": "1.1.0",
+  "sideEffects": false,
+  "scripts": {
+    "build": "npm run build:css && npm run generate:prisma && remix build",
+    "generate:prisma": "prisma generate",
+    "build:css": "tailwindcss -m -i ./styles/app.css -o app/styles/app.css",
+    "dev": "concurrently \"npm run dev:css\" \"remix dev\"",
+    "dev:css": "tailwindcss -w -i ./styles/app.css -o app/styles/app.css",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\""
+  },
+  "dependencies": {
+    "@libsql/client": "^0.8.0",
+    "@prisma/adapter-libsql": "^5.6.0",
+    "@prisma/client": "^5.18.0",
+    "@radix-ui/react-toggle-group": "^0.1.5",
+    "@remix-run/node": "^1.19.3",
+    "@remix-run/react": "^1.19.3",
+    "@remix-run/vercel": "^1.19.3",
+    "@sentry/remix": "^7.5",
+    "@vercel/node": "^1.15.2",
+    "classnames": "^2.3.1",
+    "html-entities": "^2.3.3",
+    "iso8601-duration": "^2.1.1",
+    "react": "^17.0.2",
+    "react-charts": "^3.0.0-beta.48",
+    "react-dom": "^17.0.2",
+    "rss-parser": "^3.12.0",
+    "tiny-invariant": "^1.2.0",
+    "youtube.ts": "^0.2.9",
+    "zod": "^3.16.0"
+  },
+  "devDependencies": {
+    "@remix-run/dev": "^1.19.3",
+    "@remix-run/eslint-config": "^1.19.3",
+    "@remix-run/serve": "^1.19.3",
+    "@types/react": "^17.0.45",
+    "@types/react-dom": "^17.0.17",
+    "autoprefixer": "^10.4.7",
+    "concurrently": "^7.2.0",
+    "eslint": "^8.15.0",
+    "postcss": "^8.4.13",
+    "prisma": "^5.18.0",
+    "tailwindcss": "^3.0.24",
+    "typescript": "^4.6.4"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
