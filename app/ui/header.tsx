@@ -40,7 +40,7 @@ const Header = ({
             </span>
           </h1>
         </Link>
-        <div className="flex flex-row gap-2 items-center">
+        <div className="flex flex-row gap-2 items-center md:items-left">
           Made by{" "}
           <a
             href="https://chrcit.com/projects/hasanhub-com"
