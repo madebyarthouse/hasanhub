@@ -27,7 +27,7 @@ const Header = ({
 }) => {
   return (
     <header className="px-5 lg:px-10 xl:px-14 my-6  gap-y-10 gap-x-5 lg:gap-x-14 grid grid-cols-1 grid-rows-[auto_auto_auto] sm:grid-cols-2 sm:grid-rows-[auto_auto] xl:grid-rows-1 lg:grid-cols-[25%_auto] xl:grid-cols-[20%_auto_auto]">
-      <div className="flex flex-col gap-2 items-center">
+      <div className="flex flex-col gap-2 items-center md:items-start">
         <Link
           to="/"
           prefetch="render"
