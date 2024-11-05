@@ -38,7 +38,7 @@ Syncing needs to be setup via Cron jobs (or similiar) by hitting the API routes 
 
 ## Can I use this for my own site?
 For sure! If you do pls [let me know](https://twitter.com/chrcit) so I can check it out.
-I'd also love a backlink to [my website](https://chrcit.com/projects/hasanhub-com) somewhere on the site if you are awesome!
+I'd also love a backlink to [my website](https://chrcit.com/projects/hasanhub-com?utm_source=github-hasanhub) somewhere on the site if you are awesome!
 
 ## Random stuff
 ## Refresh Twitch access token
