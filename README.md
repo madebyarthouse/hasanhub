@@ -27,8 +27,10 @@ But it could be useful for other creators/communites which have multiple channel
 - Turso / LibSQL
 - Tailwind
 
-I'm currently hosting on Vercel but it should work.
+I'm currently hosting via Vercel but it should work almost[1] everywhere.
 Syncing needs to be setup via Cron jobs (or similiar) by hitting the API routes defined in the `vercel.json`
+
+[1] Prisma limits support for edge enviromnents.
 
 ### Potential changes
 - Add payloadcms
