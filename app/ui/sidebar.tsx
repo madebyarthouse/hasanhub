@@ -78,7 +78,7 @@ const DynamicTagButton = ({
   const href =
     type === "tag"
       ? constructUrl({
-          tagSlugs: addOrRemoveElement(current.tagSlugs, filter),
+          tagSlugs: [filter],
           lastVideoId: undefined,
         })
       : constructUrl({
