@@ -42,6 +42,10 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const slugs = params["*"]?.split("/") ?? [];
   let lastVideoIdParam = url.searchParams.get("lastVideoId");
 
+  if (slugs.length !== 1) {
+    return new Response("Only 1 tag allowed at a time", { status: 400 });
+  }
+
   try {
     const { order, durations, by, lastVideoId } = UrlParamsSchema.parse({
       order: url.searchParams.get("order") ?? undefined,
