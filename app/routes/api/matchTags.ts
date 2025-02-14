@@ -82,7 +82,6 @@ export async function loader({ params }) {
           return prisma.tag.update({
             where: { id: tag.id },
             data: {
-              lastedMatchedAt: new Date(),
               videos: {
                 createMany: {
                   data: newTagVideos.map((matchedVideo) => ({
@@ -93,12 +92,7 @@ export async function loader({ params }) {
             },
           });
         } else {
-          return prisma.tag.update({
-            where: { id: tag.id },
-            data: {
-              lastedMatchedAt: new Date(),
-            },
-          });
+          return [];
         }
       }),
       10
