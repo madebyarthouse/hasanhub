@@ -92,7 +92,7 @@ export async function loader({ params }) {
             },
           });
         } else {
-          return [];
+          return {};
         }
       }),
       10
