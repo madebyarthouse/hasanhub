@@ -29,7 +29,7 @@ const fetchVideosChunked = async (take: number, chunkSize: number) => {
   return videos;
 };
 
-export async function loader({ params }) {
+export async function loader({ params }: { params: Record<string, string> }) {
   try {
     const [tags, videos] = await Promise.all([
       prisma.tag.findMany({
@@ -51,7 +51,11 @@ export async function loader({ params }) {
             return true;
           }
 
-          return video.createdAt >= tag.lastedMatchedAt;
+          // Convert both dates to UTC for comparison
+          const lastMatchedUtc = new Date(tag.lastedMatchedAt).toISOString();
+          const videoCreatedUtc = new Date(video.createdAt).toISOString();
+
+          return videoCreatedUtc >= lastMatchedUtc;
         });
 
         debug(`Videos for ${tag.name} filtered: ${filteredVideos.length}, `);
@@ -82,6 +86,7 @@ export async function loader({ params }) {
           return prisma.tag.update({
             where: { id: tag.id },
             data: {
+              lastedMatchedAt: new Date().toISOString(),
               videos: {
                 createMany: {
                   data: newTagVideos.map((matchedVideo) => ({
@@ -92,7 +97,12 @@ export async function loader({ params }) {
             },
           });
         } else {
-          return {};
+          return prisma.tag.update({
+            where: { id: tag.id },
+            data: {
+              lastedMatchedAt: new Date().toISOString(),
+            },
+          });
         }
       }),
       10
