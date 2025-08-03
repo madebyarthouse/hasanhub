@@ -322,7 +322,7 @@ const Sidebar = ({
   streamSchedule?: StreamScheduleDisplay;
 }) => {
   return (
-    <aside className="hidden lg:flex flex-col h-screen w-80 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
+    <aside className="hidden lg:flex flex-col h-screen w-80 xl:w-96  dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
       <SidebarHeader streamInfo={streamInfo} streamSchedule={streamSchedule} />
       <SidebarFilters tags={tags} />
       <SidebarFooter />

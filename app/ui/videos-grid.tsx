@@ -140,7 +140,7 @@ const VideosGrid = ({
       </div>
 
       <div className="relative lg:mx-[2px] px-6 py-3">
-        <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5 md:gap-10 xl:gap-12 2xl:gap-14 relative z-10">
+        <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 gap-5 md:gap-10 xl:gap-12 2xl:gap-14 relative z-10">
           {videos
             ?.filter((video) => !video.disabled)
             .map((video, index) => (
