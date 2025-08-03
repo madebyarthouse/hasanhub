@@ -35,8 +35,18 @@ const FilterModal = ({ tags }: { tags: Tag[] }) => {
   const activeDurationCount = durationFilter?.length ?? 0;
   const activeTagsCount =
     activeTagSlugs?.filter((slug) => slug && slug.trim() !== "").length ?? 0;
+
+  const defaultOrdering = { by: "publishedAt", order: "desc" } as const;
+  const orderingChanged =
+    ordering.by !== defaultOrdering.by ||
+    ordering.order !== defaultOrdering.order;
+  const activeSortingCount = orderingChanged ? 1 : 0;
+
   const totalActiveFilters =
-    activeTimeframeCount + activeDurationCount + activeTagsCount;
+    activeTimeframeCount +
+    activeDurationCount +
+    activeTagsCount +
+    activeSortingCount;
 
   return (
     <Drawer.Root>
@@ -75,7 +85,12 @@ const FilterModal = ({ tags }: { tags: Tag[] }) => {
             {/* Sorting Controls */}
             <details className="group mb-8" open>
               <summary className="text-lg font-semibold mb-4 cursor-pointer list-none flex items-center justify-between">
-                Sorting & Ordering
+                <div className="flex items-center gap-2">
+                  Sorting & Ordering
+                  {orderingChanged && (
+                    <div className="w-2.5 h-2.5 rounded-full bg-twitchPurpleLight"></div>
+                  )}
+                </div>
                 <svg
                   className="w-5 h-5 transition-transform group-open:rotate-180"
                   fill="none"
@@ -180,9 +195,7 @@ const FilterModal = ({ tags }: { tags: Tag[] }) => {
                 <div className="flex items-center gap-2">
                   Timeframe
                   {activeTimeframeCount > 0 && (
-                    <div className="bg-twitchPurpleLight text-white text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center">
-                      {activeTimeframeCount}
-                    </div>
+                    <div className="w-2.5 h-2.5 rounded-full bg-twitchPurpleLight"></div>
                   )}
                 </div>
                 <svg
@@ -219,9 +232,7 @@ const FilterModal = ({ tags }: { tags: Tag[] }) => {
                 <div className="flex items-center gap-2">
                   Duration
                   {activeDurationCount > 0 && (
-                    <div className="bg-twitchPurpleLight text-white text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center">
-                      {activeDurationCount}
-                    </div>
+                    <div className="w-2.5 h-2.5 rounded-full bg-twitchPurpleLight"></div>
                   )}
                 </div>
                 <svg
@@ -258,9 +269,7 @@ const FilterModal = ({ tags }: { tags: Tag[] }) => {
                 <div className="flex items-center gap-2">
                   Tags
                   {activeTagsCount > 0 && (
-                    <div className="bg-twitchPurpleLight text-white text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center">
-                      {activeTagsCount}
-                    </div>
+                    <div className="w-2.5 h-2.5 rounded-full bg-twitchPurpleLight"></div>
                   )}
                 </div>
                 <svg
@@ -334,19 +343,17 @@ const DrawerTagButton = ({
 
   return (
     <Drawer.Close asChild>
-      <div className="min-w-min">
-        <Link
-          to={href}
-          className={cx(
-            "border-twitchPurpleLight duration-400 transition-colors border betterhover:hover:bg-twitchPurple betterhover:hover:text-light inline-block rounded-lg saturate-50 text-base px-3 py-2",
-            active
-              ? "bg-twitchPurpleLight text-light"
-              : "bg-light dark:bg-lightBlack text-twitchPurpleLight"
-          )}
-        >
-          {label}
-        </Link>
-      </div>
+      <Link
+        to={href}
+        className={cx(
+          "border-twitchPurpleLight duration-400 transition-colors border betterhover:hover:bg-twitchPurple betterhover:hover:text-light inline-block rounded-lg saturate-50 text-base px-3 py-2 min-w-min",
+          active
+            ? "bg-twitchPurpleLight text-light"
+            : "bg-light dark:bg-lightBlack text-twitchPurpleLight"
+        )}
+      >
+        {label}
+      </Link>
     </Drawer.Close>
   );
 };

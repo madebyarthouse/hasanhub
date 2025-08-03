@@ -196,9 +196,7 @@ const SidebarFilters = ({ tags }: { tags: Tag[] }) => {
             <div className="flex items-center gap-2">
               Timeframe
               {activeTimeframeCount > 0 && (
-                <div className="bg-twitchPurpleLight text-white text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center">
-                  {activeTimeframeCount}
-                </div>
+                <div className="w-2.5 h-2.5 rounded-full bg-twitchPurpleLight"></div>
               )}
             </div>
             <svg
@@ -235,9 +233,7 @@ const SidebarFilters = ({ tags }: { tags: Tag[] }) => {
             <div className="flex items-center gap-2">
               Duration
               {activeDurationCount > 0 && (
-                <div className="bg-twitchPurpleLight text-white text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center">
-                  {activeDurationCount}
-                </div>
+                <div className="w-2.5 h-2.5 rounded-full bg-twitchPurpleLight"></div>
               )}
             </div>
             <svg
@@ -274,9 +270,7 @@ const SidebarFilters = ({ tags }: { tags: Tag[] }) => {
             <div className="flex items-center gap-2">
               Tags
               {activeTagsCount > 0 && (
-                <div className="bg-twitchPurpleLight text-white text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center">
-                  {activeTagsCount}
-                </div>
+                <div className="w-2.5 h-2.5 rounded-full bg-twitchPurpleLight"></div>
               )}
             </div>
             <svg
