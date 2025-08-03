@@ -1,3 +1,5 @@
+import { getTwitchAccessToken } from "./twitch-auth.server";
+
 export type StreamInfo = {
   data: {
     id: string;
@@ -43,17 +45,20 @@ export type StreamSchedule = {
 };
 
 export const getStreamInfo = async () => {
+  const accessToken = await getTwitchAccessToken();
+  const clientId = process.env.TWITCH_CLIENT_ID?.trim() ?? "";
+
   return await Promise.all([
     fetch(`https://api.twitch.tv/helix/streams?first=1&user_id=${207813352}`, {
       headers: {
-        "Client-Id": process.env.TWITCH_CLIENT_ID?.trim() ?? "",
-        Authorization: `Bearer ${process.env.TWITCH_ACCESS_TOKEN ?? ""}`,
+        "Client-Id": clientId,
+        Authorization: `Bearer ${accessToken}`,
       },
     }).then((res) => res.json()) as unknown as StreamInfo,
     fetch(`https://api.twitch.tv/helix/schedule?broadcaster_id=${207813352}`, {
       headers: {
-        "Client-Id": process.env.TWITCH_CLIENT_ID?.trim() ?? "",
-        Authorization: `Bearer ${process.env.TWITCH_ACCESS_TOKEN ?? ""}`,
+        "Client-Id": clientId,
+        Authorization: `Bearer ${accessToken}`,
       },
     }).then((res) => res.json()) as unknown as StreamSchedule,
   ]);

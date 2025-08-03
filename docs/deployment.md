@@ -74,7 +74,6 @@ Required cron jobs:
 DATABASE_URL=
 YOUTUBE_API_KEY=
 TWITCH_CLIENT_ID=
-TWITCH_ACCESS_TOKEN=
 ```
 
 ## Deployment Steps

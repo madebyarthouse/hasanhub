@@ -116,3 +116,14 @@ model TopOfTheHourRating {
   ratedAt    DateTime
   createdAt  DateTime @default(now())
 }
+
+model TwitchAuth {
+  id          Int      @id @default(autoincrement())
+  accessToken String
+  expiresAt   DateTime
+  tokenType   String   @default("Bearer")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([expiresAt])
+}
