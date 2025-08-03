@@ -46,7 +46,7 @@ const VideoGridItem = ({
       className="gap-5 h-full flex flex-col justify-between group"
       key={video.youtubeId}
     >
-      <div className="px-3 lg:px-0">
+      <div className="">
         <div className="aspect-video  relative shadow-md dark:shadow-slate-800 ">
           <a
             rel="noreferrer"

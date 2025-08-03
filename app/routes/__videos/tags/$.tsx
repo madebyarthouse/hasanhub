@@ -1,7 +1,8 @@
 import { z } from "zod";
 import type { LoaderFunction, MetaFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useFetcher, useLoaderData } from "@remix-run/react";
+import { useFetcher, useLoaderData, useOutletContext } from "@remix-run/react";
+import { cacheHeader } from "pretty-cache-header";
 import getVideos, { TagSlugsValidator } from "~/lib/get-videos";
 import { prisma } from "~/utils/prisma.server";
 import VideosGrid from "~/ui/videos-grid";
@@ -11,10 +12,15 @@ import { UrlParamsSchema } from "~/utils/validators";
 import useUrlState from "~/hooks/use-url-state";
 import useActionUrl from "~/hooks/use-action-url";
 import getActiveTagsBySlugs from "~/lib/get-active-tags-by-slugs";
+import type { VideosLayoutContext } from "~/routes/__videos";
 
 export function headers() {
   return {
-    "Cache-Control": "max-age=120, s-maxage=120, stale-while-revalidate=360",
+    "Cache-Control": cacheHeader({
+      maxAge: "2minutes",
+      sMaxage: "2minutes",
+      staleWhileRevalidate: "6minutes",
+    }),
   };
 }
 
@@ -47,12 +53,14 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
 
   try {
-    const { order, durations, by, lastVideoId } = UrlParamsSchema.parse({
-      order: url.searchParams.get("order") ?? undefined,
-      durations: url.searchParams.getAll("durations"),
-      by: url.searchParams.get("by") ?? undefined,
-      lastVideoId: lastVideoIdParam ? parseInt(lastVideoIdParam) : undefined,
-    });
+    const { order, durations, timeframe, by, lastVideoId } =
+      UrlParamsSchema.parse({
+        order: url.searchParams.get("order") ?? undefined,
+        durations: url.searchParams.getAll("durations"),
+        timeframe: url.searchParams.get("timeframe"),
+        by: url.searchParams.get("by") ?? undefined,
+        lastVideoId: lastVideoIdParam ? parseInt(lastVideoIdParam) : undefined,
+      });
 
     const tagSlugs = TagSlugsValidator.parse(slugs);
 
@@ -63,6 +71,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
         order,
         by,
         durations,
+        timeframe,
         lastVideoId,
       }),
     ]);
@@ -72,8 +81,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       {
         status: 200,
         headers: {
-          "Cache-Control":
-            "max-age=120, s-maxage=120, stale-while-revalidate=360",
+          "Cache-Control": cacheHeader({
+            maxAge: "5minutes",
+            sMaxage: "15minutes",
+            staleWhileRevalidate: "1hour",
+          }),
         },
       }
     );
@@ -94,6 +106,7 @@ export default function TagPage() {
   const fetcher = useFetcher();
   const { isLoading, ordering } = useUrlState();
   const { constructUrl } = useActionUrl();
+  const { tags, tagSlugs, durations } = useOutletContext<VideosLayoutContext>();
 
   const loaderUrl = (lastVideoId: number) =>
     constructUrl({ lastVideoId: lastVideoId }, true);
@@ -134,7 +147,8 @@ export default function TagPage() {
       title={`${title} videos about ${activeTags
         .map((tag) => tag.name)
         .join(" and ")}`}
-      videos={liveVideos}
+      // @ts-expect-error - TODO: fix this in the future
+      videos={liveVideos ?? []}
       loading={isLoading}
       loadMoreUrl={loaderUrl}
       loadingMore={fetcher.state === "loading"}

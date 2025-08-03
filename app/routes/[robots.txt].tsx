@@ -1,3 +1,5 @@
+import { cacheHeader } from "pretty-cache-header";
+
 export const loader = async () => {
   const block = `Sitemap: https://hasanhub.com/sitemap.xml
     Allow: /$
@@ -19,7 +21,10 @@ ${block}
   return new Response(robotText, {
     status: 200,
     headers: {
-      "Cache-Control": "max-age=0, s-maxage=86400",
+      "Cache-Control": cacheHeader({
+        maxAge: "0s",
+        sMaxage: "1day",
+      }),
       "Content-Type": "text/plain",
     },
   });

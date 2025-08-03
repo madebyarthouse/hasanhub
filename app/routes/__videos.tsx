@@ -1,16 +1,28 @@
 import type { LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Outlet, useLoaderData } from "@remix-run/react";
-import Sidebar from "~/ui/sidebar";
+import { cacheHeader } from "pretty-cache-header";
 import useUrlState from "~/hooks/use-url-state";
 import { TagSlugsValidator } from "~/lib/get-videos";
 import { debug } from "~/utils/debug.server";
+import type { Tag } from "@prisma/client";
+import type { DurationListType, TimeframeType } from "~/utils/validators";
+import { getStreamInfo } from "~/lib/get-stream-info.server";
+import Sidebar from "~/ui/sidebar";
+
+export type VideosLayoutContext = {
+  tags: Tag[];
+  tagSlugs: string[];
+  durations: DurationListType | undefined;
+  timeframe: TimeframeType | undefined;
+};
 
 export function headers() {
   return {
-    "Cache-Control": `s-maxage=${60 * 60 * 24}, stale-while-revalidate=${
-      60 * 60 * 24 * 7
-    }`,
+    "Cache-Control": cacheHeader({
+      sMaxage: "1day",
+      staleWhileRevalidate: "1week",
+    }),
   };
 }
 
@@ -22,23 +34,28 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     : "http://localhost:3000";
 
   try {
-    console.log(BASE_URL);
-    const response = await fetch(`${BASE_URL}/api/get-tags-for-sidebar`);
-    const data = await response.json();
+    const [tagsResponse, streamInfo] = await Promise.all([
+      fetch(`${BASE_URL}/api/get-tags-for-sidebar`),
+      getStreamInfo(),
+    ]);
 
+    const tagsData = await tagsResponse.json();
     const tagSlugs = TagSlugsValidator.parse(slugs) ?? [];
 
     return json(
       {
-        tags: data ?? [],
+        tags: tagsData ?? [],
         tagSlugs,
+        streamInfo,
       },
       {
         status: 200,
         headers: {
-          "Cache-Control": `max-age=${60 * 60 * 24 * 3}, s-maxage=${
-            60 * 60 * 24
-          }, stale-while-revalidate=${60 * 60 * 24 * 7}`,
+          "Cache-Control": cacheHeader({
+            maxAge: "3days",
+            sMaxage: "1day",
+            staleWhileRevalidate: "1week",
+          }),
         },
       }
     );
@@ -50,19 +67,23 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
 export default function VideosLayout() {
   const { tags } = useLoaderData<typeof loader>();
-  const { durations, tagSlugs } = useUrlState();
+  const { durations, timeframe, tagSlugs } = useUrlState();
+
+  const context: VideosLayoutContext = {
+    tags,
+    tagSlugs,
+    durations,
+    timeframe,
+  };
+
   return (
     <div className="flex flex-col lg:flex-row relative w-full">
-      <div className="w-full lg:sticky lg:overflow-y-auto lg:max-h-screen  lg:top-0 lg:w-1/4 xl:w-1/5  py-5 px-3 lg:px-0 overflow-x-auto">
-        <Sidebar
-          tags={tags}
-          activeTagSlugs={tagSlugs}
-          durationFilter={durations}
-        />
+      <div className="w-full hidden lg:block lg:sticky lg:overflow-y-auto lg:max-h-screen  lg:top-0 lg:w-1/4 xl:w-1/5  py-5 px-3 lg:px-0 overflow-x-auto">
+        <Sidebar tags={tags} />
       </div>
 
       <div className="lg:pl-14 w-full lg:w-3/4 xl:w-4/5">
-        <Outlet />
+        <Outlet context={context} />
       </div>
     </div>
   );

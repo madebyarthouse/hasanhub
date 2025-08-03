@@ -14,8 +14,6 @@ export async function loader() {
     ORDER BY viewsCount DESC
   `) as unknown as TagsForSidebar;
 
-    console.log(response);
-
     const tags = response.map((tag) => ({
       ...tag,
       viewsCount: Number(tag.viewsCount),

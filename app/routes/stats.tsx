@@ -1,5 +1,6 @@
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
+import { cacheHeader } from "pretty-cache-header";
 import { publishStatus } from "~/utils/dbEnums";
 import { prisma } from "~/utils/prisma.server";
 
@@ -53,9 +54,11 @@ export async function loader() {
     return json(await getAggregationData(), {
       status: 200,
       headers: {
-        "Cache-Control": `max-age=${60 * 60}, s-maxage=${
-          60 * 60
-        }, stale-while-revalidate=${60 * 60 * 24}`,
+        "Cache-Control": cacheHeader({
+          maxAge: "1hour",
+          sMaxage: "1hour",
+          staleWhileRevalidate: "1day",
+        }),
       },
     });
   } catch (e) {
