@@ -4,6 +4,7 @@ import useActionUrl from "~/hooks/use-action-url";
 import useUrlState from "~/hooks/use-url-state";
 import type { Tag } from "@prisma/client";
 import { Logo, StreamInfoComponent } from "./header";
+import clsx from "clsx";
 
 // Component-specific types that match the transformed data from root.tsx
 type StreamInfoDisplay = {
@@ -43,33 +44,35 @@ const MobileHeader = ({
   streamSchedule?: StreamScheduleDisplay;
 }) => {
   return (
-    <header className="lg:hidden w-full border-b border-gray-200 dark:border-gray-700">
-      <div className="px-4 py-4">
-        {/* Logo column */}
-        <div className="flex justify-center mb-4">
+    <header className="lg:hidden w-full px-5 py-6 gap-x-1 gap-y-6 md:py-8 border-b flex flex-col sm:flex-row justify-between border-gray-200 dark:border-gray-700">
+      {/* Logo and stream info column */}
+      <div className="flex flex-col justify-between gap-4">
+        <div className="flex flex-row justify-between items-center gap-4">
           <Logo />
-        </div>
-
-        {/* Stream info column */}
-        <div className="flex justify-center">
-          <StreamInfoComponent
-            streamInfo={streamInfo}
-            streamSchedule={streamSchedule}
-          />
-        </div>
-
-        {/* Credits and social column */}
-        <div className="flex justify-center items-center gap-4 mt-4">
-          <div className="text-gray-600 dark:text-gray-400">
-            Made by{" "}
-            <a
-              href="https://chrcit.com/projects/hasanhub-com"
-              className="underline underline-offset-2 font-semibold"
-            >
-              chrcit
-            </a>
+          <div className="sm:hidden flex">
+            <SidebarSocialLinks className="flex-wrap" />
           </div>
+        </div>
+
+        <StreamInfoComponent
+          streamInfo={streamInfo}
+          streamSchedule={streamSchedule}
+        />
+      </div>
+
+      {/* Credits and social column */}
+      <div className="flex justify-between  sm:flex-col items-center sm:items-end gap-4">
+        <div className="hidden sm:block">
           <SidebarSocialLinks />
+        </div>
+        <div className="font-semibold">
+          Made by{" "}
+          <a
+            href="https://chrcit.com/projects/hasanhub-com"
+            className="underline underline-offset-2 font-semibold"
+          >
+            chrcit
+          </a>
         </div>
       </div>
     </header>
@@ -103,9 +106,9 @@ const GitHubIcon = () => (
   </svg>
 );
 
-const SidebarSocialLinks = () => {
+const SidebarSocialLinks = ({ className }: { className?: string }) => {
   return (
-    <div className="flex items-center">
+    <div className={clsx("flex items-center", className)}>
       <a
         href="https://twitter.com/hasanhub_com"
         target="_blank"

@@ -98,7 +98,7 @@ const Logo = () => {
       prefetch="render"
       className="flex items-center justify-center sm:justify-start"
     >
-      <h1 className="text-[2rem] sm:text-[2.5rem] font-bold group inline-block w-min whitespace-nowrap">
+      <h1 className="text-[2.25rem] md:text-[2.5rem] font-bold group inline-block w-min whitespace-nowrap">
         <span>Hasan</span>
         <span className="dark:text-lightBlack text-light inline-block bg-twitchPurpleLight group-hover:bg-twitchPurple px-2 py-1 ml-2 rounded-lg saturate-50">
           Hub
@@ -130,14 +130,21 @@ const StreamInfoComponent = ({
   streamSchedule?: StreamScheduleDisplay;
 }) => {
   return (
-    <div className="flex">
+    <div className="flex items-center gap-2">
       {streamInfo ? (
         <a
-          className="hover:text-twitchPurple dark:hover:text-twitchPurpleLight saturate-50"
+          className="flex items-center gap-2 hover:text-twitchPurple dark:hover:text-twitchPurpleLight saturate-50"
           target="_blank"
           rel="noopener noreferrer"
           href={`https://twitch.tv/${streamInfo.user_login}`}
         >
+          <svg
+            className="w-5 h-5 text-twitchPurple dark:text-twitchPurpleLight saturate-50"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z" />
+          </svg>
           <p>
             <strong className="text-twitchPurple dark:text-twitchPurpleLight saturate-50">
               {streamInfo.user_name}
@@ -150,9 +157,16 @@ const StreamInfoComponent = ({
           <a
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-twitchPurple dark:hover:text-twitchPurpleLight saturate-50"
+            className="flex items-center gap-2 hover:text-twitchPurple dark:hover:text-twitchPurpleLight saturate-50"
             href={`https://twitch.tv/${streamSchedule.broadcaster_login}`}
           >
+            <svg
+              className="w-5 h-5 text-twitchPurple dark:text-twitchPurpleLight saturate-50"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z" />
+            </svg>
             <p>
               <strong className="text-twitchPurple dark:text-twitchPurpleLight saturate-50">
                 {streamSchedule.broadcaster_name}
