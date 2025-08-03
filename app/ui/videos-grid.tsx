@@ -43,7 +43,7 @@ const VideosGrid = ({
     <section aria-label={title} className="w-full relative">
       <div
         className={cx(
-          "sticky top-0 w-full gap-1 text-left sm:gap-3 bg-light/95 dark:bg-lightBlack/95 backdrop-blur-lg z-20 transition-opacity flex flex-col lg:flex-row lg:items-center lg:justify-between mb-5 py-5 px-6 md:py-8 border-b border-gray-200 dark:border-gray-700"
+          "sticky top-0 w-full gap-1 text-left sm:gap-3 bg-light/95 dark:bg-lightBlack/95 backdrop-blur-lg z-20 transition-opacity flex flex-col lg:flex-row lg:items-center lg:justify-between mb-5 py-5 px-6 xl:px-10 2xl:px-14 md:py-8 border-b border-gray-200 dark:border-gray-700"
         )}
       >
         <div className={cx("flex flex-col", { "opacity-0": loading })}>
@@ -139,8 +139,8 @@ const VideosGrid = ({
         </div>
       </div>
 
-      <div className="relative lg:mx-[2px] px-6 py-3">
-        <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 gap-5 md:gap-10 xl:gap-12 2xl:gap-14 relative z-10">
+      <div className="relative lg:mx-[2px] px-6 xl:px-10 2xl:px-14 py-3">
+        <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4 gap-5 md:gap-8 xl:gap-10 lg:gap-y-14 xl:gap-y-16 relative z-10">
           {videos
             ?.filter((video) => !video.disabled)
             .map((video, index) => (

@@ -49,9 +49,7 @@ const MobileHeader = ({
       <div className="flex flex-col justify-between gap-4">
         <div className="flex flex-row justify-between items-center gap-4">
           <Logo />
-          <div className="sm:hidden flex">
-            <SidebarSocialLinks className="flex-wrap" />
-          </div>
+          <SidebarSocialLinks className="flex-wrap sm:hidden flex justify-end" />
         </div>
 
         <StreamInfoComponent
@@ -141,7 +139,7 @@ const SidebarHeader = ({
 }) => {
   return (
     <div className="sticky top-0 dark:bg-gray-900 z-10 pb-4 border-b border-gray-200 dark:border-gray-700">
-      <div className="px-5 py-1">
+      <div className="px-5 xl:px-7 py-1">
         <div className="flex flex-col gap-3 mt-4">
           <Logo />
           <StreamInfoComponent
@@ -158,7 +156,7 @@ const SidebarHeader = ({
 const SidebarFooter = () => {
   return (
     <div className="sticky bottom-0 dark:bg-gray-900 z-10 pt-2 border-t border-gray-200 dark:border-gray-700">
-      <div className="px-5 pb-4">
+      <div className="px-5 xl:px-7 pb-4">
         <div className="flex flex-row justify-between items-center gap-2">
           <div className="text-gray-600 dark:text-gray-400">
             Made by{" "}
@@ -191,7 +189,7 @@ const SidebarFilters = ({ tags }: { tags: Tag[] }) => {
     activeTagSlugs?.filter((slug) => slug && slug.trim() !== "").length ?? 0;
 
   return (
-    <div className="flex-1 overflow-y-auto px-5 py-6 sidebar-scrollbar">
+    <div className="flex-1 overflow-y-auto px-5 xl:px-7 py-6 sidebar-scrollbar">
       <section className="flex flex-col gap-y-5">
         {/* Timeframe */}
         <details className="group" open>
@@ -319,7 +317,7 @@ const Sidebar = ({
   streamSchedule?: StreamScheduleDisplay;
 }) => {
   return (
-    <aside className="hidden lg:flex flex-col h-screen w-80 xl:w-96  dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
+    <aside className="hidden lg:flex flex-col h-screen w-80 xl:w-96 2xl:w-[30rem] dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
       <SidebarHeader streamInfo={streamInfo} streamSchedule={streamSchedule} />
       <SidebarFilters tags={tags} />
       <SidebarFooter />

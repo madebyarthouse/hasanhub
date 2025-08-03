@@ -3,7 +3,7 @@ import TagButton from "./tag-button";
 
 const Taglist = ({ tags }: { tags: Tag[] }) => {
   return (
-    <ul className="flex flex-row flex-wrap gap-3 text-sm w-full pb-3">
+    <ul className="flex flex-row flex-wrap gap-3 lg:gap-2 xl:gap-1 text-sm w-full pb-3">
       {tags.map((tag) => (
         <li key={tag.id}>
           <TagButton
