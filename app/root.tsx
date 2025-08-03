@@ -9,6 +9,7 @@ import {
   ScrollRestoration,
   useRouteError,
 } from "@remix-run/react";
+import { useEffect } from "react";
 import Layout from "./ui/layout";
 import styles from "./styles/app.css";
 
@@ -72,6 +73,33 @@ export function links() {
 }
 
 function App() {
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+    const handleChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      console.log("handleChange", e.matches);
+      if (e.matches) {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+    };
+
+    // Set initial state
+    handleChange(mediaQuery);
+
+    // Listen for changes
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", handleChange);
+    }
+
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener("change", handleChange);
+      }
+    };
+  }, []);
+
   return (
     <html lang="en">
       <head>

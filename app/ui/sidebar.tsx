@@ -138,7 +138,7 @@ const SidebarHeader = ({
   streamSchedule?: StreamScheduleDisplay;
 }) => {
   return (
-    <div className="sticky top-0 dark:bg-gray-900 z-10 pb-4 border-b border-gray-200 dark:border-gray-700">
+    <div className="sticky top-0 z-10 pb-4 border-b border-gray-200 dark:border-gray-700">
       <div className="px-5 xl:px-7 py-1">
         <div className="flex flex-col gap-3 mt-4">
           <Logo />
@@ -155,10 +155,10 @@ const SidebarHeader = ({
 // Sidebar Footer Component (Sticky)
 const SidebarFooter = () => {
   return (
-    <div className="sticky bottom-0 dark:bg-gray-900 z-10 pt-2 border-t border-gray-200 dark:border-gray-700">
+    <div className="sticky bottom-0 z-10 pt-2 border-t border-gray-200 dark:border-gray-700">
       <div className="px-5 xl:px-7 pb-4">
         <div className="flex flex-row justify-between items-center gap-2">
-          <div className="text-gray-600 dark:text-gray-400">
+          <div>
             Made by{" "}
             <a
               href="https://chrcit.com/projects/hasanhub-com"
@@ -317,7 +317,7 @@ const Sidebar = ({
   streamSchedule?: StreamScheduleDisplay;
 }) => {
   return (
-    <aside className="hidden lg:flex flex-col h-screen w-80 xl:w-96 2xl:w-[30rem] dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
+    <aside className="hidden lg:flex flex-col h-screen w-80 xl:w-96 2xl:w-[30rem] border-r border-gray-200 dark:border-gray-700">
       <SidebarHeader streamInfo={streamInfo} streamSchedule={streamSchedule} />
       <SidebarFilters tags={tags} />
       <SidebarFooter />

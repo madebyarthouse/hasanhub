@@ -48,7 +48,6 @@ const GitHubIcon = () => (
   </svg>
 );
 
-// Layout Components
 const SocialLinks = () => {
   return (
     <div className="flex gap-2 items-center">
