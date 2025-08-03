@@ -771,6 +771,10 @@ video {
   margin-top: 1rem;
 }
 
+.mt-1 {
+  margin-top: 0.25rem;
+}
+
 .block {
   display: block;
 }
@@ -977,6 +981,10 @@ video {
 
 .items-center {
   align-items: center;
+}
+
+.justify-start {
+  justify-content: flex-start;
 }
 
 .justify-end {
@@ -1830,12 +1838,12 @@ img {
     justify-content: flex-end;
   }
 
-  .md\:gap-10 {
-    gap: 2.5rem;
-  }
-
   .md\:gap-8 {
     gap: 2rem;
+  }
+
+  .md\:gap-6 {
+    gap: 1.5rem;
   }
 
   .md\:py-8 {
@@ -1895,6 +1903,10 @@ img {
     row-gap: 3.5rem;
   }
 
+  .lg\:gap-y-12 {
+    row-gap: 3rem;
+  }
+
   .lg\:overflow-y-auto {
     overflow-y: auto;
   }
@@ -1927,30 +1939,30 @@ img {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .xl\:gap-12 {
-    gap: 3rem;
+  .xl\:gap-1 {
+    gap: 0.25rem;
   }
 
   .xl\:gap-10 {
     gap: 2.5rem;
   }
 
-  .xl\:gap-1 {
-    gap: 0.25rem;
+  .xl\:gap-8 {
+    gap: 2rem;
   }
 
   .xl\:gap-y-16 {
     row-gap: 4rem;
   }
 
-  .xl\:px-14 {
-    padding-left: 3.5rem;
-    padding-right: 3.5rem;
-  }
-
   .xl\:px-10 {
     padding-left: 2.5rem;
     padding-right: 2.5rem;
+  }
+
+  .xl\:px-14 {
+    padding-left: 3.5rem;
+    padding-right: 3.5rem;
   }
 
   .xl\:px-7 {
@@ -1969,18 +1981,6 @@ img {
     width: 30rem;
   }
 
-  .\32xl\:grid-cols-4 {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .\32xl\:gap-14 {
-    gap: 3.5rem;
-  }
-
-  .\32xl\:gap-y-12 {
-    row-gap: 3rem;
-  }
-
   .\32xl\:px-14 {
     padding-left: 3.5rem;
     padding-right: 3.5rem;
@@ -1988,17 +1988,8 @@ img {
 }
 
 @media (min-width: 1920px) {
-  .\33xl\:grid-cols-5 {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-  }
-
   .\33xl\:grid-cols-4 {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .\33xl\:px-5 {
-    padding-left: 1.25rem;
-    padding-right: 1.25rem;
   }
 }
 
