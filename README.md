@@ -1,6 +1,6 @@
 # Hasanhub
 
-![CleanShot 2024-11-06 at 00 14 23](https://github.com/user-attachments/assets/7df9a391-b909-4606-9a6d-03bc49d6bd9e)
+![Screenvideo of Hasanhub on desktop](https://github.com/user-attachments/assets/a539fd5d-7cf6-4ffc-a8f0-f6797aeebe74)
 
 ## Important Note
 
