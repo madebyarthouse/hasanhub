@@ -1,5 +1,5 @@
 import useUrlState from "~/hooks/use-url-state";
-import type { DurationType } from "~/utils/validators";
+import type { DurationType, TimeframeType } from "~/utils/validators";
 import type { OrderByType, OrderDirectionType } from "../utils/validators";
 
 const useActionUrl = () => {
@@ -9,6 +9,7 @@ const useActionUrl = () => {
     action: {
       tagSlugs?: string[];
       durations?: DurationType[];
+      timeframe?: TimeframeType;
       ordering?: { by?: OrderByType; order?: OrderDirectionType };
       lastVideoId?: number;
     },
@@ -33,6 +34,10 @@ const useActionUrl = () => {
     merged.durations?.forEach((duration: DurationType) => {
       searchParams.append("durations", duration);
     });
+
+    if (merged.timeframe) {
+      searchParams.append("timeframe", merged.timeframe);
+    }
 
     if (merged.ordering.order && merged.ordering.order !== "desc") {
       searchParams.append("order", merged.ordering.order);

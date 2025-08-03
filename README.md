@@ -1,6 +1,6 @@
 # Hasanhub
 
-![CleanShot 2024-11-06 at 00 14 23](https://github.com/user-attachments/assets/7df9a391-b909-4606-9a6d-03bc49d6bd9e)
+![Screenvideo of Hasanhub on desktop](https://github.com/user-attachments/assets/a539fd5d-7cf6-4ffc-a8f0-f6797aeebe74)
 
 ## Important Note
 
@@ -49,13 +49,3 @@ Syncing needs to be setup via Cron jobs (or similiar) by hitting the API routes 
 
 For sure! If you do pls [let me know](https://twitter.com/chrcit) so I can check it out.
 I'd also love a backlink to [my website](https://chrcit.com/projects/hasanhub-com?utm_source=github-hasanhub) somewhere on the site if you are awesome!
-
-## Random stuff
-
-## Refresh Twitch access token
-
-```bash
-curl -X POST 'https://id.twitch.tv/oauth2/token' \
--H 'Content-Type: application/x-www-form-urlencoded' \
--d 'client_id=ttsgjnui5mqji4aqjvzahh3mrlyzy3&client_secret=[CLIENT_SECRET]&grant_type=client_credentials'
-```

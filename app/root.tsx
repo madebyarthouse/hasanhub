@@ -1,5 +1,4 @@
-import type { LoaderFunction, MetaFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import type { MetaFunction } from "@remix-run/node";
 import {
   isRouteErrorResponse,
   Links,
@@ -8,12 +7,11 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useLoaderData,
   useRouteError,
 } from "@remix-run/react";
+import { useEffect } from "react";
 import Layout from "./ui/layout";
 import styles from "./styles/app.css";
-import { getStreamInfo } from "./lib/get-stream-info.server";
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
@@ -74,38 +72,33 @@ export function links() {
   ];
 }
 
-export async function loader() {
-  const [streamInfo, schedule] = await getStreamInfo();
-
-  return json(
-    {
-      streamInfo: streamInfo.data?.length
-        ? {
-            user_login: streamInfo.data[0].user_login,
-            user_name: streamInfo.data[0].user_name,
-            title: streamInfo.data[0].title,
-          }
-        : null,
-      schedule: schedule.data?.segments.length
-        ? {
-            broadcaster_login: schedule.data.broadcaster_login,
-            broadcaster_name: schedule.data.broadcaster_name,
-            start_time: schedule.data.segments[0].start_time,
-            title: schedule.data.segments[0].title,
-          }
-        : null,
-    },
-    {
-      status: 200,
-      headers: {
-        "Cache-Control": "max-age=60, s-maxage=60, stale-while-revalidate=360",
-      },
-    }
-  );
-}
-
 function App() {
-  const { streamInfo, schedule } = useLoaderData<typeof loader>();
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+    const handleChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      console.log("handleChange", e.matches);
+      if (e.matches) {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+    };
+
+    // Set initial state
+    handleChange(mediaQuery);
+
+    // Listen for changes
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", handleChange);
+    }
+
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener("change", handleChange);
+      }
+    };
+  }, []);
 
   return (
     <html lang="en">
@@ -119,7 +112,7 @@ function App() {
         <meta name="og:image" content="https://hasanhub.com/og.png" />
       </head>
       <body>
-        <Layout streamInfo={streamInfo} streamSchedule={schedule}>
+        <Layout>
           <Outlet />
         </Layout>
         <ScrollRestoration />

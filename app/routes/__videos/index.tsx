@@ -1,6 +1,7 @@
 import { json } from "@remix-run/node";
 import type { LoaderFunction } from "@remix-run/node";
-import { useFetcher, useLoaderData } from "@remix-run/react";
+import { useFetcher, useLoaderData, useOutletContext } from "@remix-run/react";
+import { cacheHeader } from "pretty-cache-header";
 import { prisma } from "~/utils/prisma.server";
 import VideosGrid from "~/ui/videos-grid";
 import getVideos from "../../lib/get-videos";
@@ -9,10 +10,15 @@ import { UrlParamsSchema } from "~/utils/validators";
 import { z } from "zod";
 import useUrlState from "~/hooks/use-url-state";
 import useActionUrl from "~/hooks/use-action-url";
+import type { VideosLayoutContext } from "~/routes/__videos";
 
 export function headers() {
   return {
-    "Cache-Control": "max-age=120, s-maxage=120, stale-while-revalidate=360",
+    "Cache-Control": cacheHeader({
+      maxAge: "2minutes",
+      sMaxage: "2minutes",
+      staleWhileRevalidate: "6minutes",
+    }),
   };
 }
 
@@ -21,16 +27,19 @@ export const loader: LoaderFunction = async ({ request }) => {
   let lastVideoIdParam = url.searchParams.get("lastVideoId");
 
   try {
-    const { order, durations, by, lastVideoId } = UrlParamsSchema.parse({
-      order: url.searchParams.get("order") ?? undefined,
-      durations: url.searchParams.getAll("durations"),
-      by: url.searchParams.get("by") ?? undefined,
-      lastVideoId: lastVideoIdParam ? parseInt(lastVideoIdParam) : undefined,
-    });
+    const { order, durations, timeframe, by, lastVideoId } =
+      UrlParamsSchema.parse({
+        order: url.searchParams.get("order") ?? undefined,
+        durations: url.searchParams.getAll("durations"),
+        timeframe: url.searchParams.get("timeframe"),
+        by: url.searchParams.get("by") ?? undefined,
+        lastVideoId: lastVideoIdParam ? parseInt(lastVideoIdParam) : undefined,
+      });
 
     const [videos, totalVideosCount] = await getVideos({
       order,
       durations,
+      timeframe,
       by,
       lastVideoId,
     });
@@ -40,8 +49,11 @@ export const loader: LoaderFunction = async ({ request }) => {
       {
         status: 200,
         headers: {
-          "Cache-Control":
-            "max-age=120, s-maxage=120, stale-while-revalidate=360",
+          "Cache-Control": cacheHeader({
+            maxAge: "5minutes",
+            sMaxage: "15minutes",
+            staleWhileRevalidate: "1hour",
+          }),
         },
       }
     );
@@ -68,7 +80,7 @@ export default function Index() {
 
   useEffect(() => {
     if (fetcher.data && fetcher.data.videos?.length > 0) {
-      setLiveVideos((prev) => [...prev, ...fetcher.data.videos]);
+      setLiveVideos((prev: typeof videos) => [...prev, ...fetcher.data.videos]);
     }
   }, [fetcher.data]);
 
@@ -100,7 +112,7 @@ export default function Index() {
       totalVideosCount={totalVideosCount}
       handleLoadMore={handleLoadMore}
       title={`${title} videos`}
-      videos={liveVideos}
+      videos={liveVideos ?? []}
       loading={isLoading}
       loadMoreUrl={loaderUrl}
       loadingMore={fetcher.state === "loading"}

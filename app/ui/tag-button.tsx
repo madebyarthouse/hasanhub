@@ -6,17 +6,20 @@ const TagButton = ({
   active = false,
   styleVariant = "sidebar",
   href,
+  onClick,
 }: {
   href: string;
   active?: boolean;
   label: string;
   styleVariant: "sidebar" | "taglist";
+  onClick?: () => void;
 }) => {
   return (
     <>
       <div className="min-w-min">
         <Link
           to={href}
+          onClick={onClick}
           className={cx(
             "border-twitchPurpleLight duration-400 transition-colors border  betterhover:hover:bg-twitchPurple betterhover:hover:text-light inline-block rounded-lg saturate-50 ",
             styleVariant === "sidebar"

@@ -1,16 +1,44 @@
 import type { LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Outlet, useLoaderData } from "@remix-run/react";
-import Sidebar from "~/ui/sidebar";
+import { cacheHeader } from "pretty-cache-header";
 import useUrlState from "~/hooks/use-url-state";
 import { TagSlugsValidator } from "~/lib/get-videos";
 import { debug } from "~/utils/debug.server";
+import type { Tag } from "@prisma/client";
+import type { DurationListType, TimeframeType } from "~/utils/validators";
+import { getStreamInfo } from "~/lib/get-stream-info.server";
+import Sidebar, { MobileHeader } from "~/ui/sidebar";
+
+// Component-specific types that match the transformed data from root.tsx
+type StreamInfoDisplay = {
+  user_login: string;
+  user_name: string;
+  title: string;
+};
+
+type StreamScheduleDisplay = {
+  broadcaster_login: string;
+  broadcaster_name: string;
+  start_time: string;
+  title: string;
+};
+
+export type VideosLayoutContext = {
+  tags: Tag[];
+  tagSlugs: string[];
+  durations: DurationListType | undefined;
+  timeframe: TimeframeType | undefined;
+  streamInfo?: StreamInfoDisplay;
+  streamSchedule?: StreamScheduleDisplay;
+};
 
 export function headers() {
   return {
-    "Cache-Control": `s-maxage=${60 * 60 * 24}, stale-while-revalidate=${
-      60 * 60 * 24 * 7
-    }`,
+    "Cache-Control": cacheHeader({
+      sMaxage: "1day",
+      staleWhileRevalidate: "1week",
+    }),
   };
 }
 
@@ -22,23 +50,48 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     : "http://localhost:3000";
 
   try {
-    console.log(BASE_URL);
-    const response = await fetch(`${BASE_URL}/api/get-tags-for-sidebar`);
-    const data = await response.json();
+    const [tagsResponse, [streamInfoRaw, streamScheduleRaw]] =
+      await Promise.all([
+        fetch(`${BASE_URL}/api/get-tags-for-sidebar`),
+        getStreamInfo(),
+      ]);
 
+    const tagsData = await tagsResponse.json();
     const tagSlugs = TagSlugsValidator.parse(slugs) ?? [];
+
+    // Transform stream data to match component interface
+    const streamInfo = streamInfoRaw?.data?.length
+      ? {
+          user_login: streamInfoRaw.data[0].user_login,
+          user_name: streamInfoRaw.data[0].user_name,
+          title: streamInfoRaw.data[0].title,
+        }
+      : null;
+
+    const streamSchedule = streamScheduleRaw?.data?.segments.length
+      ? {
+          broadcaster_login: streamScheduleRaw.data.broadcaster_login,
+          broadcaster_name: streamScheduleRaw.data.broadcaster_name,
+          start_time: streamScheduleRaw.data.segments[0].start_time,
+          title: streamScheduleRaw.data.segments[0].title,
+        }
+      : null;
 
     return json(
       {
-        tags: data ?? [],
+        tags: tagsData ?? [],
         tagSlugs,
+        streamInfo,
+        streamSchedule,
       },
       {
         status: 200,
         headers: {
-          "Cache-Control": `max-age=${60 * 60 * 24 * 3}, s-maxage=${
-            60 * 60 * 24
-          }, stale-while-revalidate=${60 * 60 * 24 * 7}`,
+          "Cache-Control": cacheHeader({
+            maxAge: "3days",
+            sMaxage: "1day",
+            staleWhileRevalidate: "1week",
+          }),
         },
       }
     );
@@ -49,20 +102,33 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 export default function VideosLayout() {
-  const { tags } = useLoaderData<typeof loader>();
-  const { durations, tagSlugs } = useUrlState();
-  return (
-    <div className="flex flex-col lg:flex-row relative w-full">
-      <div className="w-full lg:sticky lg:overflow-y-auto lg:max-h-screen  lg:top-0 lg:w-1/4 xl:w-1/5  py-5 px-3 lg:px-0 overflow-x-auto">
-        <Sidebar
-          tags={tags}
-          activeTagSlugs={tagSlugs}
-          durationFilter={durations}
-        />
-      </div>
+  const { tags, streamInfo, streamSchedule } = useLoaderData<typeof loader>();
+  const { durations, timeframe, tagSlugs } = useUrlState();
 
-      <div className="lg:pl-14 w-full lg:w-3/4 xl:w-4/5">
-        <Outlet />
+  const context: VideosLayoutContext = {
+    tags,
+    tagSlugs,
+    durations,
+    timeframe,
+    streamInfo,
+    streamSchedule,
+  };
+
+  return (
+    <div className="flex flex-col lg:flex-row h-screen">
+      {/* Mobile Header - shown on mobile/tablet */}
+      <MobileHeader streamInfo={streamInfo} streamSchedule={streamSchedule} />
+
+      {/* Sidebar - hidden on mobile/tablet */}
+      <Sidebar
+        tags={tags}
+        streamInfo={streamInfo}
+        streamSchedule={streamSchedule}
+      />
+
+      {/* Content Area */}
+      <div className="flex-1 lg:overflow-y-auto">
+        <Outlet context={context} />
       </div>
     </div>
   );

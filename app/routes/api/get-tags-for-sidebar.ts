@@ -1,5 +1,6 @@
 import type { Tag } from "@prisma/client";
 import { json } from "@remix-run/node";
+import { cacheHeader } from "pretty-cache-header";
 import { prisma } from "~/utils/prisma.server";
 
 type TagsForSidebar = (Tag & { viewsCount: number })[];
@@ -25,10 +26,16 @@ export async function loader() {
       headers: {
         "Cache-Control":
           tags.length > 0
-            ? `s-maxage=${60 * 60 * 24}, stale-while-revalidate=${
-                60 * 60 * 24 * 7
-              }`
-            : `no-cache, max-age=0, no-store, must-revalidate`,
+            ? cacheHeader({
+                sMaxage: "1day",
+                staleWhileRevalidate: "1week",
+              })
+            : cacheHeader({
+                noCache: true,
+                maxAge: "0s",
+                noStore: true,
+                mustRevalidate: true,
+              }),
       },
     });
   } catch (e) {

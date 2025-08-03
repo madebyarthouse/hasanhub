@@ -1,3 +1,4 @@
+import { cacheHeader } from "pretty-cache-header";
 import { prisma } from "~/utils/prisma.server";
 
 export const loader = async () => {
@@ -29,7 +30,10 @@ export const loader = async () => {
   return new Response(sitemap, {
     status: 200,
     headers: {
-      "Cache-Control": "max-age=0, s-maxage=86400",
+      "Cache-Control": cacheHeader({
+        maxAge: "0s",
+        sMaxage: "1day",
+      }),
       "Content-Type": "application/xml",
       "xml-version": "1.0",
       encoding: "UTF-8",

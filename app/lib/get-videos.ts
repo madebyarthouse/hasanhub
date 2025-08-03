@@ -1,9 +1,14 @@
 import { z } from "zod";
 import { publishStatus, videoSyncStatus } from "~/utils/dbEnums";
 import { prisma } from "~/utils/prisma.server";
-import type { DurationListType, LastVideoIdType } from "~/utils/validators";
+import type {
+  DurationListType,
+  TimeframeType,
+  LastVideoIdType,
+} from "~/utils/validators";
 import {
   DurationListValidator,
+  TimeframeValidator,
   LastVideoIdValidator,
   OrderByValdiator,
   OrderDirectionValidator,
@@ -25,11 +30,12 @@ const GetVideosValidator = z.object({
   by: OrderByValdiator,
   order: OrderDirectionValidator,
   durations: z.optional(DurationListValidator),
+  timeframe: z.optional(TimeframeValidator),
   lastVideoId: LastVideoIdValidator,
 });
 
 const getVideos = async (params: GetVideosArgs) => {
-  const { order, durations, by, lastVideoId, tagSlugs, take } =
+  const { order, durations, timeframe, by, lastVideoId, tagSlugs, take } =
     GetVideosValidator.parse(params);
 
   let conditions: {
@@ -73,6 +79,16 @@ const getVideos = async (params: GetVideosArgs) => {
       minMaxPairs.forEach((pair) => {
         conditions.OR?.push({ duration: pair });
       });
+    }
+  }
+
+  if (timeframe) {
+    const earliestDate = getDateRangeForTimeframe(timeframe);
+    if (earliestDate) {
+      conditions["publishedAt"] = {
+        ...conditions["publishedAt"],
+        gte: earliestDate,
+      };
     }
   }
 
@@ -133,6 +149,25 @@ const getMinxMaxForTimeFilter = (durations?: DurationListType) => {
         return [0, 999999999];
     }
   });
+};
+
+const getDateRangeForTimeframe = (timeframe: TimeframeType) => {
+  const now = new Date();
+
+  switch (timeframe) {
+    case "recent": // Last 24h
+      return new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    case "week": // Last week
+      return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    case "month": // Last month
+      return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    case "quarter": // Last quarter (3 months)
+      return new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+    case "year": // Last year
+      return new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+    default:
+      return null;
+  }
 };
 
 export default getVideos;

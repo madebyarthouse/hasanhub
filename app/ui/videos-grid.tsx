@@ -4,7 +4,9 @@ import cx from "classnames";
 import LoadingSpinner from "./loading-spinner";
 import useUrlState from "~/hooks/use-url-state";
 import useActionUrl from "~/hooks/use-action-url";
-import { Link } from "@remix-run/react";
+import { Link, useOutletContext } from "@remix-run/react";
+import FilterModal from "./filter-modal";
+import type { VideosLayoutContext } from "~/routes/__videos";
 
 type VideoType = Video & {
   channel: Channel | null;
@@ -34,28 +36,42 @@ const VideosGrid = ({
 }: Props) => {
   const { ordering } = useUrlState();
   const { constructUrl } = useActionUrl();
+  const { tags } = useOutletContext<VideosLayoutContext>();
   const lastVideoId = videos.length > 0 ? videos[videos.length - 1].id : null;
 
   return (
     <section aria-label={title} className="w-full relative">
       <div
         className={cx(
-          "sticky top-0 w-full gap-1 text-left sm:gap-3 bg-light dark:bg-lightBlack z-20 transition-opacity flex flex-col md:flex-row md:items-center md:justify-between px-3 lg:px-0 mb-5 py-5"
+          "sticky top-0 w-full gap-1 text-left sm:gap-3 bg-light/95 dark:bg-lightBlack/95 backdrop-blur-lg z-20 transition-opacity flex flex-col lg:flex-row lg:items-center lg:justify-between mb-5 py-5 px-6 xl:px-10 2xl:px-14 md:py-8 border-b border-gray-200 dark:border-gray-700"
         )}
       >
         <div className={cx("flex flex-col", { "opacity-0": loading })}>
-          <h1 className={cx("text-4xl md:text-5xl mt-0")}>{title}</h1>
-          <div className="text-sm font-semibold">
-            <strong className={cx("font-extrabold")}>
-              {videos?.length ?? 0}
-            </strong>{" "}
-            of{" "}
-            <strong className={cx("font-extrabold")}>{totalVideosCount}</strong>{" "}
-            Videos shown
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h1
+                className={cx(
+                  "text-3xl lg:text-4xl xl:text-5xl md:mb-0 font-semibold"
+                )}
+              >
+                {title}
+              </h1>
+              <div className="text-xs md:text-sm font-semibold">
+                <strong className={cx("font-extrabold")}>
+                  {videos?.length ?? 0}
+                </strong>{" "}
+                of{" "}
+                <strong className={cx("font-extrabold")}>
+                  {totalVideosCount}
+                </strong>{" "}
+                Videos shown
+              </div>
+            </div>
+            <FilterModal tags={tags} />
           </div>
         </div>
 
-        <div className="flex flex-row gap-1 sm:gap-10 justify-between lg:flex-row md:justify-end my-3 md:my-0 ">
+        <div className="hidden lg:flex flex-row gap-1 sm:gap-10 justify-between lg:flex-row md:justify-end my-3 md:my-0">
           <ul className="flex flex-row">
             <li>
               <Link
@@ -123,8 +139,8 @@ const VideosGrid = ({
         </div>
       </div>
 
-      <div className="relative lg:mx-[2px]">
-        <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-10 xl:gap-12 2xl:gap-14 relative z-10">
+      <div className="relative lg:mx-[2px] px-6 xl:px-10 2xl:px-14 py-3">
+        <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4 gap-5 md:gap-6 xl:gap-8 lg:gap-y-12 xl:gap-y-16 relative z-10">
           {videos
             ?.filter((video) => !video.disabled)
             .map((video, index) => (
