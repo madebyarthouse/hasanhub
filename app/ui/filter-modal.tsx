@@ -69,7 +69,7 @@ const FilterModal = ({ tags }: { tags: Tag[] }) => {
         container={typeof document !== "undefined" ? document.body : null}
       >
         <Drawer.Overlay className="fixed inset-0 bg-black/40 lg:hidden z-[9999]" />
-        <Drawer.Content className="bg-light dark:bg-lightBlack flex flex-col rounded-t-[10px] h-[96vh] max-h-[96vh] overflow-y-auto fixed bottom-0 left-0 right-0 lg:hidden z-[9999]">
+        <Drawer.Content className="bg-light dark:bg-lightBlack flex flex-col rounded-t-[10px] h-[96dvh] max-h-[96dvh] overflow-y-auto fixed bottom-0 left-0 right-0 lg:hidden z-[9999]">
           <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-gray-300 dark:bg-gray-600 mb-8 mt-4" />
           <div className="px-3.5 pb-6">
             {/* Sorting Controls */}

@@ -834,12 +834,20 @@ video {
   height: 96vh;
 }
 
+.h-\[96dvh\] {
+  height: 96dvh;
+}
+
 .max-h-\[96\%\] {
   max-height: 96%;
 }
 
 .max-h-\[96vh\] {
   max-height: 96vh;
+}
+
+.max-h-\[96dvh\] {
+  max-height: 96dvh;
 }
 
 .w-12 {
