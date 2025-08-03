@@ -119,8 +119,8 @@ const VideoGridItem = ({
               alt=""
               className="rounded-full"
               src={video.channel?.smallThumbnailUrl ?? ""}
-              width={40}
-              height={40}
+              width={35}
+              height={35}
               loading={lazy ? "lazy" : "eager"}
             />
             <h3 className="font-semibold overflow-clip w-max">
