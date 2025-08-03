@@ -43,7 +43,7 @@ const VideosGrid = ({
     <section aria-label={title} className="w-full relative">
       <div
         className={cx(
-          "sticky top-0 w-full gap-1 text-left sm:gap-3 bg-light/95 dark:bg-lightBlack/95 backdrop-blur-lg z-20 transition-opacity flex flex-col lg:flex-row lg:items-center lg:justify-between mb-5 py-3 md:py-5"
+          "sticky top-0 w-full gap-1 text-left sm:gap-3 bg-light/95 dark:bg-lightBlack/95 backdrop-blur-lg z-20 transition-opacity flex flex-col lg:flex-row lg:items-center lg:justify-between mb-5 py-5 px-6 md:py-8 border-b border-gray-200 dark:border-gray-700"
         )}
       >
         <div className={cx("flex flex-col", { "opacity-0": loading })}>
@@ -51,7 +51,7 @@ const VideosGrid = ({
             <div>
               <h1
                 className={cx(
-                  "text-xl xs:text-2xl md:text-3xl xl:text-4xl md:mb-0 font-semibold"
+                  "text-3xl lg:text-4xl xl:text-5xl md:mb-0 font-semibold"
                 )}
               >
                 {title}
@@ -71,7 +71,7 @@ const VideosGrid = ({
           </div>
         </div>
 
-        <div className="hidden lg:flex flex-row gap-1 sm:gap-10 justify-between lg:flex-row md:justify-end my-3 md:my-0 ">
+        <div className="hidden lg:flex flex-row gap-1 sm:gap-10 justify-between lg:flex-row md:justify-end my-3 md:my-0">
           <ul className="flex flex-row">
             <li>
               <Link
@@ -139,7 +139,7 @@ const VideosGrid = ({
         </div>
       </div>
 
-      <div className="relative lg:mx-[2px]">
+      <div className="relative lg:mx-[2px] px-6 py-3">
         <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5 md:gap-10 xl:gap-12 2xl:gap-14 relative z-10">
           {videos
             ?.filter((video) => !video.disabled)

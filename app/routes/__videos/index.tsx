@@ -74,9 +74,7 @@ export default function Index() {
   const fetcher = useFetcher();
   const { isLoading, ordering } = useUrlState();
   const { constructUrl } = useActionUrl();
-  const context = useOutletContext<VideosLayoutContext>();
 
-  console.log(context);
   const loaderUrl = (lastVideoId: number) =>
     constructUrl({ lastVideoId: lastVideoId }, true);
 

@@ -1,19 +1,5 @@
 import { Link } from "@remix-run/react";
 
-// Types
-type StreamInfo = {
-  user_login: string;
-  user_name: string;
-  title: string;
-};
-
-type StreamSchedule = {
-  broadcaster_login: string;
-  broadcaster_name: string;
-  start_time: string;
-  title: string;
-};
-
 // Utility Functions
 const getTimeUntilStream = (startTime: string) => {
   const now = new Date();
@@ -122,15 +108,29 @@ const Logo = () => {
   );
 };
 
-const StreamInfo = ({
+// Component-specific types that match the transformed data from root.tsx
+type StreamInfoDisplay = {
+  user_login: string;
+  user_name: string;
+  title: string;
+};
+
+type StreamScheduleDisplay = {
+  broadcaster_login: string;
+  broadcaster_name: string;
+  start_time: string;
+  title: string;
+};
+
+const StreamInfoComponent = ({
   streamInfo,
   streamSchedule,
 }: {
-  streamInfo?: StreamInfo;
-  streamSchedule: StreamSchedule;
+  streamInfo?: StreamInfoDisplay;
+  streamSchedule?: StreamScheduleDisplay;
 }) => {
   return (
-    <div className="flex items-center justify-center sm:justify-end text-center sm:text-right text-base md:text-lg">
+    <div className="flex">
       {streamInfo ? (
         <a
           className="hover:text-twitchPurple dark:hover:text-twitchPurpleLight saturate-50"
@@ -171,8 +171,8 @@ const Header = ({
   streamInfo,
   streamSchedule,
 }: {
-  streamInfo?: StreamInfo;
-  streamSchedule: StreamSchedule;
+  streamInfo?: StreamInfoDisplay;
+  streamSchedule?: StreamScheduleDisplay;
 }) => {
   return (
     <header className="px-5 lg:px-10 xl:px-14 pt-6">
@@ -182,10 +182,15 @@ const Header = ({
       {/* Main Content Row */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <Logo />
-        <StreamInfo streamInfo={streamInfo} streamSchedule={streamSchedule} />
+        <StreamInfoComponent
+          streamInfo={streamInfo}
+          streamSchedule={streamSchedule}
+        />
       </div>
     </header>
   );
 };
 
+// Export individual components for use in other layouts
+export { Logo, TopBar, StreamInfoComponent, SocialLinks };
 export default Header;
