@@ -49,13 +49,3 @@ Syncing needs to be setup via Cron jobs (or similiar) by hitting the API routes 
 
 For sure! If you do pls [let me know](https://twitter.com/chrcit) so I can check it out.
 I'd also love a backlink to [my website](https://chrcit.com/projects/hasanhub-com?utm_source=github-hasanhub) somewhere on the site if you are awesome!
-
-## Random stuff
-
-## Refresh Twitch access token
-
-```bash
-curl -X POST 'https://id.twitch.tv/oauth2/token' \
--H 'Content-Type: application/x-www-form-urlencoded' \
--d 'client_id=ttsgjnui5mqji4aqjvzahh3mrlyzy3&client_secret=[CLIENT_SECRET]&grant_type=client_credentials'
-```
