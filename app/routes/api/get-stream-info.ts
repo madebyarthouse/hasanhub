@@ -13,16 +13,19 @@ export async function loader() {
     const shouldCache = hasStreamInfo || hasScheduleInfo;
 
     if (shouldCache) {
-      return json(streamData, {
-        status: 200,
-        headers: {
-          "Cache-Control": cacheHeader({
-            maxAge: "15minutes",
-            sMaxage: "15minutes",
-            staleWhileRevalidate: "15minutes",
-          }),
-        },
-      });
+      return json(
+        { streamInfo, streamSchedule },
+        {
+          status: 200,
+          headers: {
+            "Cache-Control": cacheHeader({
+              maxAge: "15minutes",
+              sMaxage: "15minutes",
+              staleWhileRevalidate: "15minutes",
+            }),
+          },
+        }
+      );
     } else {
       // Don't cache when there's no meaningful data
       return json(streamData, {

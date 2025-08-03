@@ -9,6 +9,7 @@ import type { Tag } from "@prisma/client";
 import type { DurationListType, TimeframeType } from "~/utils/validators";
 
 import Sidebar, { MobileHeader } from "~/ui/sidebar";
+import { StreamInfo, StreamSchedule } from "~/lib/get-stream-info.server";
 
 // Component-specific types that match the transformed data from root.tsx
 type StreamInfoDisplay = {
@@ -55,7 +56,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       fetch(`${BASE_URL}/api/get-stream-info`),
     ]);
 
-    const [streamInfoRaw, streamScheduleRaw] = await streamResponse.json();
+    const { streamInfo: streamInfoRaw, streamSchedule: streamScheduleRaw } =
+      (await streamResponse.json()) as {
+        streamInfo: StreamInfo;
+        streamSchedule: StreamSchedule;
+      };
 
     const tagsData = await tagsResponse.json();
     const tagSlugs = TagSlugsValidator.parse(slugs) ?? [];
