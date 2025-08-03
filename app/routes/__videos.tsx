@@ -7,7 +7,7 @@ import { TagSlugsValidator } from "~/lib/get-videos";
 import { debug } from "~/utils/debug.server";
 import type { Tag } from "@prisma/client";
 import type { DurationListType, TimeframeType } from "~/utils/validators";
-import { getStreamInfo } from "~/lib/get-stream-info.server";
+
 import Sidebar, { MobileHeader } from "~/ui/sidebar";
 
 // Component-specific types that match the transformed data from root.tsx
@@ -50,11 +50,12 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     : "http://localhost:3000";
 
   try {
-    const [tagsResponse, [streamInfoRaw, streamScheduleRaw]] =
-      await Promise.all([
-        fetch(`${BASE_URL}/api/get-tags-for-sidebar`),
-        getStreamInfo(),
-      ]);
+    const [tagsResponse, streamResponse] = await Promise.all([
+      fetch(`${BASE_URL}/api/get-tags-for-sidebar`),
+      fetch(`${BASE_URL}/api/get-stream-info`),
+    ]);
+
+    const [streamInfoRaw, streamScheduleRaw] = await streamResponse.json();
 
     const tagsData = await tagsResponse.json();
     const tagSlugs = TagSlugsValidator.parse(slugs) ?? [];

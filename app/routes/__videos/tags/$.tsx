@@ -12,7 +12,6 @@ import { UrlParamsSchema } from "~/utils/validators";
 import useUrlState from "~/hooks/use-url-state";
 import useActionUrl from "~/hooks/use-action-url";
 import getActiveTagsBySlugs from "~/lib/get-active-tags-by-slugs";
-import type { VideosLayoutContext } from "~/routes/__videos";
 
 export function headers() {
   return {
@@ -106,7 +105,6 @@ export default function TagPage() {
   const fetcher = useFetcher();
   const { isLoading, ordering } = useUrlState();
   const { constructUrl } = useActionUrl();
-  const { tags, tagSlugs, durations } = useOutletContext<VideosLayoutContext>();
 
   const loaderUrl = (lastVideoId: number) =>
     constructUrl({ lastVideoId: lastVideoId }, true);

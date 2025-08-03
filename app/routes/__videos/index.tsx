@@ -1,6 +1,6 @@
 import { json } from "@remix-run/node";
 import type { LoaderFunction } from "@remix-run/node";
-import { useFetcher, useLoaderData, useOutletContext } from "@remix-run/react";
+import { useFetcher, useLoaderData } from "@remix-run/react";
 import { cacheHeader } from "pretty-cache-header";
 import { prisma } from "~/utils/prisma.server";
 import VideosGrid from "~/ui/videos-grid";
@@ -10,7 +10,6 @@ import { UrlParamsSchema } from "~/utils/validators";
 import { z } from "zod";
 import useUrlState from "~/hooks/use-url-state";
 import useActionUrl from "~/hooks/use-action-url";
-import type { VideosLayoutContext } from "~/routes/__videos";
 
 export function headers() {
   return {
