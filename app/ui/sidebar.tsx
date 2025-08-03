@@ -119,7 +119,7 @@ const SidebarSocialLinks = ({ className }: { className?: string }) => {
         <TwitterIcon />
       </a>
       <a
-        href="https://github.com/chrcit/hasanhub"
+        href="https://github.com/madebyarthouse/hasanhub"
         target="_blank"
         rel="noreferrer"
         aria-label="View on GitHub"
