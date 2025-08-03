@@ -830,8 +830,12 @@ video {
   height: 100vh;
 }
 
-.max-h-\[96\%\] {
-  max-height: 96%;
+.h-\[96vh\] {
+  height: 96vh;
+}
+
+.max-h-\[96vh\] {
+  max-height: 96vh;
 }
 
 .w-12 {
@@ -1237,9 +1241,9 @@ video {
   text-align: center;
 }
 
-.text-2xl {
-  font-size: 1.5rem;
-  line-height: 2rem;
+.text-3xl {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
 }
 
 .text-\[2\.5rem\] {
@@ -1275,11 +1279,6 @@ video {
   line-height: 1rem;
 }
 
-.text-3xl {
-  font-size: 1.875rem;
-  line-height: 2.25rem;
-}
-
 .font-bold {
   font-weight: 700;
 }
@@ -1299,6 +1298,11 @@ video {
 .text-\[\#1DA1F2\] {
   --tw-text-opacity: 1;
   color: rgb(29 161 242 / var(--tw-text-opacity));
+}
+
+.text-\[\#26a7de\] {
+  --tw-text-opacity: 1;
+  color: rgb(38 167 222 / var(--tw-text-opacity));
 }
 
 .text-\[\#333333\] {
@@ -1334,11 +1338,6 @@ video {
 .text-white {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));
-}
-
-.text-\[\#26a7de\] {
-  --tw-text-opacity: 1;
-  color: rgb(38 167 222 / var(--tw-text-opacity));
 }
 
 .underline {
@@ -1613,11 +1612,6 @@ img {
   color: rgb(119 44 232 / var(--tw-text-opacity));
 }
 
-.hover\:text-twitchPurpleLight:hover {
-  --tw-text-opacity: 1;
-  color: rgb(145 71 255 / var(--tw-text-opacity));
-}
-
 .group[open] .group-open\:rotate-180 {
   --tw-rotate: 180deg;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
@@ -1695,6 +1689,11 @@ img {
   --tw-shadow: var(--tw-shadow-colored);
 }
 
+.dark\:hover\:text-\[\#26a7de\]:hover:is(.dark *) {
+  --tw-text-opacity: 1;
+  color: rgb(38 167 222 / var(--tw-text-opacity));
+}
+
 .dark\:hover\:text-gray-300:hover:is(.dark *) {
   --tw-text-opacity: 1;
   color: rgb(209 213 219 / var(--tw-text-opacity));
@@ -1703,11 +1702,6 @@ img {
 .dark\:hover\:text-twitchPurpleLight:hover:is(.dark *) {
   --tw-text-opacity: 1;
   color: rgb(145 71 255 / var(--tw-text-opacity));
-}
-
-.dark\:hover\:text-\[\#26a7de\]:hover:is(.dark *) {
-  --tw-text-opacity: 1;
-  color: rgb(38 167 222 / var(--tw-text-opacity));
 }
 
 @media (min-width: 640px) {
@@ -1790,11 +1784,6 @@ img {
   .md\:py-8 {
     padding-top: 2rem;
     padding-bottom: 2rem;
-  }
-
-  .md\:text-3xl {
-    font-size: 1.875rem;
-    line-height: 2.25rem;
   }
 
   .md\:text-sm {
