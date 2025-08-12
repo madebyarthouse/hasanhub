@@ -27,6 +27,14 @@ export const meta: MetaFunction = ({ data, parentsData }) => {
   // const { tags, tagSlugs }: { tags: Tag[]; tagSlugs: string[] } =
   //   parentsData["routes/__videos"];
   const { activeTags } = data as LoaderData;
+
+  if (!activeTags || activeTags.length === 0) {
+    return {
+      title: "Not found",
+      description: "Not found",
+    };
+  }
+
   const title = activeTags.map((tag) => tag.name).join(" and ");
   return {
     title: `${title} | HasanHub`,
