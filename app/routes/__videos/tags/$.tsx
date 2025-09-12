@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { LoaderFunction, MetaFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useFetcher, useLoaderData, useOutletContext } from "@remix-run/react";
+import { useFetcher, useLoaderData } from "@remix-run/react";
 import { cacheHeader } from "pretty-cache-header";
 import getVideos, { TagSlugsValidator } from "~/lib/get-videos";
 import { prisma } from "~/utils/prisma.server";
@@ -55,6 +55,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const slugs = params["*"]?.split("/") ?? [];
   let lastVideoIdParam = url.searchParams.get("lastVideoId");
 
+  console.log(slugs);
   if (slugs.length !== 1) {
     return new Response("Only 1 tag allowed at a time", { status: 400 });
   }
