@@ -46,6 +46,10 @@ export function headers() {
 export const loader: LoaderFunction = async ({ request, params }) => {
   const slugs = params["*"]?.split("/") ?? [];
 
+  if (slugs.length !== 1) {
+    return new Response("Only 1 tag allowed at a time", { status: 400 });
+  }
+
   const BASE_URL = process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
     : "http://localhost:3000";
