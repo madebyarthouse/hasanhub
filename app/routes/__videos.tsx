@@ -46,7 +46,7 @@ export function headers() {
 export const loader: LoaderFunction = async ({ request, params }) => {
   const slugs = params["*"]?.split("/") ?? [];
 
-  if (slugs.length !== 1) {
+  if (slugs.length > 1) {
     return new Response("Only 1 tag allowed at a time", { status: 400 });
   }
 
