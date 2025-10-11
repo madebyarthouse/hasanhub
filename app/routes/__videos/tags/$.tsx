@@ -56,7 +56,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   let lastVideoIdParam = url.searchParams.get("lastVideoId");
 
   if (slugs.length !== 1) {
-    return new Response("Only 1 tag allowed at a time", { status: 400 });
+    throw new Response("Not found", { status: 404, statusText: "Not found" });
   }
 
   try {
