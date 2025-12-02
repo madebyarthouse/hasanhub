@@ -16,9 +16,9 @@ import getActiveTagsBySlugs from "~/lib/get-active-tags-by-slugs";
 export function headers() {
   return {
     "Cache-Control": cacheHeader({
-      maxAge: "2minutes",
-      sMaxage: "2minutes",
-      staleWhileRevalidate: "6minutes",
+      maxAge: "1hour",
+      sMaxage: "12hours",
+      staleWhileRevalidate: "1day",
     }),
   };
 }
@@ -89,9 +89,9 @@ export const loader: LoaderFunction = async ({ request, params }) => {
         status: 200,
         headers: {
           "Cache-Control": cacheHeader({
-            maxAge: "5minutes",
-            sMaxage: "15minutes",
-            staleWhileRevalidate: "1hour",
+            maxAge: "10minutes",
+            sMaxage: "1hour",
+            staleWhileRevalidate: "1day",
           }),
         },
       }
