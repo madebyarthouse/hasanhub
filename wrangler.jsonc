@@ -12,6 +12,9 @@
       "database_id": "3cb465bd-8698-4c06-941c-0154e1fd72e7"
     }
   ],
+  "assets": {
+    "directory": "build/client"
+  },
   "triggers": {
     "crons": [
       "*/15 * * * *",
