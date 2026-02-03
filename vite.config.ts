@@ -38,12 +38,6 @@ export default defineConfig(({ command }) => {
       },
     },
     ssr: {
-      noExternal: [
-        "react",
-        "react-dom",
-        "react/jsx-runtime",
-        "react/jsx-dev-runtime",
-      ],
       external: ["cloudflare:workers"],
     },
     build: {
