@@ -2,6 +2,7 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "hasanhub",
   "main": "workers/app.ts",
+  "node_compat": true,
   "compatibility_date": "2025-02-02",
   "d1_databases": [
     {
