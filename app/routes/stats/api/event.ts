@@ -8,6 +8,8 @@ const buildProxyHeaders = (request: Request) => {
   const acceptLanguage = request.headers.get("accept-language");
   const referer = request.headers.get("referer");
   const origin = request.headers.get("origin");
+  const connectingIp = request.headers.get("CF-Connecting-IP");
+  const forwardedFor = request.headers.get("X-Forwarded-For");
 
   if (contentType) headers.set("Content-Type", contentType);
   if (userAgent) headers.set("User-Agent", userAgent);
@@ -15,6 +17,15 @@ const buildProxyHeaders = (request: Request) => {
   if (acceptLanguage) headers.set("Accept-Language", acceptLanguage);
   if (referer) headers.set("Referer", referer);
   if (origin) headers.set("Origin", origin);
+  if (connectingIp) {
+    headers.set(
+      "X-Forwarded-For",
+      forwardedFor ? `${forwardedFor}, ${connectingIp}` : connectingIp
+    );
+    headers.set("CF-Connecting-IP", connectingIp);
+  } else if (forwardedFor) {
+    headers.set("X-Forwarded-For", forwardedFor);
+  }
 
   return headers;
 };

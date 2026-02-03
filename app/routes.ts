@@ -6,6 +6,8 @@ export default [
     route("tags/*", "routes/__videos/tags/$splat.tsx"),
   ]),
   route("stats", "routes/stats.tsx"),
+  route("stats/js/script.js", "routes/stats/js/script.js.ts"),
+  route("stats/api/event", "routes/stats/api/event.ts"),
   route("robots.txt", "routes/robots.txt.ts"),
   route("sitemap.xml", "routes/sitemap.xml.ts"),
   route("api/get-tags-for-sidebar", "routes/api/get-tags-for-sidebar.ts"),

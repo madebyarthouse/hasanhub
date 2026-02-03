@@ -1,7 +1,7 @@
 import { useLoaderData } from "react-router";
 import { cacheHeader } from "pretty-cache-header";
 import { sql, eq } from "drizzle-orm";
-import { Video, Channel } from "../../db/schema";
+import { Video } from "../../db/schema";
 import { publishStatus } from "~/utils/dbEnums";
 import { db } from "../../db/client";
 import type { Route } from "./+types/stats";

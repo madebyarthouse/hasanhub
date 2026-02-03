@@ -3,17 +3,13 @@ import type { YoutubeChannel } from "~/sync/clients/youtube-api.server";
 import { getChannel } from "~/sync/clients/youtube-api.server";
 import { publishStatus } from "~/utils/dbEnums";
 import { chunkAndMergePromises } from "~/utils";
-import { Channel, Playlist } from "../../../db/schema";
+import { Channel } from "../../../db/schema";
 import { db } from "../../../db/client";
 import type { Route } from "./+types/syncChannels";
 
 export const loader = async (_args: Route.LoaderArgs) => {
   try {
-    const [channels, playlists] = await Promise.all([
-      db.select().from(Channel),
-      db.select().from(Playlist),
-    ]);
-    void playlists;
+    const channels = await db.select().from(Channel);
 
     console.log("syncChannels:requested", {
       count: channels.length,
