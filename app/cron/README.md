@@ -1,6 +1,6 @@
 # Cron jobs
 
-Cloudflare Cron Triggers are defined in `wrangler.toml`.
+Cloudflare Cron Triggers are defined in `wrangler.jsonc`.
 
 Current schedule mapping:
 - `*/15 * * * *` → syncNewVideos
