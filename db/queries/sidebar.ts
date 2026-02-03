@@ -1,12 +1,6 @@
 import { sql } from "drizzle-orm";
+import type { TagSidebarRecord } from "../types";
 import type { ReturnTypeOrDb } from "./types";
-
-export type SidebarTagRow = {
-  id: number;
-  name: string;
-  slug: string | null;
-  viewsCount: number;
-};
 
 export const getTagsForSidebar = async (db: ReturnTypeOrDb) => {
   const rows = await db.all(
@@ -25,5 +19,5 @@ export const getTagsForSidebar = async (db: ReturnTypeOrDb) => {
     name: String(row.name),
     slug: row.slug === null ? null : String(row.slug),
     viewsCount: Number(row.viewsCount ?? 0),
-  })) as SidebarTagRow[];
+  })) as TagSidebarRecord[];
 };

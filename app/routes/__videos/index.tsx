@@ -5,6 +5,7 @@ import { useFetcher, useLoaderData } from "react-router";
 import getVideos from "~/lib/get-videos";
 import VideosGrid from "~/ui/videos-grid";
 import { UrlParamsSchema } from "~/utils/validators";
+import { getOrderingTitle } from "~/utils/get-ordering-title";
 import useUrlState from "~/hooks/use-url-state";
 import useActionUrl from "~/hooks/use-action-url";
 import { db } from "../../../db/client";
@@ -82,12 +83,7 @@ export default function Index() {
     fetcher.load(loaderUrl(lastVideoId));
   };
 
-  let title;
-  if (ordering.by === "publishedAt") {
-    title = ordering.order === "asc" ? "Oldest" : "Latest";
-  } else if (ordering.by === "views") {
-    title = ordering.order === "asc" ? "Least Viewed" : "Most Viewed";
-  }
+  const title = getOrderingTitle(ordering);
 
   return (
     <VideosGrid

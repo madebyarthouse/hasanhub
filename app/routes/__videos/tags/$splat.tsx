@@ -6,6 +6,7 @@ import getVideos, { TagSlugsValidator } from "~/lib/get-videos";
 import getActiveTagsBySlugs from "~/lib/get-active-tags-by-slugs";
 import VideosGrid from "~/ui/videos-grid";
 import { UrlParamsSchema } from "~/utils/validators";
+import { getOrderingTitle } from "~/utils/get-ordering-title";
 import useUrlState from "~/hooks/use-url-state";
 import useActionUrl from "~/hooks/use-action-url";
 import { db } from "../../../../db/client";
@@ -42,7 +43,7 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
   const lastVideoIdParam = url.searchParams.get("lastVideoId");
 
   if (slugs.length !== 1) {
-    return new Response("Not found", { status: 404, statusText: "Not found" });
+    throw new Response("Not found", { status: 404, statusText: "Not found" });
   }
 
   try {
@@ -123,12 +124,7 @@ export default function TagPage() {
     setLiveVideos(videos);
   }, [videos]);
 
-  let title;
-  if (ordering.by === "publishedAt") {
-    title = ordering.order === "asc" ? "Oldest" : "Latest";
-  } else if (ordering.by === "views") {
-    title = ordering.order === "asc" ? "Least viewed" : "Most viewed";
-  }
+  const title = getOrderingTitle(ordering);
 
   return (
     <VideosGrid

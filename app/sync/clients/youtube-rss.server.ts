@@ -1,15 +1,7 @@
 import { DOMParser } from "@xmldom/xmldom";
+import { summarizeItems } from "~/utils/summarize-items";
+import { toIsoStringOrNull } from "~/utils/date";
 import { YTRSSChannelResponseValidator } from "../validators/youtube-rss.server";
-
-const summarizeItems = <T, U>(
-  items: T[],
-  map: (item: T) => U,
-  limit = 20
-) => ({
-  count: items.length,
-  sample: items.slice(0, limit).map(map),
-  truncated: items.length > limit,
-});
 
 export const videoUrl = (youtubeId: string) =>
   `https://www.youtube.com/watch?v=${youtubeId}`;
@@ -84,10 +76,7 @@ export const getChannel = async (youtubeId: string) => {
     ...summarizeItems(channelResponse.items, (item) => ({
       id: item.id,
       title: item.title,
-      pubDate:
-        item.pubDate instanceof Date
-          ? item.pubDate.toISOString()
-          : String(item.pubDate),
+      pubDate: toIsoStringOrNull(item.pubDate) ?? null,
     })),
   });
 

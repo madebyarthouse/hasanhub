@@ -55,6 +55,10 @@ export const loader = async (_args: Route.LoaderArgs) => {
         try {
           return await getVideo(video.youtubeId);
         } catch (error) {
+          console.warn("syncVideos:fetchFailed", {
+            youtubeId: video.youtubeId,
+            error: String(error),
+          });
           await db
             .update(Video)
             .set({ publishStatus: publishStatus.Unpublished })

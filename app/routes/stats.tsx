@@ -28,36 +28,10 @@ export const loader = async (_args: Route.LoaderArgs) => {
         } = ${224}`
       );
 
-    const statsPerMonth = await db.all(
-      sql`
-        SELECT
-          strftime('%Y_%m', v.publishedAt) AS yearWithMonth,
-          count(*) AS videos_count,
-          sum(v.views) AS views_sum
-        FROM Video v
-        GROUP BY yearWithMonth
-        ORDER BY yearWithMonth DESC
-      `
-    );
-
-    const statsPerChannel = await db.all(
-      sql`
-        SELECT
-          c.title AS title,
-          count(*) AS videos_count,
-          sum(v.views) AS views_sum
-        FROM Video v JOIN Channel c ON v.channelId = c.id
-        GROUP BY c.title
-        ORDER BY sum(views) DESC
-      `
-    );
-
     return new Response(
       JSON.stringify({
         stats: stats[0],
         statsWithoutMain: statsWithoutMain[0],
-        statsPerMonth,
-        statsPerChannel,
       }),
       {
         status: 200,
@@ -80,13 +54,9 @@ export const loader = async (_args: Route.LoaderArgs) => {
   }
 };
 
-type LoaderData = Awaited<ReturnType<typeof loader>>;
-
 type LoaderSuccess = {
   stats: { count: number; viewsSum: number | null } | undefined;
   statsWithoutMain: { count: number; viewsSum: number | null } | undefined;
-  statsPerMonth: Array<{ yearWithMonth: string; videos_count: number; views_sum: number }>;
-  statsPerChannel: Array<{ title: string; videos_count: number; views_sum: number }>;
 };
 
 export default function Stats() {

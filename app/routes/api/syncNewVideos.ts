@@ -2,6 +2,7 @@ import { decode } from "html-entities";
 import { eq, inArray } from "drizzle-orm";
 import { getChannel } from "~/sync/clients/youtube-rss.server";
 import { publishStatus } from "~/utils/dbEnums";
+import { toIsoStringOrNull } from "~/utils/date";
 import { Channel, Video } from "../../../db/schema";
 import { db } from "../../../db/client";
 import type { Route } from "./+types/syncNewVideos";
@@ -36,7 +37,7 @@ export const loader = async (_args: Route.LoaderArgs) => {
             sample: newItems.slice(0, 20).map((item) => ({
               id: item.id,
               title: item.title,
-              pubDate: item.pubDate.toISOString(),
+              pubDate: toIsoStringOrNull(item.pubDate),
             })),
             truncated: newItems.length > 20,
           });
@@ -48,7 +49,7 @@ export const loader = async (_args: Route.LoaderArgs) => {
                 newItems.map((video) => ({
                   title: decode(video.title),
                   youtubeId: video.id,
-                  publishedAt: video.pubDate.toISOString(),
+                  publishedAt: toIsoStringOrNull(video.pubDate),
                   channelId: channel.id,
                   createdAt: new Date().toISOString(),
                 }))
@@ -58,7 +59,11 @@ export const loader = async (_args: Route.LoaderArgs) => {
 
           const inserted = newItems.length
             ? await db
-                .select({ id: Video.id, title: Video.title })
+                .select({
+                  id: Video.id,
+                  title: Video.title,
+                  youtubeId: Video.youtubeId,
+                })
                 .from(Video)
                 .where(inArray(Video.youtubeId, newItems.map((item) => item.id)))
             : [];
@@ -79,6 +84,10 @@ export const loader = async (_args: Route.LoaderArgs) => {
 
           return { channel: { title: channel.title }, videos: inserted };
         } catch (error) {
+          console.warn("syncNewVideos:error", {
+            channelId: channel.youtubeId,
+            error: String(error),
+          });
           errors.push(error);
           return null;
         }

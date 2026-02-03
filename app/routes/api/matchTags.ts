@@ -78,23 +78,25 @@ export const loader = async (_args: Route.LoaderArgs) => {
         (matchedVideo) => !existingVideoIds.includes(matchedVideo.id)
       );
 
-      await db
-        .update(Tag)
-        .set({ lastedMatchedAt: new Date().toISOString() })
-        .where(eq(Tag.id, tag.id));
+      await db.transaction(async (tx) => {
+        await tx
+          .update(Tag)
+          .set({ lastedMatchedAt: new Date().toISOString() })
+          .where(eq(Tag.id, tag.id));
 
-      if (newTagVideos.length > 0) {
-        insertedTagVideos += newTagVideos.length;
-        await db
-          .insert(TagVideo)
-          .values(
-            newTagVideos.map((matchedVideo) => ({
-              tagId: tag.id,
-              videoId: matchedVideo.id,
-            }))
-          )
-        .onConflictDoNothing();
-      }
+        if (newTagVideos.length > 0) {
+          insertedTagVideos += newTagVideos.length;
+          await tx
+            .insert(TagVideo)
+            .values(
+              newTagVideos.map((matchedVideo) => ({
+                tagId: tag.id,
+                videoId: matchedVideo.id,
+              }))
+            )
+            .onConflictDoNothing();
+        }
+      });
     }
 
     console.log("matchTags:inserted", {

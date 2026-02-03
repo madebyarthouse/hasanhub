@@ -30,6 +30,10 @@ export const loader = async (_args: Route.LoaderArgs) => {
         try {
           return await getChannel(channel.youtubeId);
         } catch (error) {
+          console.warn("syncChannels:fetchFailed", {
+            youtubeId: channel.youtubeId,
+            error: String(error),
+          });
           await db
             .update(Channel)
             .set({ publishStatus: publishStatus.Unpublished })
