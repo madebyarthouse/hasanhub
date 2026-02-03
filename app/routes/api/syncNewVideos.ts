@@ -28,6 +28,19 @@ export const loader = async (_args: Route.LoaderArgs) => {
             (item) => !videosYoutubeIds.includes(item.id)
           );
 
+          console.log("syncNewVideos:fetched", {
+            channelId: channel.youtubeId,
+            channelTitle: channel.title,
+            fetchedCount: channelResponse.items.length,
+            newCount: newItems.length,
+            sample: newItems.slice(0, 20).map((item) => ({
+              id: item.id,
+              title: item.title,
+              pubDate: item.pubDate.toISOString(),
+            })),
+            truncated: newItems.length > 20,
+          });
+
           if (newItems.length > 0) {
             await db
               .insert(Video)
@@ -49,6 +62,20 @@ export const loader = async (_args: Route.LoaderArgs) => {
                 .from(Video)
                 .where(inArray(Video.youtubeId, newItems.map((item) => item.id)))
             : [];
+
+          if (inserted.length > 0) {
+            console.log("syncNewVideos:inserted", {
+              channelId: channel.youtubeId,
+              channelTitle: channel.title,
+              insertedCount: inserted.length,
+              sample: inserted.slice(0, 20).map((video) => ({
+                id: video.id,
+                title: video.title,
+                youtubeId: video.youtubeId,
+              })),
+              truncated: inserted.length > 20,
+            });
+          }
 
           return { channel: { title: channel.title }, videos: inserted };
         } catch (error) {

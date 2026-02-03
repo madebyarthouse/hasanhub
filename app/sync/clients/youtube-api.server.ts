@@ -1,5 +1,15 @@
 import { env } from "cloudflare:workers";
 
+const summarizeItems = <T, U>(
+  items: T[],
+  map: (item: T) => U,
+  limit = 20
+) => ({
+  count: items.length,
+  sample: items.slice(0, limit).map(map),
+  truncated: items.length > limit,
+});
+
 type YoutubeThumbnail = {
   url: string;
   width?: number;
@@ -77,6 +87,11 @@ export const getChannel = async (youtubeId: string) => {
   if (!channel) {
     throw new Error("Channel not found");
   }
+  console.log("youtube:channel", {
+    id: channel.id,
+    title: channel.snippet.title,
+    publishedAt: channel.snippet.publishedAt,
+  });
   return channel;
 };
 
@@ -92,6 +107,14 @@ export const getVideo = async (youtubeId: string) => {
   if (!video) {
     throw new Error("Video not found");
   }
+  console.log("youtube:video", {
+    id: video.id,
+    title: video.snippet.title,
+    publishedAt: video.snippet.publishedAt,
+    viewCount: video.statistics.viewCount ?? null,
+    likeCount: video.statistics.likeCount ?? null,
+    commentCount: video.statistics.commentCount ?? null,
+  });
   return video;
 };
 
@@ -111,5 +134,18 @@ export const getChannelVideos = async (
     url.searchParams.set("pageToken", pageToken);
   }
 
-  return fetchJson<YoutubeApiResponse<YoutubeVideoSearchItem>>(url.toString());
+  const data = await fetchJson<YoutubeApiResponse<YoutubeVideoSearchItem>>(
+    url.toString()
+  );
+  console.log("youtube:channelVideos", {
+    channelId: youtubeId,
+    pageToken: pageToken ?? null,
+    nextPageToken: data.nextPageToken ?? null,
+    ...summarizeItems(data.items, (item) => ({
+      id: item.id.videoId,
+      title: item.snippet.title,
+      publishedAt: item.snippet.publishedAt,
+    })),
+  });
+  return data;
 };

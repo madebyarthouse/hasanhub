@@ -48,6 +48,7 @@ export const loader = async (_args: Route.LoaderArgs) => {
     ]);
 
     const taggedVideos: { [key: string]: number } = {};
+    let insertedTagVideos = 0;
 
     for (const tag of tags) {
       const tagVideos = await db
@@ -83,6 +84,7 @@ export const loader = async (_args: Route.LoaderArgs) => {
         .where(eq(Tag.id, tag.id));
 
       if (newTagVideos.length > 0) {
+        insertedTagVideos += newTagVideos.length;
         await db
           .insert(TagVideo)
           .values(
@@ -91,9 +93,15 @@ export const loader = async (_args: Route.LoaderArgs) => {
               videoId: matchedVideo.id,
             }))
           )
-          .onConflictDoNothing();
+        .onConflictDoNothing();
       }
     }
+
+    console.log("matchTags:inserted", {
+      tagCount: tags.length,
+      videoCount: videos.length,
+      newTagVideoCount: insertedTagVideos,
+    });
 
     return new Response(JSON.stringify(taggedVideos), {
       status: 200,

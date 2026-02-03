@@ -44,6 +44,12 @@ export const loader = async (_args: Route.LoaderArgs) => {
       .orderBy(desc(Video.publishedAt))
       .limit(75);
 
+    console.log("syncVideos:requested", {
+      count: videos.length,
+      sample: videos.slice(0, 20).map((video) => video.youtubeId),
+      truncated: videos.length > 20,
+    });
+
     const videosResponse = await Promise.all(
       videos.map(async (video) => {
         try {
@@ -61,6 +67,16 @@ export const loader = async (_args: Route.LoaderArgs) => {
     const videosData = videosResponse.filter(
       (video) => video !== null
     ) as YoutubeVideo[];
+
+    console.log("syncVideos:fetched", {
+      count: videosData.length,
+      sample: videosData.slice(0, 20).map((video) => ({
+        id: video.id,
+        title: video.snippet.title,
+        publishedAt: video.snippet.publishedAt,
+      })),
+      truncated: videosData.length > 20,
+    });
 
     const updated = await chunkAndMergePromises(
       videosData.map((videoData) => {
@@ -95,6 +111,12 @@ export const loader = async (_args: Route.LoaderArgs) => {
       }),
       5
     );
+
+    console.log("syncVideos:updated", {
+      count: videosData.length,
+      sample: videosData.slice(0, 20).map((video) => video.id),
+      truncated: videosData.length > 20,
+    });
 
     return new Response(
       JSON.stringify({

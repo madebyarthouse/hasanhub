@@ -15,6 +15,16 @@ export const loader = async (_args: Route.LoaderArgs) => {
     ]);
     void playlists;
 
+    console.log("syncChannels:requested", {
+      count: channels.length,
+      sample: channels.slice(0, 20).map((channel) => ({
+        id: channel.id,
+        youtubeId: channel.youtubeId,
+        title: channel.title,
+      })),
+      truncated: channels.length > 20,
+    });
+
     const channelsResponse = await Promise.all(
       channels.map(async (channel) => {
         try {
@@ -33,6 +43,16 @@ export const loader = async (_args: Route.LoaderArgs) => {
       (channel) => channel !== null
     ) as YoutubeChannel[];
 
+    console.log("syncChannels:fetched", {
+      count: channelsData.length,
+      sample: channelsData.slice(0, 20).map((channel) => ({
+        id: channel.id,
+        title: channel.snippet.title,
+        publishedAt: channel.snippet.publishedAt,
+      })),
+      truncated: channelsData.length > 20,
+    });
+
     const updated = await chunkAndMergePromises(
       channelsData.map((channelData) => {
         return db
@@ -50,6 +70,12 @@ export const loader = async (_args: Route.LoaderArgs) => {
       }),
       5
     );
+
+    console.log("syncChannels:updated", {
+      count: channelsData.length,
+      sample: channelsData.slice(0, 20).map((channel) => channel.id),
+      truncated: channelsData.length > 20,
+    });
 
     return new Response(JSON.stringify({ channelsSynced: updated.length }), {
       status: 200,

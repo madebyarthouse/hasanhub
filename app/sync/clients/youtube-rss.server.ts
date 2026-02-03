@@ -1,6 +1,16 @@
 import { DOMParser } from "@xmldom/xmldom";
 import { YTRSSChannelResponseValidator } from "../validators/youtube-rss.server";
 
+const summarizeItems = <T, U>(
+  items: T[],
+  map: (item: T) => U,
+  limit = 20
+) => ({
+  count: items.length,
+  sample: items.slice(0, limit).map(map),
+  truncated: items.length > limit,
+});
+
 export const videoUrl = (youtubeId: string) =>
   `https://www.youtube.com/watch?v=${youtubeId}`;
 export const channelUrl = (youtubeId: string) =>
@@ -67,6 +77,18 @@ export const getChannel = async (youtubeId: string) => {
     link: getLinkHref(feed, "alternate"),
     feedUrl: getLinkHref(feed, "self"),
     items,
+  });
+
+  console.log("youtube:rss", {
+    title: channelResponse.title,
+    ...summarizeItems(channelResponse.items, (item) => ({
+      id: item.id,
+      title: item.title,
+      pubDate:
+        item.pubDate instanceof Date
+          ? item.pubDate.toISOString()
+          : String(item.pubDate),
+    })),
   });
 
   return {

@@ -35,6 +35,17 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
     nextPageToken = response.nextPageToken;
   } while (nextPageToken);
 
+  console.log("syncChannel:fetched", {
+    channelId: channel.youtubeId,
+    fetchedCount: videosResponse.length,
+    sample: videosResponse.slice(0, 20).map((video) => ({
+      id: video.id.videoId,
+      title: video.snippet.title,
+      publishedAt: video.snippet.publishedAt,
+    })),
+    truncated: videosResponse.length > 20,
+  });
+
   const channelVideos = await getVideosFromChannel(db, channel.id);
   const newVideosResponse = filterVideos(videosResponse, channelVideos);
 
@@ -55,6 +66,19 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
 
     await batchInsertVideos(db, newVideoRows, 50);
 
+    if (newVideoRows.length > 0) {
+      console.log("syncChannel:inserted", {
+        channelId: channel.youtubeId,
+        insertedCount: newVideoRows.length,
+        sample: newVideoRows.slice(0, 20).map((video) => ({
+          youtubeId: video.youtubeId,
+          title: video.title,
+          publishedAt: video.publishedAt,
+        })),
+        truncated: newVideoRows.length > 20,
+      });
+    }
+
     const newVideoIds = newVideosResponse.map((video) => video.id.videoId);
     const newVideos = newVideoIds.length
       ? await db
@@ -62,6 +86,8 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
           .from(Video)
           .where(inArray(Video.youtubeId, newVideoIds))
       : [];
+
+    let tagVideoInsertCount = 0;
 
     if (newVideos.length > 0) {
       const tags = await db.select().from(Tag);
@@ -88,6 +114,7 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
             .where(eq(Tag.id, tag.id));
 
           if (newTagVideos.length > 0) {
+            tagVideoInsertCount += newTagVideos.length;
             await db
               .insert(TagVideo)
               .values(
@@ -101,6 +128,12 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
         })
       );
     }
+
+    console.log("syncChannel:tagMatches", {
+      channelId: channel.youtubeId,
+      newVideosCount: newVideos.length,
+      newTagVideoCount: tagVideoInsertCount,
+    });
 
     return new Response(JSON.stringify({ videos: newVideos.length }), {
       status: 200,
