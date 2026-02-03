@@ -54,6 +54,12 @@ const isCacheable = (cacheControl: string | null) => {
   return typeof ttl === "number" && ttl > 0;
 };
 
+const getCacheDebugFlag = (request: Request) => {
+  if (request.headers.get("X-Cache-Debug") === "1") return true;
+  const url = new URL(request.url);
+  return url.searchParams.get("cacheDebug") === "1";
+};
+
 const resolveCronJob = (cron: string): CronJob | null => {
   const entry = Object.entries(cronScheduleMap).find(
     ([, schedule]) => schedule === cron
@@ -78,6 +84,7 @@ export default {
     const skipWrite = requestCacheControlValue.includes("no-store");
     const hasSensitiveHeaders =
       request.headers.has("Cookie") || request.headers.has("Authorization");
+    const cacheDebug = getCacheDebugFlag(request);
 
     const cache = caches.default;
     const cacheKey = new Request(request.url, { method: "GET" });
@@ -85,13 +92,43 @@ export default {
     if (!bypassRead && !hasSensitiveHeaders) {
       const cached = await cache.match(cacheKey);
       if (cached) {
+        if (cacheDebug) {
+          console.log("cache:hit", {
+            url: request.url,
+            cacheControl: cached.headers.get("Cache-Control"),
+          });
+          const response = new Response(cached.body, cached);
+          response.headers.set("X-Cache-Debug", "hit");
+          return response;
+        }
         return cached;
       }
+    }
+
+    if (cacheDebug) {
+      console.log("cache:miss", {
+        url: request.url,
+        bypassRead,
+        hasSensitiveHeaders,
+        requestCacheControl: requestCacheControl || null,
+      });
     }
 
     const response = await handleRequest(request, {
       cloudflare: { env, ctx },
     });
+
+    if (cacheDebug) {
+      console.log("cache:response", {
+        url: request.url,
+        status: response.status,
+        cacheControl: response.headers.get("Cache-Control"),
+        cdnCacheControl:
+          response.headers.get("CDN-Cache-Control") ??
+          response.headers.get("Cloudflare-CDN-Cache-Control"),
+        setCookie: response.headers.has("Set-Cookie"),
+      });
+    }
 
     if (
       response.status < 500 &&
@@ -110,7 +147,34 @@ export default {
           toCache.headers.set("Cache-Control", edgeCacheControl);
         }
         ctx.waitUntil(cache.put(cacheKey, toCache.clone()));
+        if (cacheDebug) {
+          console.log("cache:stored", {
+            url: request.url,
+            cacheControl: edgeCacheControl,
+          });
+        }
+      } else if (cacheDebug) {
+        console.log("cache:skip", {
+          url: request.url,
+          reason: "not-cacheable",
+          cacheControl: edgeCacheControl,
+        });
       }
+    } else if (cacheDebug) {
+      console.log("cache:skip", {
+        url: request.url,
+        reason: "response-or-request-not-cacheable",
+        status: response.status,
+        skipWrite,
+        hasSensitiveHeaders,
+        hasSetCookie: response.headers.has("Set-Cookie"),
+      });
+    }
+
+    if (cacheDebug) {
+      const debugResponse = new Response(response.body, response);
+      debugResponse.headers.set("X-Cache-Debug", "miss");
+      return debugResponse;
     }
 
     return response;
