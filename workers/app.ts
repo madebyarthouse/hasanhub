@@ -32,6 +32,28 @@ const handleRequest = createRequestHandler(
   getMode()
 );
 
+const parseCacheControlInt = (value: string, directive: string) => {
+  const match = new RegExp(`${directive}\\s*=\\s*(\\d+)`, "i").exec(value);
+  return match ? Number.parseInt(match[1] ?? "", 10) : null;
+};
+
+const isCacheable = (cacheControl: string | null) => {
+  if (!cacheControl) return false;
+  const value = cacheControl.toLowerCase();
+  if (
+    value.includes("no-store") ||
+    value.includes("no-cache") ||
+    value.includes("private")
+  ) {
+    return false;
+  }
+
+  const sMaxAge = parseCacheControlInt(value, "s-maxage");
+  const maxAge = parseCacheControlInt(value, "max-age");
+  const ttl = sMaxAge ?? maxAge;
+  return typeof ttl === "number" && ttl > 0;
+};
+
 const resolveCronJob = (cron: string): CronJob | null => {
   const entry = Object.entries(cronScheduleMap).find(
     ([, schedule]) => schedule === cron
@@ -40,10 +62,58 @@ const resolveCronJob = (cron: string): CronJob | null => {
 };
 
 export default {
-  fetch(request, env, ctx) {
-    return handleRequest(request, {
+  async fetch(request, env, ctx) {
+    if (request.method !== "GET") {
+      return handleRequest(request, {
+        cloudflare: { env, ctx },
+      });
+    }
+
+    const requestCacheControl = request.headers.get("Cache-Control") ?? "";
+    const requestCacheControlValue = requestCacheControl.toLowerCase();
+    const bypassRead =
+      requestCacheControlValue.includes("no-cache") ||
+      requestCacheControlValue.includes("max-age=0") ||
+      request.headers.has("Pragma");
+    const skipWrite = requestCacheControlValue.includes("no-store");
+    const hasSensitiveHeaders =
+      request.headers.has("Cookie") || request.headers.has("Authorization");
+
+    const cache = caches.default;
+    const cacheKey = new Request(request.url, { method: "GET" });
+
+    if (!bypassRead && !hasSensitiveHeaders) {
+      const cached = await cache.match(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+
+    const response = await handleRequest(request, {
       cloudflare: { env, ctx },
     });
+
+    if (
+      response.status < 500 &&
+      !skipWrite &&
+      !hasSensitiveHeaders &&
+      !response.headers.has("Set-Cookie")
+    ) {
+      const edgeCacheControl =
+        response.headers.get("CDN-Cache-Control") ??
+        response.headers.get("Cloudflare-CDN-Cache-Control") ??
+        response.headers.get("Cache-Control");
+
+      if (isCacheable(edgeCacheControl)) {
+        const toCache = new Response(response.body, response);
+        if (edgeCacheControl) {
+          toCache.headers.set("Cache-Control", edgeCacheControl);
+        }
+        ctx.waitUntil(cache.put(cacheKey, toCache.clone()));
+      }
+    }
+
+    return response;
   },
   async scheduled(controller, env, ctx) {
     const cron = controller.cron ?? "";
