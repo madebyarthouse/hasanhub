@@ -1,5 +1,6 @@
 import { desc, eq } from "drizzle-orm";
 import { matchTagWithVideos } from "~/sync/services/matching";
+import { chunkByParams } from "~/utils";
 import { Tag, TagVideo, Video } from "../../../db/schema";
 import { db } from "../../../db/client";
 import type { ReturnTypeOrDb } from "../../../db/queries/types";
@@ -79,15 +80,14 @@ export const loader = async (_args: Route.LoaderArgs) => {
       );
 
       if (newTagVideos.length > 0) {
-        await db
-          .insert(TagVideo)
-          .values(
-            newTagVideos.map((matchedVideo) => ({
-              tagId: tag.id,
-              videoId: matchedVideo.id,
-            }))
-          )
-          .onConflictDoNothing();
+        const tagVideoRows = newTagVideos.map((matchedVideo) => ({
+          tagId: tag.id,
+          videoId: matchedVideo.id,
+        }));
+        const tagVideoChunks = chunkByParams(tagVideoRows);
+        for (const chunk of tagVideoChunks) {
+          await db.insert(TagVideo).values(chunk).onConflictDoNothing();
+        }
         insertedTagVideos += newTagVideos.length;
       }
 

@@ -3,6 +3,7 @@ import { eq, inArray } from "drizzle-orm";
 import { getChannel } from "~/sync/clients/youtube-rss.server";
 import { publishStatus } from "~/utils/dbEnums";
 import { toIsoStringOrNull } from "~/utils/date";
+import { chunkByParams } from "~/utils";
 import { Channel, Video } from "../../../db/schema";
 import { db } from "../../../db/client";
 import type { Route } from "./+types/syncNewVideos";
@@ -43,18 +44,17 @@ export const loader = async (_args: Route.LoaderArgs) => {
           });
 
           if (newItems.length > 0) {
-            await db
-              .insert(Video)
-              .values(
-                newItems.map((video) => ({
-                  title: decode(video.title),
-                  youtubeId: video.id,
-                  publishedAt: toIsoStringOrNull(video.pubDate),
-                  channelId: channel.id,
-                  createdAt: new Date().toISOString(),
-                }))
-              )
-              .onConflictDoNothing();
+            const videoRows = newItems.map((video) => ({
+              title: decode(video.title),
+              youtubeId: video.id,
+              publishedAt: toIsoStringOrNull(video.pubDate),
+              channelId: channel.id,
+              createdAt: new Date().toISOString(),
+            }));
+            const videoChunks = chunkByParams(videoRows);
+            for (const chunk of videoChunks) {
+              await db.insert(Video).values(chunk).onConflictDoNothing();
+            }
           }
 
           const inserted = newItems.length

@@ -5,6 +5,7 @@ import { eq, inArray } from "drizzle-orm";
 import { getChannelVideos } from "~/sync/clients/youtube-api.server";
 import { matchTagWithVideos } from "~/sync/services/matching";
 import { publishStatus, videoSyncStatus } from "~/utils/dbEnums";
+import { chunkByParams } from "~/utils";
 import { Channel, Tag, TagVideo, Video } from "../../../db/schema";
 import { db } from "../../../db/client";
 import type { ReturnTypeOrDb } from "../../../db/queries/types";
@@ -64,7 +65,10 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
       createdAt: new Date().toISOString(),
     }));
 
-    await batchInsertVideos(db, newVideoRows, 50);
+    const videoChunks = chunkByParams(newVideoRows);
+    for (const chunk of videoChunks) {
+      await db.insert(Video).values(chunk).onConflictDoNothing();
+    }
 
     if (newVideoRows.length > 0) {
       console.log("syncChannel:inserted", {
@@ -114,16 +118,15 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
             .where(eq(Tag.id, tag.id));
 
           if (newTagVideos.length > 0) {
+            const tagVideoRows = newTagVideos.map((matchedVideo) => ({
+              tagId: tag.id,
+              videoId: matchedVideo.id,
+            }));
+            const tagVideoChunks = chunkByParams(tagVideoRows);
+            for (const chunk of tagVideoChunks) {
+              await db.insert(TagVideo).values(chunk).onConflictDoNothing();
+            }
             tagVideoInsertCount += newTagVideos.length;
-            await db
-              .insert(TagVideo)
-              .values(
-                newTagVideos.map((matchedVideo) => ({
-                  tagId: tag.id,
-                  videoId: matchedVideo.id,
-                }))
-              )
-              .onConflictDoNothing();
           }
         })
       );
@@ -164,28 +167,4 @@ const filterVideos = (
   latestVideos: string[]
 ) => {
   return videos.filter((video) => !latestVideos.includes(video.id.videoId));
-};
-
-const batchInsertVideos = async (
-  db: ReturnTypeOrDb,
-  videos: Array<{
-    title: string;
-    youtubeId: string;
-    description: string;
-    publishedAt: string;
-    smallThumbnailUrl: string;
-    mediumThumbnailUrl: string;
-    largeThumbnailUrl: string;
-    syncStatus: string;
-    publishStatus: string;
-    channelId: number;
-    createdAt: string;
-  }>,
-  batchSize: number
-) => {
-  for (let i = 0; i < videos.length; i += batchSize) {
-    const chunk = videos.slice(i, i + batchSize);
-    if (chunk.length === 0) continue;
-    await db.insert(Video).values(chunk).onConflictDoNothing();
-  }
 };
