@@ -46,9 +46,34 @@ export default {
     });
   },
   async scheduled(controller, env, ctx) {
-    const job = resolveCronJob(controller.cron ?? "");
-    if (!job) return;
+    const cron = controller.cron ?? "";
+    const job = resolveCronJob(cron);
 
-    ctx.waitUntil(runCronJob(job, getCronOrigin(env)));
+    if (!job) {
+      console.warn("cron:unmapped", { cron });
+      return;
+    }
+
+    const origin = getCronOrigin(env);
+    const startedAt = new Date().toISOString();
+    console.log("cron:start", { cron, job, origin, startedAt });
+
+    ctx.waitUntil(
+      (async () => {
+        try {
+          await runCronJob(job, origin);
+          console.log("cron:success", {
+            cron,
+            job,
+            origin,
+            startedAt,
+            finishedAt: new Date().toISOString(),
+          });
+        } catch (error) {
+          console.error("cron:error", { cron, job, origin, error });
+          throw error;
+        }
+      })()
+    );
   },
 } satisfies ExportedHandler<Env>;
