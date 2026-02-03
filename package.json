@@ -1,0 +1,49 @@
+{
+  "name": "hasanhub-cloudflare",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "react-router build",
+    "dev": "react-router dev",
+    "start": "react-router-serve ./build/server/index.js",
+    "typecheck": "react-router typegen && tsc",
+    "db:validate": "node --loader ts-node/esm scripts/validate-db.ts"
+  },
+  "dependencies": {
+    "@react-router/node": "7.12.0",
+    "@react-router/serve": "7.12.0",
+    "classnames": "^2.3.1",
+    "clsx": "^2.1.1",
+    "drizzle-orm": "^0.44.5",
+    "html-entities": "^2.3.3",
+    "isbot": "^5.1.31",
+    "iso8601-duration": "^2.1.1",
+    "lucide-react": "^0.536.0",
+    "pretty-cache-header": "^1.0.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-router": "7.12.0",
+    "rss-parser": "^3.12.0",
+    "tailwind-merge": "^3.3.1",
+    "tailwindcss-animate": "^1.0.7",
+    "tiny-invariant": "^1.2.0",
+    "vaul": "^1.1.2",
+    "youtube.ts": "^0.2.9",
+    "zod": "^3.16.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240909.0",
+    "@cloudflare/vite-plugin": "^1.12.3",
+    "@react-router/dev": "7.12.0",
+    "@tailwindcss/vite": "^4.1.13",
+    "@types/node": "^22",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "better-sqlite3": "^11.7.0",
+    "tailwindcss": "^4.1.13",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.7",
+    "vite-tsconfig-paths": "^5.1.4"
+  }
+}

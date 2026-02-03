@@ -1,0 +1,43 @@
+import type { ExportedHandler } from "@cloudflare/workers-types";
+import { createRequestHandler } from "react-router";
+import {
+  cronScheduleMap,
+  getCronOrigin,
+  runCronJob,
+  type CronJob,
+} from "../app/cron/jobs";
+
+export type Env = {
+  DB: D1Database;
+  YOUTUBE_API_KEY?: string;
+  TWITCH_CLIENT_ID?: string;
+  TWITCH_CLIENT_SECRET?: string;
+  TOP_OF_THE_HOUR_SECRET?: string;
+  CRON_ORIGIN?: string;
+};
+
+const handleRequest = createRequestHandler(
+  () => import("virtual:react-router/server-build"),
+  import.meta.env.MODE
+);
+
+const resolveCronJob = (cron: string): CronJob | null => {
+  const entry = Object.entries(cronScheduleMap).find(
+    ([, schedule]) => schedule === cron
+  );
+  return entry ? (entry[0] as CronJob) : null;
+};
+
+export default {
+  fetch(request, env, ctx) {
+    return handleRequest(request, {
+      cloudflare: { env, ctx },
+    });
+  },
+  async scheduled(controller, env, ctx) {
+    const job = resolveCronJob(controller.cron ?? "");
+    if (!job) return;
+
+    ctx.waitUntil(runCronJob(job, getCronOrigin(env)));
+  },
+} satisfies ExportedHandler<Env>;

@@ -1,0 +1,16 @@
+name = "hasanhub-cloudflare"
+main = "workers/app.ts"
+compatibility_date = "2025-02-02"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "hasanhub"
+database_id = "REPLACE_WITH_PROD_D1_ID"
+
+[triggers]
+crons = [
+  "*/15 * * * *",
+  "0 * * * *",
+  "0 3 * * *",
+  "0 4 * * *"
+]
