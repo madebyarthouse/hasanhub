@@ -1,3 +1,4 @@
+import { DOMParser } from "@xmldom/xmldom";
 import { YTRSSChannelResponseValidator } from "../validators/youtube-rss.server";
 
 export const videoUrl = (youtubeId: string) =>
@@ -8,8 +9,12 @@ export const feedUrl = (youtubeId: string) =>
   `https://www.youtube.com/feeds/videos.xml?channel_id=${youtubeId}`;
 
 const getDirectChild = (parent: Element, tag: string) => {
-  for (const node of Array.from(parent.children)) {
-    if (node.localName === tag) return node;
+  const children = Array.from(parent.childNodes).filter(
+    (node): node is Element => node.nodeType === 1
+  );
+  for (const node of children) {
+    const nodeName = node.localName ?? node.tagName;
+    if (nodeName === tag) return node;
   }
   return null;
 };

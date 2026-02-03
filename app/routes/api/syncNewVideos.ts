@@ -35,7 +35,7 @@ export const loader = async (_args: Route.LoaderArgs) => {
                 newItems.map((video) => ({
                   title: decode(video.title),
                   youtubeId: video.id,
-                  publishedAt: video.pubDate,
+                  publishedAt: video.pubDate.toISOString(),
                   channelId: channel.id,
                   createdAt: new Date().toISOString(),
                 }))

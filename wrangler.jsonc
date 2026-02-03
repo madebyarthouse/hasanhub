@@ -1,9 +1,10 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "hasanhub",
+  "account_id": "2c9fb1653ddb6954dedcb6ece9f5affe",
   "main": "workers/app.ts",
-  "node_compat": true,
   "compatibility_date": "2025-02-02",
+  "compatibility_flags": ["nodejs_compat"],
   "d1_databases": [
     {
       "binding": "DB",

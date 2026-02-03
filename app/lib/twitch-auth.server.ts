@@ -1,5 +1,5 @@
 import { env } from "cloudflare:workers";
-import { desc, lt } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import { db } from "../../db/client";
 import { TwitchAuth } from "../../db/schema";
 
@@ -99,9 +99,4 @@ export const getTokenInfo = async () => {
     createdAt: auth.createdAt,
     tokenType: auth.tokenType,
   };
-};
-
-export const cleanupExpiredTokens = async () => {
-  const cutoff = new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString();
-  return db.delete(TwitchAuth).where(lt(TwitchAuth.createdAt, cutoff));
 };
