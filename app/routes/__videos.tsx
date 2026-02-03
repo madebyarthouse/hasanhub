@@ -86,6 +86,11 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
   );
 };
 
+export const headers: Route.HeadersFunction = ({ loaderHeaders }) => {
+  const cacheControl = loaderHeaders.get("Cache-Control");
+  return cacheControl ? { "Cache-Control": cacheControl } : {};
+};
+
 export default function VideosLayout() {
   const { tags, streamInfo, streamSchedule } = useLoaderData<typeof loader>();
   const { durations, timeframe, tagSlugs } = useUrlState();

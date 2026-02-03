@@ -99,6 +99,11 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
   }
 };
 
+export const headers: Route.HeadersFunction = ({ loaderHeaders }) => {
+  const cacheControl = loaderHeaders.get("Cache-Control");
+  return cacheControl ? { "Cache-Control": cacheControl } : {};
+};
+
 export default function TagPage() {
   const { videos, totalVideosCount, activeTags } =
     useLoaderData<LoaderData>();

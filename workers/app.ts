@@ -82,8 +82,7 @@ export default {
       requestCacheControlValue.includes("max-age=0") ||
       request.headers.has("Pragma");
     const skipWrite = requestCacheControlValue.includes("no-store");
-    const hasSensitiveHeaders =
-      request.headers.has("Cookie") || request.headers.has("Authorization");
+    const hasSensitiveHeaders = request.headers.has("Authorization");
     const cacheDebug = getCacheDebugFlag(request);
 
     const cache = caches.default;

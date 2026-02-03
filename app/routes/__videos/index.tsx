@@ -59,6 +59,11 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
   }
 };
 
+export const headers: Route.HeadersFunction = ({ loaderHeaders }) => {
+  const cacheControl = loaderHeaders.get("Cache-Control");
+  return cacheControl ? { "Cache-Control": cacheControl } : {};
+};
+
 export default function Index() {
   const { totalVideosCount, videos } = useLoaderData<typeof loader>();
   const [liveVideos, setLiveVideos] = useState<typeof videos>(videos);

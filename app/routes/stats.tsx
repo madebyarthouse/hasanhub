@@ -54,6 +54,11 @@ export const loader = async (_args: Route.LoaderArgs) => {
   }
 };
 
+export const headers: Route.HeadersFunction = ({ loaderHeaders }) => {
+  const cacheControl = loaderHeaders.get("Cache-Control");
+  return cacheControl ? { "Cache-Control": cacheControl } : {};
+};
+
 type LoaderSuccess = {
   stats: { count: number; viewsSum: number | null } | undefined;
   statsWithoutMain: { count: number; viewsSum: number | null } | undefined;
