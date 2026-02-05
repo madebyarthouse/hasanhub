@@ -1,3 +1,8 @@
+import { matchTags } from "./tasks/matchTags";
+import { syncChannels } from "./tasks/syncChannels";
+import { syncNewVideos } from "./tasks/syncNewVideos";
+import { syncVideos } from "./tasks/syncVideos";
+
 export type CronJob = "syncNewVideos" | "syncVideos" | "syncChannels" | "matchTags";
 
 export const cronScheduleMap: Record<CronJob, string> = {
@@ -7,26 +12,14 @@ export const cronScheduleMap: Record<CronJob, string> = {
   matchTags: "0 4 * * *",
 };
 
-export const cronEndpoints: Record<CronJob, string> = {
-  syncNewVideos: "/api/syncNewVideos",
-  syncVideos: "/api/syncVideos",
-  syncChannels: "/api/syncChannels",
-  matchTags: "/api/matchTags",
+const cronTaskMap: Record<CronJob, () => Promise<unknown>> = {
+  syncNewVideos,
+  syncVideos,
+  syncChannels,
+  matchTags,
 };
 
-export const runCronJob = async (job: CronJob, origin: string) => {
-  const endpoint = cronEndpoints[job];
-  const url = `${origin}${endpoint}`;
-
-  const response = await fetch(url);
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Cron job ${job} failed: ${response.status} ${text}`);
-  }
-
-  return response.json();
-};
-
-export const getCronOrigin = (env: { CRON_ORIGIN?: string }) => {
-  return env?.CRON_ORIGIN ?? "https://hasanhub.com";
+export const runCronJob = async (job: CronJob) => {
+  const task = cronTaskMap[job];
+  return task();
 };

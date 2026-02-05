@@ -14,9 +14,4 @@ export default [
   route("api/get-stream-info", "routes/api/get-stream-info.ts"),
   route("api/add-top-of-the-hour-rating", "routes/api/add-top-of-the-hour-rating.ts"),
   route("api/twitch-auth", "routes/api/twitch-auth.ts"),
-  route("api/syncNewVideos", "routes/api/syncNewVideos.ts"),
-  route("api/syncChannels", "routes/api/syncChannels.ts"),
-  route("api/syncChannel", "routes/api/syncChannel.ts"),
-  route("api/syncVideos", "routes/api/syncVideos.ts"),
-  route("api/matchTags", "routes/api/matchTags.ts"),
 ] satisfies RouteConfig;

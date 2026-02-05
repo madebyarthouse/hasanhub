@@ -1,11 +1,6 @@
 import type { ExportedHandler } from "@cloudflare/workers-types";
 import { createRequestHandler } from "react-router";
-import {
-  cronScheduleMap,
-  getCronOrigin,
-  runCronJob,
-  type CronJob,
-} from "../app/cron/jobs";
+import { cronScheduleMap, runCronJob, type CronJob } from "../app/cron/jobs";
 
 export type Env = {
   DB: D1Database;
@@ -13,7 +8,6 @@ export type Env = {
   TWITCH_CLIENT_ID?: string;
   TWITCH_CLIENT_SECRET?: string;
   TOP_OF_THE_HOUR_SECRET?: string;
-  CRON_ORIGIN?: string;
 };
 
 const getMode = () => {
@@ -187,23 +181,22 @@ export default {
       return;
     }
 
-    const origin = getCronOrigin(env);
     const startedAt = new Date().toISOString();
-    console.log("cron:start", { cron, job, origin, startedAt });
+    console.log("cron:start", { cron, job, startedAt });
 
     ctx.waitUntil(
       (async () => {
         try {
-          await runCronJob(job, origin);
+          const result = await runCronJob(job);
           console.log("cron:success", {
             cron,
             job,
-            origin,
             startedAt,
             finishedAt: new Date().toISOString(),
+            result,
           });
         } catch (error) {
-          console.error("cron:error", { cron, job, origin, error });
+          console.error("cron:error", { cron, job, error });
           throw error;
         }
       })()
