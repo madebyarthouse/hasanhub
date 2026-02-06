@@ -1,6 +1,11 @@
-import type { ExportedHandler } from "@cloudflare/workers-types";
 import { createRequestHandler } from "react-router";
 import { cronScheduleMap, runCronJob, type CronJob } from "../app/cron/jobs";
+
+type VersionMetadata = {
+  id?: string;
+  tag?: string;
+  timestamp?: string;
+};
 
 export type Env = {
   DB: D1Database;
@@ -8,7 +13,12 @@ export type Env = {
   TWITCH_CLIENT_ID?: string;
   TWITCH_CLIENT_SECRET?: string;
   TOP_OF_THE_HOUR_SECRET?: string;
+  CF_VERSION_METADATA?: VersionMetadata;
 };
+
+const CACHE_NAMESPACE = "hasanhub:ssr";
+const CACHE_VERSION_PARAM = "__cv";
+const CACHE_DEBUG_PARAM = "cacheDebug";
 
 const getMode = () => {
   // Guard against `import.meta.env` being undefined in Workers.
@@ -51,7 +61,7 @@ const isCacheable = (cacheControl: string | null) => {
 const getCacheDebugFlag = (request: Request) => {
   if (request.headers.get("X-Cache-Debug") === "1") return true;
   const url = new URL(request.url);
-  return url.searchParams.get("cacheDebug") === "1";
+  return url.searchParams.get(CACHE_DEBUG_PARAM) === "1";
 };
 
 const resolveCronJob = (cron: string): CronJob | null => {
@@ -61,59 +71,87 @@ const resolveCronJob = (cron: string): CronJob | null => {
   return entry ? (entry[0] as CronJob) : null;
 };
 
+const hasVaryWildcard = (vary: string | null) =>
+  Boolean(vary && vary.split(",").some((token) => token.trim() === "*"));
+
+const getCacheVersion = (env: Env) =>
+  env.CF_VERSION_METADATA?.id ?? "unversioned";
+
+const toHandlerRequest = (request: Request) =>
+  new Request(request.url, request);
+
+const createCacheKey = (request: Request, env: Env) => {
+  const keyUrl = new URL(request.url);
+  keyUrl.searchParams.delete(CACHE_DEBUG_PARAM);
+  keyUrl.searchParams.set(CACHE_VERSION_PARAM, getCacheVersion(env));
+  return new Request(keyUrl.toString(), { method: "GET" });
+};
+
 export default {
-  async fetch(request, env, ctx) {
-    if (request.method !== "GET") {
-      return handleRequest(request, {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext) {
+    const handlerRequest = toHandlerRequest(request);
+
+    if (handlerRequest.method !== "GET") {
+      return handleRequest(handlerRequest, {
         cloudflare: { env, ctx },
       });
     }
 
-    const requestCacheControl = request.headers.get("Cache-Control") ?? "";
+    const requestCacheControl = handlerRequest.headers.get("Cache-Control") ?? "";
     const requestCacheControlValue = requestCacheControl.toLowerCase();
     const bypassRead =
       requestCacheControlValue.includes("no-cache") ||
       requestCacheControlValue.includes("max-age=0") ||
-      request.headers.has("Pragma");
+      handlerRequest.headers.has("Pragma");
     const skipWrite = requestCacheControlValue.includes("no-store");
-    const hasSensitiveHeaders = request.headers.has("Authorization");
-    const cacheDebug = getCacheDebugFlag(request);
+    const hasSensitiveHeaders = handlerRequest.headers.has("Authorization");
+    const cacheDebug = getCacheDebugFlag(handlerRequest);
 
-    const cache = caches.default;
-    const cacheKey = new Request(request.url, { method: "GET" });
+    const cache = await caches.open(CACHE_NAMESPACE);
+    const cacheKey = createCacheKey(handlerRequest, env);
 
     if (!bypassRead && !hasSensitiveHeaders) {
-      const cached = await cache.match(cacheKey);
-      if (cached) {
-        if (cacheDebug) {
-          console.log("cache:hit", {
-            url: request.url,
-            cacheControl: cached.headers.get("Cache-Control"),
-          });
-          const response = new Response(cached.body, cached);
-          response.headers.set("X-Cache-Debug", "hit");
-          return response;
+      try {
+        const cached = await cache.match(cacheKey);
+        if (cached) {
+          if (cacheDebug) {
+            console.log("cache:hit", {
+              url: handlerRequest.url,
+              cacheControl: cached.headers.get("Cache-Control"),
+              cacheVersion: getCacheVersion(env),
+            });
+            const response = new Response(cached.body, cached);
+            response.headers.set("X-Cache-Debug", "hit");
+            response.headers.set("X-Cache-Version", getCacheVersion(env));
+            return response;
+          }
+          return cached;
         }
-        return cached;
+      } catch (error) {
+        console.warn("cache:match-error", {
+          url: handlerRequest.url,
+          error: String(error),
+        });
       }
     }
 
     if (cacheDebug) {
       console.log("cache:miss", {
-        url: request.url,
+        url: handlerRequest.url,
         bypassRead,
         hasSensitiveHeaders,
         requestCacheControl: requestCacheControl || null,
+        cacheVersion: getCacheVersion(env),
       });
     }
 
-    const response = await handleRequest(request, {
+    const response = await handleRequest(handlerRequest, {
       cloudflare: { env, ctx },
     });
 
     if (cacheDebug) {
       console.log("cache:response", {
-        url: request.url,
+        url: handlerRequest.url,
         status: response.status,
         cacheControl: response.headers.get("Cache-Control"),
         cdnCacheControl:
@@ -124,10 +162,11 @@ export default {
     }
 
     if (
-      response.status < 500 &&
+      response.status === 200 &&
       !skipWrite &&
       !hasSensitiveHeaders &&
-      !response.headers.has("Set-Cookie")
+      !response.headers.has("Set-Cookie") &&
+      !hasVaryWildcard(response.headers.get("Vary"))
     ) {
       const edgeCacheControl =
         response.headers.get("CDN-Cache-Control") ??
@@ -135,27 +174,36 @@ export default {
         response.headers.get("Cache-Control");
 
       if (isCacheable(edgeCacheControl)) {
-        const toCache = new Response(response.body, response);
-        if (edgeCacheControl) {
-          toCache.headers.set("Cache-Control", edgeCacheControl);
-        }
-        ctx.waitUntil(cache.put(cacheKey, toCache.clone()));
-        if (cacheDebug) {
-          console.log("cache:stored", {
-            url: request.url,
-            cacheControl: edgeCacheControl,
+        try {
+          const cacheSource = response.clone();
+          const toCache = new Response(cacheSource.body, cacheSource);
+          if (edgeCacheControl) {
+            toCache.headers.set("Cache-Control", edgeCacheControl);
+          }
+          ctx.waitUntil(cache.put(cacheKey, toCache));
+          if (cacheDebug) {
+            console.log("cache:stored", {
+              url: handlerRequest.url,
+              cacheControl: edgeCacheControl,
+              cacheVersion: getCacheVersion(env),
+            });
+          }
+        } catch (error) {
+          console.warn("cache:put-error", {
+            url: handlerRequest.url,
+            error: String(error),
           });
         }
       } else if (cacheDebug) {
         console.log("cache:skip", {
-          url: request.url,
+          url: handlerRequest.url,
           reason: "not-cacheable",
           cacheControl: edgeCacheControl,
         });
       }
     } else if (cacheDebug) {
       console.log("cache:skip", {
-        url: request.url,
+        url: handlerRequest.url,
         reason: "response-or-request-not-cacheable",
         status: response.status,
         skipWrite,
@@ -167,12 +215,17 @@ export default {
     if (cacheDebug) {
       const debugResponse = new Response(response.body, response);
       debugResponse.headers.set("X-Cache-Debug", "miss");
+      debugResponse.headers.set("X-Cache-Version", getCacheVersion(env));
       return debugResponse;
     }
 
     return response;
   },
-  async scheduled(controller, env, ctx) {
+  async scheduled(
+    controller: ScheduledController,
+    env: Env,
+    ctx: ExecutionContext
+  ) {
     const cron = controller.cron ?? "";
     const job = resolveCronJob(cron);
 
