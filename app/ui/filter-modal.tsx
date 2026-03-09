@@ -1,10 +1,10 @@
 import type { DurationType, TimeframeType } from "~/utils/validators";
 import useActionUrl from "~/hooks/use-action-url";
 import useUrlState from "~/hooks/use-url-state";
-import { Link } from "@remix-run/react";
+import { Link } from "react-router";
 import cx from "classnames";
 import { Drawer } from "vaul";
-import type { Tag } from "@prisma/client";
+import type { TagSidebarRecord } from "../../db/types";
 
 const durationFilterData: { value: DurationType; label: string }[] = [
   { value: "short", label: "< 3min" },
@@ -21,7 +21,7 @@ const timeframeFilterData: { value: TimeframeType; label: string }[] = [
   { value: "year", label: "Last Year" },
 ];
 
-const FilterModal = ({ tags }: { tags: Tag[] }) => {
+const FilterModal = ({ tags }: { tags: TagSidebarRecord[] }) => {
   const {
     tagSlugs: activeTagSlugs,
     durations: durationFilter,

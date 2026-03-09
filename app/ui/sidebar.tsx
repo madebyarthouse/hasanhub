@@ -2,7 +2,7 @@ import TagButton from "./tag-button";
 import type { DurationType, TimeframeType } from "~/utils/validators";
 import useActionUrl from "~/hooks/use-action-url";
 import useUrlState from "~/hooks/use-url-state";
-import type { Tag } from "@prisma/client";
+import type { TagSidebarRecord } from "../../db/types";
 import { Logo, StreamInfoComponent } from "./header";
 import clsx from "clsx";
 
@@ -175,7 +175,7 @@ const SidebarFooter = () => {
 };
 
 // Scrollable Filters Component
-const SidebarFilters = ({ tags }: { tags: Tag[] }) => {
+const SidebarFilters = ({ tags }: { tags: TagSidebarRecord[] }) => {
   const {
     tagSlugs: activeTagSlugs,
     durations: durationFilter,

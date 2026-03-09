@@ -1,0 +1,42 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "hasanhub",
+  "account_id": "2c9fb1653ddb6954dedcb6ece9f5affe",
+  "main": "workers/app.ts",
+  "compatibility_date": "2026-02-03",
+  "compatibility_flags": ["nodejs_compat"],
+  "version_metadata": {
+    "binding": "CF_VERSION_METADATA"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "hasanhub",
+      "database_id": "3cb465bd-8698-4c06-941c-0154e1fd72e7"
+    }
+  ],
+  "assets": {
+    "directory": "build/client"
+  },
+  "triggers": {
+    "crons": [
+      "*/15 * * * *",
+      "0 * * * *",
+      "0 3 * * *",
+      "0 4 * * *"
+    ]
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "invocation_logs": true
+    },
+    "traces": {
+      "enabled": true,
+      "head_sampling_rate": 1
+    }
+  }
+}

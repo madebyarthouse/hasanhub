@@ -1,9 +1,12 @@
-import { TwitchAuthService } from "~/lib/twitch-auth.server";
+import {
+  getTokenInfo,
+  refreshAccessToken,
+} from "~/lib/twitch-auth.server";
+import type { Route } from "./+types/twitch-auth";
 
-export async function loader() {
+export const loader = async (_args: Route.LoaderArgs) => {
   try {
-    const authService = TwitchAuthService.getInstance();
-    const tokenInfo = await authService.getTokenInfo();
+    const tokenInfo = await getTokenInfo();
 
     return new Response(JSON.stringify(tokenInfo), {
       status: 200,
@@ -22,22 +25,21 @@ export async function loader() {
       }
     );
   }
-}
+};
 
-export async function action({ request }: { request: Request }) {
+export const action = async ({ request }: Route.ActionArgs) => {
   if (request.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
   }
 
   try {
-    const authService = TwitchAuthService.getInstance();
-    const newToken = await authService.forceRefresh();
+    const newToken = await refreshAccessToken();
 
     return new Response(
       JSON.stringify({
         success: true,
         message: "Token refreshed successfully",
-        tokenLength: newToken.length, // Don't expose the actual token
+        tokenLength: newToken.length,
       }),
       {
         status: 200,
@@ -57,4 +59,4 @@ export async function action({ request }: { request: Request }) {
       }
     );
   }
-}
+};

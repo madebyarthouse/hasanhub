@@ -1,4 +1,5 @@
-import { getTwitchAccessToken } from "./twitch-auth.server";
+import { env } from "cloudflare:workers";
+import { getValidAccessToken } from "./twitch-auth.server";
 
 export type StreamInfo = {
   data: {
@@ -45,8 +46,8 @@ export type StreamSchedule = {
 };
 
 export const getStreamInfo = async () => {
-  const accessToken = await getTwitchAccessToken();
-  const clientId = process.env.TWITCH_CLIENT_ID?.trim() ?? "";
+  const accessToken = await getValidAccessToken();
+  const clientId = env.TWITCH_CLIENT_ID?.trim() ?? "";
 
   return await Promise.all([
     fetch(`https://api.twitch.tv/helix/streams?first=1&user_id=${207813352}`, {

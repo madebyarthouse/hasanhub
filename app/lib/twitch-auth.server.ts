@@ -1,4 +1,7 @@
-import { prisma } from "~/utils/prisma.server";
+import { env } from "cloudflare:workers";
+import { desc } from "drizzle-orm";
+import { db } from "../../db/client";
+import { TwitchAuth } from "../../db/schema";
 
 interface TwitchTokenResponse {
   access_token: string;
@@ -6,139 +9,94 @@ interface TwitchTokenResponse {
   token_type: string;
 }
 
-export class TwitchAuthService {
-  private static instance: TwitchAuthService;
-  private clientId: string;
-  private clientSecret: string;
+const getClientConfig = () => {
+  const clientId = env.TWITCH_CLIENT_ID || "";
+  const clientSecret = env.TWITCH_CLIENT_SECRET || "";
 
-  private constructor() {
-    this.clientId = process.env.TWITCH_CLIENT_ID || "";
-    this.clientSecret = process.env.TWITCH_CLIENT_SECRET || "";
-
-    if (!this.clientId || !this.clientSecret) {
-      throw new Error("TWITCH_CLIENT_ID and TWITCH_CLIENT_SECRET must be set");
-    }
+  if (!clientId || !clientSecret) {
+    throw new Error("TWITCH_CLIENT_ID and TWITCH_CLIENT_SECRET must be set");
   }
 
-  public static getInstance(): TwitchAuthService {
-    if (!TwitchAuthService.instance) {
-      TwitchAuthService.instance = new TwitchAuthService();
-    }
-    return TwitchAuthService.instance;
+  return { clientId, clientSecret };
+};
+
+const getCurrentAuth = async () => {
+  const rows = await db
+    .select()
+    .from(TwitchAuth)
+    .orderBy(desc(TwitchAuth.createdAt))
+    .limit(1);
+
+  return rows[0] ?? null;
+};
+
+const isTokenValid = (expiresAt: string) => {
+  const now = new Date();
+  const bufferTime = 5 * 60 * 1000;
+  const expires = new Date(expiresAt);
+  return expires.getTime() > now.getTime() + bufferTime;
+};
+
+export const refreshAccessToken = async () => {
+  const { clientId, clientSecret } = getClientConfig();
+
+  const response = await fetch("https://id.twitch.tv/oauth2/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      grant_type: "client_credentials",
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      `Failed to refresh token: ${errorData.message || response.statusText}`
+    );
   }
 
-  /**
-   * Get a valid access token, refreshing if necessary
-   */
-  async getValidAccessToken(): Promise<string> {
-    const currentAuth = await this.getCurrentAuth();
+  const tokenData = (await response.json()) as TwitchTokenResponse;
+  const expiresAt = new Date();
+  expiresAt.setSeconds(expiresAt.getSeconds() + tokenData.expires_in);
 
-    if (currentAuth && this.isTokenValid(currentAuth.expiresAt)) {
-      return currentAuth.accessToken;
-    }
+  const inserted = await db
+    .insert(TwitchAuth)
+    .values({
+      accessToken: tokenData.access_token,
+      expiresAt: expiresAt.toISOString(),
+      tokenType: tokenData.token_type,
+      createdAt: new Date().toISOString(),
+    })
+    .returning();
 
-    // Token is expired or doesn't exist, refresh it
-    return this.refreshAccessToken();
+  const saved = inserted[0];
+  return saved?.accessToken ?? tokenData.access_token;
+};
+
+export const getValidAccessToken = async () => {
+  const current = await getCurrentAuth();
+  if (current && current.expiresAt && isTokenValid(current.expiresAt)) {
+    return current.accessToken;
   }
 
-  /**
-   * Get the current auth record from database
-   */
-  private async getCurrentAuth() {
-    return await prisma.twitchAuth.findFirst({
-      orderBy: { createdAt: "desc" },
-    });
+  return refreshAccessToken();
+};
+
+export const getTokenInfo = async () => {
+  const auth = await getCurrentAuth();
+  if (!auth) {
+    return { status: "no_token", message: "No token found in database" };
   }
 
-  /**
-   * Check if token is still valid (with 5 minute buffer)
-   */
-  private isTokenValid(expiresAt: Date): boolean {
-    const now = new Date();
-    const bufferTime = 5 * 60 * 1000; // 5 minutes in milliseconds
-    return expiresAt.getTime() > now.getTime() + bufferTime;
-  }
-
-  /**
-   * Refresh the access token from Twitch
-   */
-  async refreshAccessToken(): Promise<string> {
-    try {
-      const response = await fetch("https://id.twitch.tv/oauth2/token", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({
-          client_id: this.clientId,
-          client_secret: this.clientSecret,
-          grant_type: "client_credentials",
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          `Failed to refresh token: ${errorData.message || response.statusText}`
-        );
-      }
-
-      const tokenData: TwitchTokenResponse = await response.json();
-
-      // Calculate expiration date
-      const expiresAt = new Date();
-      expiresAt.setSeconds(expiresAt.getSeconds() + tokenData.expires_in);
-
-      // Store in database
-      const savedAuth = await prisma.twitchAuth.create({
-        data: {
-          accessToken: tokenData.access_token,
-          expiresAt: expiresAt,
-          tokenType: tokenData.token_type,
-        },
-      });
-
-      console.log(
-        `New Twitch token saved, expires at: ${expiresAt.toISOString()}`
-      );
-
-      return savedAuth.accessToken;
-    } catch (error) {
-      console.error("Error refreshing Twitch access token:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Force refresh the token (useful for manual refresh)
-   */
-  async forceRefresh(): Promise<string> {
-    return this.refreshAccessToken();
-  }
-
-  /**
-   * Get token info for debugging
-   */
-  async getTokenInfo() {
-    const auth = await this.getCurrentAuth();
-    if (!auth) {
-      return { status: "no_token", message: "No token found in database" };
-    }
-
-    const isValid = this.isTokenValid(auth.expiresAt);
-    return {
-      status: isValid ? "valid" : "expired",
-      expiresAt: auth.expiresAt,
-      createdAt: auth.createdAt,
-      tokenType: auth.tokenType,
-    };
-  }
-}
-
-/**
- * Convenience function to get a valid token
- */
-export async function getTwitchAccessToken(): Promise<string> {
-  const authService = TwitchAuthService.getInstance();
-  return authService.getValidAccessToken();
-}
+  const isValid = isTokenValid(auth.expiresAt);
+  return {
+    status: isValid ? "valid" : "expired",
+    expiresAt: auth.expiresAt,
+    createdAt: auth.createdAt,
+    tokenType: auth.tokenType,
+  };
+};

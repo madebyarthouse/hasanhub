@@ -1,29 +1,52 @@
-import type { EntryContext } from "@remix-run/node";
-import { RemixServer } from "@remix-run/react";
-import { renderToString } from "react-dom/server";
-// import * as Sentry from "@sentry/remix";
-// import { prisma } from "~/utils/prisma.server";
+import type { AppLoadContext, EntryContext } from "react-router";
+import { ServerRouter } from "react-router";
+import { isbot } from "isbot";
+import { renderToReadableStream } from "react-dom/server";
 
-// Sentry.init({
-//   dsn: "https://5c4951b4713443e18cb2e5871d45a782@o1293114.ingest.sentry.io/6564125",
-//   tracesSampleRate: 1,
-//   integrations: [new Sentry.Integrations.Prisma({ client: prisma })],
-// });
+export const streamTimeout = 5_000;
 
-export default function handleRequest(
+export default async function handleRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
-  remixContext: EntryContext
+  routerContext: EntryContext,
+  _loadContext: AppLoadContext,
 ) {
-  let markup = renderToString(
-    <RemixServer context={remixContext} url={request.url} />
+  if (request.method.toUpperCase() === "HEAD") {
+    return new Response(null, {
+      status: responseStatusCode,
+      headers: responseHeaders,
+    });
+  }
+
+  let didError = false;
+  const abortController = new AbortController();
+  const timeoutId = setTimeout(
+    () => abortController.abort(),
+    streamTimeout + 1000,
   );
 
-  responseHeaders.set("Content-Type", "text/html");
+  const body = await renderToReadableStream(
+    <ServerRouter context={routerContext} url={request.url} />,
+    {
+      signal: abortController.signal,
+      onError(error: unknown) {
+        didError = true;
+        console.error(error);
+      },
+    },
+  );
 
-  return new Response("<!DOCTYPE html>" + markup, {
-    status: responseStatusCode,
+  const userAgent = request.headers.get("user-agent") ?? "";
+  if (isbot(userAgent) || routerContext.isSpaMode) {
+    await body.allReady;
+  }
+
+  clearTimeout(timeoutId);
+
+  responseHeaders.set("Content-Type", "text/html");
+  return new Response(body, {
+    status: didError ? 500 : responseStatusCode,
     headers: responseHeaders,
   });
 }

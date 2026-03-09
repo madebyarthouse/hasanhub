@@ -18,3 +18,23 @@ export const chunkAndMergePromises = async <T>(
 
   return results;
 };
+
+const DEFAULT_D1_MAX_PARAMS = 100;
+
+export const chunkByParams = <T extends Record<string, unknown>>(
+  rows: T[],
+  maxParams = DEFAULT_D1_MAX_PARAMS
+): T[][] => {
+  if (rows.length === 0) return [];
+
+  const columns = Object.keys(rows[0]).length;
+  const paramsPerRow = Math.max(1, columns);
+  const maxRows = Math.max(1, Math.floor(maxParams / paramsPerRow));
+
+  const chunks: T[][] = [];
+  for (let i = 0; i < rows.length; i += maxRows) {
+    chunks.push(rows.slice(i, i + maxRows));
+  }
+
+  return chunks;
+};

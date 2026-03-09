@@ -1,4 +1,9 @@
-import type { Channel, Tag, TagVideo, Video } from "@prisma/client";
+import type {
+  ChannelRecord,
+  TagRecord,
+  TagVideoRecord,
+  VideoRecord,
+} from "../../db/types";
 import Taglist from "./taglist";
 
 const formatDate = (date: string | Date) => {
@@ -49,9 +54,9 @@ const VideoGridItem = ({
   layoutId,
   lazy = false,
 }: {
-  video: Video & { channel: Channel | null } & {
-    tags: (TagVideo & {
-      tag: Tag | null;
+  video: VideoRecord & { channel: ChannelRecord | null } & {
+    tags: (TagVideoRecord & {
+      tag: TagRecord | null;
     })[];
   };
   lazy?: boolean;

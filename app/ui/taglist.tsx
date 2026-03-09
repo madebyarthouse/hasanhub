@@ -1,7 +1,7 @@
-import type { Tag } from "@prisma/client";
+import type { TagSidebarRecord } from "../../db/types";
 import TagButton from "./tag-button";
 
-const Taglist = ({ tags }: { tags: Tag[] }) => {
+const Taglist = ({ tags }: { tags: TagSidebarRecord[] }) => {
   return (
     <ul className="flex flex-row flex-wrap gap-3 lg:gap-2 xl:gap-1 text-sm w-full pb-3">
       {tags.map((tag) => (

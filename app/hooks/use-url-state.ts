@@ -1,4 +1,4 @@
-import { useLocation, useSearchParams, useTransition } from "@remix-run/react";
+import { useLocation, useSearchParams, useNavigation } from "react-router";
 import { useEffect, useState } from "react";
 import type {
   LastVideoIdType,
@@ -52,18 +52,16 @@ const useUrlState = () => {
     },
   });
 
-  const transition = useTransition();
+  const navigation = useNavigation();
 
   useEffect(() => {
-    const nextSearchParams = new URLSearchParams(transition.location?.search);
+    const nextSearchParams = new URLSearchParams(navigation.location?.search);
 
     let lastVideoIdParam = searchParams.get("lastVideoId");
     let nextLastVideoIdParam = nextSearchParams.get("lastVideoId");
 
     const tagSlugs = getTagSlugsFromPathname(location?.pathname);
-    const nextTagSlugs = getTagSlugsFromPathname(
-      transition?.location?.pathname
-    );
+    const nextTagSlugs = getTagSlugsFromPathname(navigation.location?.pathname);
 
     const { order, durations, timeframe, by, lastVideoId } =
       UrlParamsSchema.parse({
@@ -100,10 +98,10 @@ const useUrlState = () => {
       lastVideoId: nextLastVideoId ?? lastVideoId,
       tagSlugs: nextTagSlugs.length !== 0 ? nextTagSlugs : tagSlugs,
     });
-  }, [location, transition.location, searchParams]);
+  }, [location, navigation.location, searchParams]);
 
   return {
-    isLoading: transition.state === "loading",
+    isLoading: navigation.state === "loading",
     ...urlState,
   };
 };

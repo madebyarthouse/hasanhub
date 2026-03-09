@@ -1,29 +1,19 @@
-import { json } from "@remix-run/node";
-import type { LoaderFunction } from "@remix-run/node";
-import { useFetcher, useLoaderData } from "@remix-run/react";
-import { cacheHeader } from "pretty-cache-header";
-import { prisma } from "~/utils/prisma.server";
-import VideosGrid from "~/ui/videos-grid";
-import getVideos from "../../lib/get-videos";
-import { useEffect, useState } from "react";
-import { UrlParamsSchema } from "~/utils/validators";
 import { z } from "zod";
+import { cacheHeader } from "pretty-cache-header";
+import { useEffect, useState } from "react";
+import { useFetcher, useLoaderData } from "react-router";
+import getVideos from "~/lib/get-videos";
+import VideosGrid from "~/ui/videos-grid";
+import { UrlParamsSchema } from "~/utils/validators";
+import { getOrderingTitle } from "~/utils/get-ordering-title";
 import useUrlState from "~/hooks/use-url-state";
 import useActionUrl from "~/hooks/use-action-url";
+import { db } from "../../../db/client";
+import type { Route } from "./+types/index";
 
-export function headers() {
-  return {
-    "Cache-Control": cacheHeader({
-      maxAge: "5minutes",
-      sMaxage: "30minutes",
-      staleWhileRevalidate: "1day",
-    }),
-  };
-}
-
-export const loader: LoaderFunction = async ({ request }) => {
+export const loader = async ({ request }: Route.LoaderArgs) => {
   const url = new URL(request.url);
-  let lastVideoIdParam = url.searchParams.get("lastVideoId");
+  const lastVideoIdParam = url.searchParams.get("lastVideoId");
 
   try {
     const { order, durations, timeframe, by, lastVideoId } =
@@ -35,7 +25,7 @@ export const loader: LoaderFunction = async ({ request }) => {
         lastVideoId: lastVideoIdParam ? parseInt(lastVideoIdParam) : undefined,
       });
 
-    const [videos, totalVideosCount] = await getVideos({
+    const [videos, totalVideosCount] = await getVideos(db, {
       order,
       durations,
       timeframe,
@@ -43,32 +33,39 @@ export const loader: LoaderFunction = async ({ request }) => {
       lastVideoId,
     });
 
-    return json(
-      { totalVideosCount, videos },
-      {
-        status: 200,
-        headers: {
-          "Cache-Control": cacheHeader({
-            maxAge: "10minutes",
-            sMaxage: "1hour",
-            staleWhileRevalidate: "1day",
-          }),
-        },
-      }
-    );
+    return new Response(JSON.stringify({ totalVideosCount, videos }), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": cacheHeader({
+          maxAge: "10minutes",
+          sMaxage: "1hour",
+          staleWhileRevalidate: "1day",
+        }),
+      },
+    });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     if (error instanceof z.ZodError) {
-      return json(error.issues, { status: 500 });
+      return new Response(JSON.stringify(error.issues), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
-    return json(error, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
+    return new Response(JSON.stringify(error), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 };
 
+export const headers: Route.HeadersFunction = ({ loaderHeaders }) => {
+  const cacheControl = loaderHeaders.get("Cache-Control");
+  return cacheControl ? { "Cache-Control": cacheControl } : {};
+};
+
 export default function Index() {
-  const { totalVideosCount, videos } = useLoaderData();
+  const { totalVideosCount, videos } = useLoaderData<typeof loader>();
   const [liveVideos, setLiveVideos] = useState<typeof videos>(videos);
   const fetcher = useFetcher();
   const { isLoading, ordering } = useUrlState();
@@ -91,20 +88,7 @@ export default function Index() {
     fetcher.load(loaderUrl(lastVideoId));
   };
 
-  let title;
-  if (ordering.by === "publishedAt") {
-    if (ordering.order === "desc") {
-      title = "Latest";
-    } else if (ordering.order === "asc") {
-      title = "Oldest";
-    }
-  } else if (ordering.by === "views") {
-    if (ordering.order === "desc") {
-      title = "Most Viewed";
-    } else if (ordering.order === "asc") {
-      title = "Least Viewed";
-    }
-  }
+  const title = getOrderingTitle(ordering);
 
   return (
     <VideosGrid

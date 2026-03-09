@@ -1,15 +1,10 @@
-node_modules
-
-.cache
-.env
-.vercel
-.output
-
-/build/
-/public/build
-/api
-
 .DS_Store
-.pscale.yml
-dev.db
-dev.db-journal
+.env
+/node_modules/
+
+# React Router
+/.react-router/
+/build/
+.wrangler
+.d1/
+dump.sql

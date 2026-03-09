@@ -1,17 +1,15 @@
-import type { LoaderFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
-import { Outlet, useLoaderData } from "@remix-run/react";
-import { cacheHeader } from "pretty-cache-header";
-import useUrlState from "~/hooks/use-url-state";
-import { TagSlugsValidator } from "~/lib/get-videos";
-import { debug } from "~/utils/debug.server";
-import type { Tag } from "@prisma/client";
+import { Outlet, useLoaderData } from "react-router";
+import type { TagSidebarRecord } from "../../db/types";
 import type { DurationListType, TimeframeType } from "~/utils/validators";
-
 import Sidebar, { MobileHeader } from "~/ui/sidebar";
-import { StreamInfo, StreamSchedule } from "~/lib/get-stream-info.server";
+import { cacheHeader } from "pretty-cache-header";
+import { db } from "../../db/client";
+import { getTagsForSidebar } from "../../db/queries";
+import { TagSlugsValidator } from "~/lib/get-videos";
+import { getStreamInfo } from "~/lib/get-stream-info.server";
+import type { Route } from "./+types/__videos";
+import useUrlState from "~/hooks/use-url-state";
 
-// Component-specific types that match the transformed data from root.tsx
 type StreamInfoDisplay = {
   user_login: string;
   user_name: string;
@@ -26,7 +24,7 @@ type StreamScheduleDisplay = {
 };
 
 export type VideosLayoutContext = {
-  tags: Tag[];
+  tags: TagSidebarRecord[];
   tagSlugs: string[];
   durations: DurationListType | undefined;
   timeframe: TimeframeType | undefined;
@@ -34,81 +32,63 @@ export type VideosLayoutContext = {
   streamSchedule?: StreamScheduleDisplay;
 };
 
-export function headers() {
-  return {
-    "Cache-Control": cacheHeader({
-      sMaxage: "1day",
-      staleWhileRevalidate: "1week",
-    }),
-  };
-}
+export const loader = async ({ request }: Route.LoaderArgs) => {
+  const url = new URL(request.url);
+  const slugs = url.pathname.startsWith("/tags/")
+    ? url.pathname.replace("/tags/", "").split("/")
+    : [];
 
-export const loader: LoaderFunction = async ({ request, params }) => {
-  const slugs = params["*"]?.split("/") ?? [];
+  const tags = await getTagsForSidebar(db);
+  const tagSlugs = TagSlugsValidator.parse(slugs) ?? [];
 
-  if (slugs.length > 1) {
-    return new Response("Only 1 tag allowed at a time", { status: 400 });
-  }
-
-  const BASE_URL = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "http://localhost:3000";
+  let streamInfo: StreamInfoDisplay | null = null;
+  let streamSchedule: StreamScheduleDisplay | null = null;
 
   try {
-    const [tagsResponse, streamResponse] = await Promise.all([
-      fetch(`${BASE_URL}/api/get-tags-for-sidebar`),
-      fetch(`${BASE_URL}/api/get-stream-info`),
-    ]);
-
-    const { streamInfo: streamInfoRaw, streamSchedule: streamScheduleRaw } =
-      (await streamResponse.json()) as {
-        streamInfo: StreamInfo;
-        streamSchedule: StreamSchedule;
-      };
-
-    const tagsData = await tagsResponse.json();
-    const tagSlugs = TagSlugsValidator.parse(slugs) ?? [];
-
-    // Transform stream data to match component interface
-    const streamInfo = streamInfoRaw?.data?.length
+    const [info, schedule] = await getStreamInfo();
+    streamInfo = info?.data?.length
       ? {
-          user_login: streamInfoRaw.data[0].user_login,
-          user_name: streamInfoRaw.data[0].user_name,
-          title: streamInfoRaw.data[0].title,
+          user_login: info.data[0].user_login,
+          user_name: info.data[0].user_name,
+          title: info.data[0].title,
         }
       : null;
-
-    const streamSchedule = streamScheduleRaw?.data?.segments.length
+    streamSchedule = schedule?.data?.segments?.length
       ? {
-          broadcaster_login: streamScheduleRaw.data.broadcaster_login,
-          broadcaster_name: streamScheduleRaw.data.broadcaster_name,
-          start_time: streamScheduleRaw.data.segments[0].start_time,
-          title: streamScheduleRaw.data.segments[0].title,
+          broadcaster_login: schedule.data.broadcaster_login,
+          broadcaster_name: schedule.data.broadcaster_name,
+          start_time: schedule.data.segments[0].start_time,
+          title: schedule.data.segments[0].title,
         }
       : null;
-
-    return json(
-      {
-        tags: tagsData ?? [],
-        tagSlugs,
-        streamInfo,
-        streamSchedule,
-      },
-      {
-        status: 200,
-        headers: {
-          "Cache-Control": cacheHeader({
-            maxAge: "3days",
-            sMaxage: "1day",
-            staleWhileRevalidate: "1week",
-          }),
-        },
-      }
-    );
-  } catch (e) {
-    debug(e);
-    return json({ error: e });
+  } catch (error) {
+    console.warn("Stream info unavailable:", error);
   }
+
+  return new Response(
+    JSON.stringify({
+      tags,
+      tagSlugs,
+      streamInfo,
+      streamSchedule,
+    }),
+    {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": cacheHeader({
+          maxAge: "3days",
+          sMaxage: "1day",
+          staleWhileRevalidate: "1week",
+        }),
+      },
+    }
+  );
+};
+
+export const headers: Route.HeadersFunction = ({ loaderHeaders }) => {
+  const cacheControl = loaderHeaders.get("Cache-Control");
+  return cacheControl ? { "Cache-Control": cacheControl } : {};
 };
 
 export default function VideosLayout() {
@@ -120,23 +100,21 @@ export default function VideosLayout() {
     tagSlugs,
     durations,
     timeframe,
-    streamInfo,
-    streamSchedule,
+    streamInfo: streamInfo ?? undefined,
+    streamSchedule: streamSchedule ?? undefined,
   };
 
   return (
     <div className="flex flex-col lg:flex-row h-screen">
-      {/* Mobile Header - shown on mobile/tablet */}
-      <MobileHeader streamInfo={streamInfo} streamSchedule={streamSchedule} />
-
-      {/* Sidebar - hidden on mobile/tablet */}
+      <MobileHeader
+        streamInfo={streamInfo ?? undefined}
+        streamSchedule={streamSchedule ?? undefined}
+      />
       <Sidebar
         tags={tags}
-        streamInfo={streamInfo}
-        streamSchedule={streamSchedule}
+        streamInfo={streamInfo ?? undefined}
+        streamSchedule={streamSchedule ?? undefined}
       />
-
-      {/* Content Area */}
       <div className="flex-1 lg:overflow-y-auto">
         <Outlet context={context} />
       </div>

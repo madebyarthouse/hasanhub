@@ -1,6 +1,6 @@
-import type { Tag, Video } from "@prisma/client";
+import type { TagRecord, VideoRecord } from "../../../db/types";
 
-export const matchTagWithVideos = (tag: Tag, videos: Video[]) => {
+export const matchTagWithVideos = (tag: TagRecord, videos: VideoRecord[]) => {
   const synonyms = tag.synonyms.split(",");
 
   return videos.filter((video) => {

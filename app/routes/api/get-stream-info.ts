@@ -1,51 +1,42 @@
-import { json } from "@remix-run/node";
 import { cacheHeader } from "pretty-cache-header";
 import { getStreamInfo } from "~/lib/get-stream-info.server";
+import type { Route } from "./+types/get-stream-info";
 
-export async function loader() {
+export const loader = async (_args: Route.LoaderArgs) => {
   try {
-    const streamData = await getStreamInfo();
-    const [streamInfo, streamSchedule] = streamData;
+    const [streamInfo, streamSchedule] = await getStreamInfo();
 
-    // Check if we have meaningful data to cache
     const hasStreamInfo = streamInfo?.data?.length > 0;
     const hasScheduleInfo = streamSchedule?.data?.segments?.length > 0;
     const shouldCache = hasStreamInfo || hasScheduleInfo;
 
-    if (shouldCache) {
-      return json(
-        { streamInfo, streamSchedule },
-        {
-          status: 200,
-          headers: {
-            "Cache-Control": cacheHeader({
-              maxAge: "15minutes",
-              sMaxage: "15minutes",
-              staleWhileRevalidate: "15minutes",
-            }),
-          },
-        }
-      );
-    } else {
-      // Don't cache when there's no meaningful data
-      return json(streamData, {
-        status: 200,
-        headers: {
-          "Cache-Control": cacheHeader({
-            noCache: true,
-            maxAge: "0s",
-            mustRevalidate: true,
-          }),
-        },
-      });
-    }
+    const headers = shouldCache
+      ? cacheHeader({
+          maxAge: "15minutes",
+          sMaxage: "15minutes",
+          staleWhileRevalidate: "15minutes",
+        })
+      : cacheHeader({
+          noCache: true,
+          maxAge: "0s",
+          mustRevalidate: true,
+        });
+
+    return new Response(JSON.stringify({ streamInfo, streamSchedule }), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": headers,
+      },
+    });
   } catch (error) {
     console.error("Error fetching stream info:", error);
-    return json(
-      { error: "Failed to fetch stream info" },
+    return new Response(
+      JSON.stringify({ error: "Failed to fetch stream info" }),
       {
         status: 500,
         headers: {
+          "Content-Type": "application/json",
           "Cache-Control": cacheHeader({
             noCache: true,
             maxAge: "0s",
@@ -54,4 +45,4 @@ export async function loader() {
       }
     );
   }
-}
+};

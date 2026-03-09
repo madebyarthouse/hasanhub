@@ -1,17 +1,22 @@
-import type { Channel, Tag, TagVideo, Video } from "@prisma/client";
+import type {
+  ChannelRecord,
+  TagRecord,
+  TagVideoRecord,
+  VideoRecord,
+} from "../../db/types";
 import VideoGridItem from "./video-grid-item";
 import cx from "classnames";
 import LoadingSpinner from "./loading-spinner";
 import useUrlState from "~/hooks/use-url-state";
 import useActionUrl from "~/hooks/use-action-url";
-import { Link, useOutletContext } from "@remix-run/react";
+import { Link, useOutletContext } from "react-router";
 import FilterModal from "./filter-modal";
 import type { VideosLayoutContext } from "~/routes/__videos";
 
-type VideoType = Video & {
-  channel: Channel | null;
-  tags: (TagVideo & {
-    tag: Tag | null;
+type VideoType = VideoRecord & {
+  channel: ChannelRecord | null;
+  tags: (TagVideoRecord & {
+    tag: TagRecord | null;
   })[];
 };
 

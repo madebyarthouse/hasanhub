@@ -1,52 +1,87 @@
-# Hasanhub
+# Welcome to React Router!
 
-![Screenvideo of Hasanhub on desktop](https://github.com/user-attachments/assets/a539fd5d-7cf6-4ffc-a8f0-f6797aeebe74)
+A modern, production-ready template for building full-stack React applications using React Router.
 
-## Important Note
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
 
-This is a raw release with some basic documentation.
-There is currently no admin for editing the data. You'd need to insert the non-dynamic data directly via the database.
+## Features
 
-For more detailed documentation, please see the [README](./docs/README.md).
+- 🚀 Server-side rendering
+- ⚡️ Hot Module Replacement (HMR)
+- 📦 Asset bundling and optimization
+- 🔄 Data loading and mutations
+- 🔒 TypeScript by default
+- 🎉 TailwindCSS for styling
+- 📖 [React Router docs](https://reactrouter.com/)
 
+## Getting Started
 
-## What is this?
+### Installation
 
-**Hasanhub project page:** [chrcit.com/projects/hasanhub-com](https://chrcit.com/projects/hasanhub-com)
+Install the dependencies:
 
-A web app which aggregates videos from multiple Youtube Channels into one view.
-If you add tags they will be autodetected on all videos synced.
+```bash
+npm install
+```
 
-## Why?
+### Development
 
-The political streamer Hasanabi allows his fans to clip his stream VODs, upload those clips to YouTube and make money from his content.
-Due to this there are 100+ different YouTube channels dedicated to him. Some of these fan channels have over 200.000 subscribers.
+Start the development server with HMR:
 
-His community is ideal for such an application due to the sheer number of channels.
-But it could be useful for other creators/communites which have multiple channels and/or a larger backlog.
+```bash
+npm run dev
+```
 
-## Stack
+Your application will be available at `http://localhost:5173`.
 
-- Typescript
-- React
-- Remix
-- Prisma
-- Turso / LibSQL
-- Tailwind
+## Building for Production
 
-I'm currently hosting via Vercel but it should work almost[1] everywhere.
-Syncing needs to be setup via Cron jobs (or similiar) by hitting the API routes defined in the `vercel.json`
+Create a production build:
 
-[1] Prisma limits support for edge enviromnents.
+```bash
+npm run build
+```
 
-### Potential changes
+## Deployment
 
-- Add payloadcms
-  - Also switches from Prisma to Drizzle
-  - Add database configs for all available adapters
-- Add deployment options for Docker and Vercel/Netlify/Cloudflare
+### Docker Deployment
 
-## Can I use this for my own site?
+To build and run using Docker:
 
-For sure! If you do pls [let me know](https://twitter.com/chrcit) so I can check it out.
-I'd also love a backlink to [my website](https://chrcit.com/projects/hasanhub-com?utm_source=github-hasanhub) somewhere on the site if you are awesome!
+```bash
+docker build -t my-app .
+
+# Run the container
+docker run -p 3000:3000 my-app
+```
+
+The containerized application can be deployed to any platform that supports Docker, including:
+
+- AWS ECS
+- Google Cloud Run
+- Azure Container Apps
+- Digital Ocean App Platform
+- Fly.io
+- Railway
+
+### DIY Deployment
+
+If you're familiar with deploying Node applications, the built-in app server is production-ready.
+
+Make sure to deploy the output of `npm run build`
+
+```
+├── package.json
+├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
+├── build/
+│   ├── client/    # Static assets
+│   └── server/    # Server-side code
+```
+
+## Styling
+
+This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
+
+---
+
+Built with ❤️ using React Router.

@@ -1,6 +1,6 @@
 import { z } from "zod";
+import { and, asc, desc, eq, gte, inArray, lte, lt, gt, or, sql } from "drizzle-orm";
 import { publishStatus, videoSyncStatus } from "~/utils/dbEnums";
-import { prisma } from "~/utils/prisma.server";
 import type {
   DurationListType,
   TimeframeType,
@@ -13,6 +13,8 @@ import {
   OrderByValdiator,
   OrderDirectionValidator,
 } from "~/utils/validators";
+import { Channel, Tag, TagVideo, Video } from "../../db/schema";
+import type { ReturnTypeOrDb } from "../../db/queries/types";
 
 export const TagSlugsValidator = z.optional(z.array(z.string()));
 
@@ -34,104 +36,180 @@ const GetVideosValidator = z.object({
   lastVideoId: LastVideoIdValidator,
 });
 
-const getVideos = async (params: GetVideosArgs) => {
+const getVideos = async (db: ReturnTypeOrDb, params: GetVideosArgs) => {
   const { order, durations, timeframe, by, lastVideoId, tagSlugs, take } =
     GetVideosValidator.parse(params);
 
-  let conditions: {
-    tags?: object;
-    publishedAt?: object;
-    views?: object;
-    likes?: object;
-    OR?: Array<object>;
-    disabled: boolean;
-    syncStatus: typeof videoSyncStatus.Full;
-    publishStatus: typeof publishStatus.Published;
-  } = {
-    disabled: false,
-    syncStatus: videoSyncStatus.Full,
-    publishStatus: publishStatus.Published,
-  };
+  const conditions = [
+    eq(Video.disabled, false),
+    eq(Video.syncStatus, videoSyncStatus.Full),
+    eq(Video.publishStatus, publishStatus.Published),
+  ];
 
   if (tagSlugs && tagSlugs.length > 0) {
-    conditions["tags"] = { some: { tag: { slug: { in: tagSlugs } } } };
+    const tagVideoSubquery = db
+      .select({ videoId: TagVideo.videoId })
+      .from(TagVideo)
+      .innerJoin(Tag, eq(TagVideo.tagId, Tag.id))
+      .where(inArray(Tag.slug, tagSlugs));
+    conditions.push(inArray(Video.id, tagVideoSubquery));
   }
 
-  const lastCondition = lastVideoId
-    ? (await getLastVideo(lastVideoId))?.[by ?? "publishedAt"]
-    : null;
-
-  if (lastCondition) {
-    if (order === "asc") {
-      conditions[by ?? "publishedAt"] = { gt: lastCondition };
-    } else {
-      conditions[by ?? "publishedAt"] = { lt: lastCondition };
+  if (lastVideoId) {
+    const lastVideo = await getLastVideo(db, lastVideoId);
+    const key = by ?? "publishedAt";
+    const lastValue =
+      key === "views"
+        ? lastVideo?.views ?? null
+        : key === "likes"
+          ? lastVideo?.likes ?? null
+          : lastVideo?.publishedAt ?? null;
+    if (lastValue) {
+      if ((order ?? "desc") === "asc") {
+        conditions.push(
+          key === "views"
+            ? gt(Video.views, Number(lastValue))
+            : gt(Video.publishedAt, String(lastValue))
+        );
+      } else {
+        conditions.push(
+          key === "views"
+            ? lt(Video.views, Number(lastValue))
+            : lt(Video.publishedAt, String(lastValue))
+        );
+      }
     }
   }
 
   if (durations) {
-    const minMaxPairs =
-      getMinxMaxForTimeFilter(durations)?.map((pair) => {
-        return { gte: pair[0], lte: pair[1] };
-      }) ?? [];
+    const minMaxPairs = getMinxMaxForTimeFilter(durations) ?? [];
     if (minMaxPairs.length > 0) {
-      conditions["OR"] = [];
-      minMaxPairs.forEach((pair) => {
-        conditions.OR?.push({ duration: pair });
-      });
+      conditions.push(
+        or(
+          ...minMaxPairs.map(([min, max]) =>
+            and(gte(Video.duration, min), lte(Video.duration, max))
+          )
+        )
+      );
     }
   }
 
   if (timeframe) {
     const earliestDate = getDateRangeForTimeframe(timeframe);
     if (earliestDate) {
-      conditions["publishedAt"] = {
-        ...conditions["publishedAt"],
-        gte: earliestDate,
-      };
+      conditions.push(gt(Video.publishedAt, earliestDate.toISOString()));
     }
   }
 
-  return await prisma.$transaction([
-    prisma.video.findMany({
-      select: {
-        id: true,
-        youtubeId: true,
-        largeThumbnailUrl: true,
-        title: true,
-        publishedAt: true,
-        views: true,
-        duration: true,
-        channel: {
-          select: {
-            id: true,
-            title: true,
-            smallThumbnailUrl: true,
-            youtubeId: true,
-          },
-        },
-        tags: {
-          select: { tag: { select: { id: true, slug: true, name: true } } },
-        },
-      },
-      where: conditions,
-      take: take ?? 25,
-      // include: { channel: true, tags: { include: { tag: true } } },
-      orderBy: {
-        [by ?? "publishedAt"]: order ?? "desc",
-      },
-    }),
-    prisma.video.count({
-      where: conditions,
-    }),
-  ]);
+  const orderKey = by ?? "publishedAt";
+  const ordering =
+    (order ?? "desc") === "asc"
+      ? orderKey === "views"
+        ? asc(Video.views)
+        : asc(Video.publishedAt)
+      : orderKey === "views"
+        ? desc(Video.views)
+        : desc(Video.publishedAt);
+
+  const videos = await db
+    .select({
+      id: Video.id,
+      youtubeId: Video.youtubeId,
+      largeThumbnailUrl: Video.largeThumbnailUrl,
+      title: Video.title,
+      publishedAt: Video.publishedAt,
+      views: Video.views,
+      duration: Video.duration,
+      channelId: Video.channelId,
+      channelTitle: Channel.title,
+      channelSmallThumbnailUrl: Channel.smallThumbnailUrl,
+      channelYoutubeId: Channel.youtubeId,
+    })
+    .from(Video)
+    .leftJoin(Channel, eq(Video.channelId, Channel.id))
+    .where(and(...conditions))
+    .orderBy(ordering)
+    .limit(take ?? 25);
+
+  const videoIds = videos.map((video) => video.id).filter(Boolean);
+  const tags = videoIds.length
+    ? await db
+        .select({
+          tagVideoId: TagVideo.id,
+          tagId: Tag.id,
+          videoId: TagVideo.videoId,
+          tagSlug: Tag.slug,
+          tagName: Tag.name,
+        })
+        .from(TagVideo)
+        .leftJoin(Tag, eq(TagVideo.tagId, Tag.id))
+        .where(inArray(TagVideo.videoId, videoIds))
+    : [];
+
+  const tagsByVideoId = new Map<number, typeof tags>();
+  tags.forEach((tag) => {
+    const id = tag.videoId ?? -1;
+    const bucket = tagsByVideoId.get(id) ?? [];
+    bucket.push(tag);
+    tagsByVideoId.set(id, bucket);
+  });
+
+  const data = videos.map((video) => ({
+    id: video.id,
+    youtubeId: video.youtubeId,
+    largeThumbnailUrl: video.largeThumbnailUrl ?? "",
+    title: video.title ?? "",
+    publishedAt: video.publishedAt,
+    views: video.views,
+    duration: video.duration,
+    channel: video.channelId
+      ? {
+          id: video.channelId,
+          title: video.channelTitle ?? "",
+          smallThumbnailUrl: video.channelSmallThumbnailUrl ?? "",
+          youtubeId: video.channelYoutubeId ?? "",
+        }
+      : null,
+    tags:
+      tagsByVideoId.get(video.id ?? -1)?.map((tag) => ({
+        id: tag.tagVideoId ?? 0,
+        tagId: tag.tagId ?? null,
+        videoId: tag.videoId ?? null,
+        tag: tag.tagId
+          ? {
+              id: tag.tagId,
+              slug: tag.tagSlug,
+              name: tag.tagName ?? "",
+            }
+          : null,
+      })) ?? [],
+  }));
+
+  const countRow = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(Video)
+    .where(and(...conditions));
+
+  const totalVideosCount = Number(countRow[0]?.count ?? 0);
+
+  return [data, totalVideosCount] as const;
 };
 
-const getLastVideo = async (lastVideoId: LastVideoIdType) => {
-  return await prisma.video.findUnique({
-    where: { id: lastVideoId },
-    select: { publishedAt: true, views: true, likes: true },
-  });
+const getLastVideo = async (db: ReturnTypeOrDb, lastVideoId: LastVideoIdType) => {
+  if (!lastVideoId) {
+    return null;
+  }
+  const rows = await db
+    .select({
+      publishedAt: Video.publishedAt,
+      views: Video.views,
+      likes: Video.likes,
+    })
+    .from(Video)
+    .where(eq(Video.id, lastVideoId))
+    .limit(1);
+
+  return rows[0] ?? null;
 };
 
 const getMinxMaxForTimeFilter = (durations?: DurationListType) => {
