@@ -9,6 +9,7 @@ There is currently no admin for editing the data. You'd need to insert the non-d
 
 For more detailed documentation, please see the [README](./docs/README.md).
 
+
 ## What is this?
 
 **Hasanhub project page:** [chrcit.com/projects/hasanhub-com](https://chrcit.com/projects/hasanhub-com)
