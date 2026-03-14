@@ -10,7 +10,7 @@ The original project launched in April 2022 and is documented here: [chrcit.com/
 > There is currently no admin UI for editing data.
 > Non-dynamic data needs to be inserted directly into the database.
 
-## What Is This?
+## What is this?
 
 HasanHub is a YouTube aggregator for the Hasanabi Clips Industrial Complex.
 
