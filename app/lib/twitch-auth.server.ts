@@ -24,7 +24,7 @@ const getCurrentAuth = async () => {
   const rows = await db
     .select()
     .from(TwitchAuth)
-    .orderBy(desc(TwitchAuth.createdAt))
+    .orderBy(desc(TwitchAuth.id))
     .limit(1);
 
   return rows[0] ?? null;
@@ -34,7 +34,43 @@ const isTokenValid = (expiresAt: string) => {
   const now = new Date();
   const bufferTime = 5 * 60 * 1000;
   const expires = new Date(expiresAt);
+  if (Number.isNaN(expires.getTime())) return false;
   return expires.getTime() > now.getTime() + bufferTime;
+};
+
+const getErrorText = async (response: Response) => {
+  try {
+    const data = (await response.json()) as {
+      message?: string;
+      error_description?: string;
+      error?: string;
+    };
+    return (
+      data.message ?? data.error_description ?? data.error ?? `HTTP ${response.status}`
+    );
+  } catch {
+    return `HTTP ${response.status}`;
+  }
+};
+
+const saveAuthToken = async (
+  token: string,
+  tokenType: string,
+  expiresAt: string
+) => {
+  const timestamp = new Date().toISOString();
+  const inserted = await db
+    .insert(TwitchAuth)
+    .values({
+      accessToken: token,
+      expiresAt,
+      tokenType,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    })
+    .returning();
+
+  return inserted[0] ?? null;
 };
 
 export const refreshAccessToken = async () => {
@@ -53,9 +89,9 @@ export const refreshAccessToken = async () => {
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
+    const errorText = await getErrorText(response);
     throw new Error(
-      `Failed to refresh token: ${errorData.message || response.statusText}`
+      `Failed to refresh token: ${errorText || response.statusText}`
     );
   }
 
@@ -63,23 +99,29 @@ export const refreshAccessToken = async () => {
   const expiresAt = new Date();
   expiresAt.setSeconds(expiresAt.getSeconds() + tokenData.expires_in);
 
-  const inserted = await db
-    .insert(TwitchAuth)
-    .values({
-      accessToken: tokenData.access_token,
-      expiresAt: expiresAt.toISOString(),
-      tokenType: tokenData.token_type,
-      createdAt: new Date().toISOString(),
-    })
-    .returning();
+  const saved = await saveAuthToken(
+    tokenData.access_token,
+    tokenData.token_type,
+    expiresAt.toISOString()
+  );
 
-  const saved = inserted[0];
-  return saved?.accessToken ?? tokenData.access_token;
+  if (!saved) {
+    return tokenData.access_token;
+  }
+
+  return saved.accessToken;
 };
 
-export const getValidAccessToken = async () => {
+export const getValidAccessToken = async (options?: {
+  forceRefresh?: boolean;
+}) => {
   const current = await getCurrentAuth();
-  if (current && current.expiresAt && isTokenValid(current.expiresAt)) {
+  if (
+    !options?.forceRefresh &&
+    current &&
+    current.expiresAt &&
+    isTokenValid(current.expiresAt)
+  ) {
     return current.accessToken;
   }
 

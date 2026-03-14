@@ -1,47 +1,33 @@
 import { useLoaderData } from "react-router";
 import { cacheHeader } from "pretty-cache-header";
-import { sql, eq } from "drizzle-orm";
-import { Video } from "../../db/schema";
-import { publishStatus } from "~/utils/dbEnums";
 import { db } from "../../db/client";
+import { getStats } from "~/lib/get-stats.server";
+import { deriveDbCachePolicy } from "~/lib/db-cache.server";
 import type { Route } from "./+types/stats";
+
+const STATS_CACHE_POLICY = {
+  maxAge: "1hour",
+  sMaxage: "1hour",
+  staleWhileRevalidate: "1day",
+};
 
 export const loader = async (_args: Route.LoaderArgs) => {
   try {
-    const stats = await db
-      .select({
-        count: sql<number>`count(*)`,
-        viewsSum: sql<number>`sum(${Video.views})`,
-      })
-      .from(Video)
-      .where(eq(Video.publishStatus, publishStatus.Published));
-
-    const statsWithoutMain = await db
-      .select({
-        count: sql<number>`count(*)`,
-        viewsSum: sql<number>`sum(${Video.views})`,
-      })
-      .from(Video)
-      .where(
-        sql`${Video.publishStatus} = ${publishStatus.Published} AND ${
-          Video.channelId
-        } = ${224}`
-      );
+    const { stats, statsWithoutMain } = await getStats(
+      db,
+      deriveDbCachePolicy(STATS_CACHE_POLICY)
+    );
 
     return new Response(
       JSON.stringify({
-        stats: stats[0],
-        statsWithoutMain: statsWithoutMain[0],
+        stats,
+        statsWithoutMain,
       }),
       {
         status: 200,
         headers: {
           "Content-Type": "application/json",
-          "Cache-Control": cacheHeader({
-            maxAge: "1hour",
-            sMaxage: "1hour",
-            staleWhileRevalidate: "1day",
-          }),
+          "Cache-Control": cacheHeader(STATS_CACHE_POLICY),
         },
       }
     );

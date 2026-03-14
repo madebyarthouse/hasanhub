@@ -1,11 +1,19 @@
 import { cacheHeader } from "pretty-cache-header";
-import { Tag } from "../../db/schema";
 import { db } from "../../db/client";
+import { deriveDbCachePolicy } from "~/lib/db-cache.server";
+import { getSitemapTagSlugs } from "~/lib/get-sitemap-tags.server";
 import type { Route } from "./+types/sitemap.xml";
 
 export const loader = async (_args: Route.LoaderArgs) => {
+  const SITEMAP_CACHE_POLICY = {
+    maxAge: "0s",
+    sMaxage: "1day",
+  };
   const BASE_URL = "https://hasanhub.com";
-  const tags = await db.select({ slug: Tag.slug }).from(Tag);
+  const tags = await getSitemapTagSlugs(
+    db,
+    deriveDbCachePolicy(SITEMAP_CACHE_POLICY)
+  );
 
   const now = new Date().toISOString();
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
@@ -17,11 +25,10 @@ export const loader = async (_args: Route.LoaderArgs) => {
             <priority>1.0</priority>
         </url>
     ${tags
-      .filter((tag) => tag.slug)
       .map(
         (tag) => `
         <url>
-            <loc>${BASE_URL}/tags/${tag.slug}</loc>
+            <loc>${BASE_URL}/tags/${tag}</loc>
             <lastmod>${now}</lastmod>
             <changefreq>daily</changefreq>
             <priority>1.0</priority>
@@ -36,8 +43,8 @@ export const loader = async (_args: Route.LoaderArgs) => {
     status: 200,
     headers: {
       "Cache-Control": cacheHeader({
-        maxAge: "0s",
-        sMaxage: "1day",
+        maxAge: SITEMAP_CACHE_POLICY.maxAge,
+        sMaxage: SITEMAP_CACHE_POLICY.sMaxage,
       }),
       "Content-Type": "application/xml",
       "xml-version": "1.0",

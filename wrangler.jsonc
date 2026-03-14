@@ -6,25 +6,27 @@
   "compatibility_date": "2026-02-03",
   "compatibility_flags": ["nodejs_compat"],
   "version_metadata": {
-    "binding": "CF_VERSION_METADATA"
+    "binding": "CF_VERSION_METADATA",
   },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "hasanhub",
-      "database_id": "3cb465bd-8698-4c06-941c-0154e1fd72e7"
-    }
+      "database_id": "3cb465bd-8698-4c06-941c-0154e1fd72e7",
+      "migrations_dir": "./drizzle",
+    },
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "DB_QUERY_CACHE",
+      "id": "ce961ab51c3f470aa96ea8503cf94a24",
+    },
   ],
   "assets": {
-    "directory": "build/client"
+    "directory": "build/client",
   },
   "triggers": {
-    "crons": [
-      "*/15 * * * *",
-      "0 * * * *",
-      "0 3 * * *",
-      "0 4 * * *"
-    ]
+    "crons": ["*/15 * * * *", "0 * * * *", "0 3 * * *", "0 4 * * *"],
   },
   "observability": {
     "enabled": true,
@@ -32,11 +34,11 @@
     "logs": {
       "enabled": true,
       "head_sampling_rate": 1,
-      "invocation_logs": true
+      "invocation_logs": true,
     },
     "traces": {
       "enabled": true,
-      "head_sampling_rate": 1
-    }
-  }
+      "head_sampling_rate": 1,
+    },
+  },
 }
