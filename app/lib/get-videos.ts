@@ -1,6 +1,11 @@
 import { z } from "zod";
 import { and, asc, desc, eq, gte, inArray, lte, lt, gt, or, sql } from "drizzle-orm";
 import { publishStatus, videoSyncStatus } from "~/utils/dbEnums";
+import {
+  getCachedQuery,
+  createDbCacheKey,
+  type DbCachePolicy,
+} from "./db-cache.server";
 import type {
   DurationListType,
   TimeframeType,
@@ -36,7 +41,11 @@ const GetVideosValidator = z.object({
   lastVideoId: LastVideoIdValidator,
 });
 
-const getVideos = async (db: ReturnTypeOrDb, params: GetVideosArgs) => {
+const getVideos = async (
+  db: ReturnTypeOrDb,
+  params: GetVideosArgs,
+  cachePolicy?: DbCachePolicy
+) => {
   const { order, durations, timeframe, by, lastVideoId, tagSlugs, take } =
     GetVideosValidator.parse(params);
 
@@ -111,88 +120,110 @@ const getVideos = async (db: ReturnTypeOrDb, params: GetVideosArgs) => {
         ? desc(Video.views)
         : desc(Video.publishedAt);
 
-  const videos = await db
-    .select({
-      id: Video.id,
-      youtubeId: Video.youtubeId,
-      largeThumbnailUrl: Video.largeThumbnailUrl,
-      title: Video.title,
-      publishedAt: Video.publishedAt,
-      views: Video.views,
-      duration: Video.duration,
-      channelId: Video.channelId,
-      channelTitle: Channel.title,
-      channelSmallThumbnailUrl: Channel.smallThumbnailUrl,
-      channelYoutubeId: Channel.youtubeId,
-    })
-    .from(Video)
-    .leftJoin(Channel, eq(Video.channelId, Channel.id))
-    .where(and(...conditions))
-    .orderBy(ordering)
-    .limit(take ?? 25);
+  const getFresh = async () => {
+    const videos = await db
+      .select({
+        id: Video.id,
+        youtubeId: Video.youtubeId,
+        largeThumbnailUrl: Video.largeThumbnailUrl,
+        title: Video.title,
+        publishedAt: Video.publishedAt,
+        views: Video.views,
+        duration: Video.duration,
+        channelId: Video.channelId,
+        channelTitle: Channel.title,
+        channelSmallThumbnailUrl: Channel.smallThumbnailUrl,
+        channelYoutubeId: Channel.youtubeId,
+      })
+      .from(Video)
+      .leftJoin(Channel, eq(Video.channelId, Channel.id))
+      .where(and(...conditions))
+      .orderBy(ordering)
+      .limit(take ?? 25);
 
-  const videoIds = videos.map((video) => video.id).filter(Boolean);
-  const tags = videoIds.length
-    ? await db
-        .select({
-          tagVideoId: TagVideo.id,
-          tagId: Tag.id,
-          videoId: TagVideo.videoId,
-          tagSlug: Tag.slug,
-          tagName: Tag.name,
-        })
-        .from(TagVideo)
-        .leftJoin(Tag, eq(TagVideo.tagId, Tag.id))
-        .where(inArray(TagVideo.videoId, videoIds))
-    : [];
+    const videoIds = videos.map((video) => video.id).filter(Boolean);
+    const tags = videoIds.length
+      ? await db
+          .select({
+            tagVideoId: TagVideo.id,
+            tagId: Tag.id,
+            videoId: TagVideo.videoId,
+            tagSlug: Tag.slug,
+            tagName: Tag.name,
+          })
+          .from(TagVideo)
+          .leftJoin(Tag, eq(TagVideo.tagId, Tag.id))
+          .where(inArray(TagVideo.videoId, videoIds))
+      : [];
 
-  const tagsByVideoId = new Map<number, typeof tags>();
-  tags.forEach((tag) => {
-    const id = tag.videoId ?? -1;
-    const bucket = tagsByVideoId.get(id) ?? [];
-    bucket.push(tag);
-    tagsByVideoId.set(id, bucket);
+    const tagsByVideoId = new Map<number, typeof tags>();
+    tags.forEach((tag) => {
+      const id = tag.videoId ?? -1;
+      const bucket = tagsByVideoId.get(id) ?? [];
+      bucket.push(tag);
+      tagsByVideoId.set(id, bucket);
+    });
+
+    const data = videos.map((video) => ({
+      id: video.id,
+      youtubeId: video.youtubeId,
+      largeThumbnailUrl: video.largeThumbnailUrl ?? "",
+      title: video.title ?? "",
+      publishedAt: video.publishedAt,
+      views: video.views,
+      duration: video.duration,
+      channel: video.channelId
+        ? {
+            id: video.channelId,
+            title: video.channelTitle ?? "",
+            smallThumbnailUrl: video.channelSmallThumbnailUrl ?? "",
+            youtubeId: video.channelYoutubeId ?? "",
+          }
+        : null,
+      tags:
+        tagsByVideoId.get(video.id ?? -1)?.map((tag) => ({
+          id: tag.tagVideoId ?? 0,
+          tagId: tag.tagId ?? null,
+          videoId: tag.videoId ?? null,
+          tag: tag.tagId
+            ? {
+                id: tag.tagId,
+                slug: tag.tagSlug,
+                name: tag.tagName ?? "",
+              }
+            : null,
+        })) ?? [],
+    }));
+
+    const countRow = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(Video)
+      .where(and(...conditions));
+
+    const totalVideosCount = Number(countRow[0]?.count ?? 0);
+
+    return [data, totalVideosCount] as const;
+  };
+
+  if (!cachePolicy?.ttl) {
+    return getFresh();
+  }
+
+  const cacheKey = createDbCacheKey("getVideos", {
+    tagSlugs: [...(tagSlugs ?? [])].sort(),
+    durations: [...(durations ?? [])].sort(),
+    timeframe,
+    order: order ?? "desc",
+    by: by ?? "publishedAt",
+    lastVideoId: lastVideoId ?? null,
+    take: take ?? 25,
   });
 
-  const data = videos.map((video) => ({
-    id: video.id,
-    youtubeId: video.youtubeId,
-    largeThumbnailUrl: video.largeThumbnailUrl ?? "",
-    title: video.title ?? "",
-    publishedAt: video.publishedAt,
-    views: video.views,
-    duration: video.duration,
-    channel: video.channelId
-      ? {
-          id: video.channelId,
-          title: video.channelTitle ?? "",
-          smallThumbnailUrl: video.channelSmallThumbnailUrl ?? "",
-          youtubeId: video.channelYoutubeId ?? "",
-        }
-      : null,
-    tags:
-      tagsByVideoId.get(video.id ?? -1)?.map((tag) => ({
-        id: tag.tagVideoId ?? 0,
-        tagId: tag.tagId ?? null,
-        videoId: tag.videoId ?? null,
-        tag: tag.tagId
-          ? {
-              id: tag.tagId,
-              slug: tag.tagSlug,
-              name: tag.tagName ?? "",
-            }
-          : null,
-      })) ?? [],
-  }));
-
-  const countRow = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(Video)
-    .where(and(...conditions));
-
-  const totalVideosCount = Number(countRow[0]?.count ?? 0);
-
-  return [data, totalVideosCount] as const;
+  return getCachedQuery({
+    key: cacheKey,
+    cachePolicy,
+    getFreshValue: getFresh,
+  });
 };
 
 const getLastVideo = async (db: ReturnTypeOrDb, lastVideoId: LastVideoIdType) => {

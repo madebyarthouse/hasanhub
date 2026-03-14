@@ -7,6 +7,7 @@ import { db } from "../../db/client";
 import { getTagsForSidebar } from "../../db/queries";
 import { TagSlugsValidator } from "~/lib/get-videos";
 import { getStreamInfo } from "~/lib/get-stream-info.server";
+import { deriveDbCachePolicy } from "~/lib/db-cache.server";
 import type { Route } from "./+types/__videos";
 import useUrlState from "~/hooks/use-url-state";
 
@@ -23,6 +24,12 @@ type StreamScheduleDisplay = {
   title: string;
 };
 
+const TAGS_SIDEBAR_CACHE_POLICY = {
+  maxAge: "3days",
+  sMaxage: "1day",
+  staleWhileRevalidate: "1week",
+};
+
 export type VideosLayoutContext = {
   tags: TagSidebarRecord[];
   tagSlugs: string[];
@@ -37,8 +44,9 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
   const slugs = url.pathname.startsWith("/tags/")
     ? url.pathname.replace("/tags/", "").split("/")
     : [];
+  const tagsCachePolicy = deriveDbCachePolicy(TAGS_SIDEBAR_CACHE_POLICY);
 
-  const tags = await getTagsForSidebar(db);
+  const tags = await getTagsForSidebar(db, tagsCachePolicy);
   const tagSlugs = TagSlugsValidator.parse(slugs) ?? [];
 
   let streamInfo: StreamInfoDisplay | null = null;
@@ -76,11 +84,7 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
       status: 200,
       headers: {
         "Content-Type": "application/json",
-        "Cache-Control": cacheHeader({
-          maxAge: "3days",
-          sMaxage: "1day",
-          staleWhileRevalidate: "1week",
-        }),
+        "Cache-Control": cacheHeader(TAGS_SIDEBAR_CACHE_POLICY),
       },
     }
   );

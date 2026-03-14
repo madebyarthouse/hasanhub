@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useFetcher, useLoaderData } from "react-router";
 import getVideos, { TagSlugsValidator } from "~/lib/get-videos";
 import getActiveTagsBySlugs from "~/lib/get-active-tags-by-slugs";
+import { deriveDbCachePolicy } from "~/lib/db-cache.server";
 import VideosGrid from "~/ui/videos-grid";
 import { UrlParamsSchema } from "~/utils/validators";
 import { getOrderingTitle } from "~/utils/get-ordering-title";
@@ -37,10 +38,17 @@ type LoaderData = {
   activeTags: Awaited<ReturnType<typeof getActiveTagsBySlugs>>;
 };
 
+const TAGS_VIDEOS_ROUTE_CACHE_POLICY = {
+  maxAge: "10minutes",
+  sMaxage: "1hour",
+  staleWhileRevalidate: "1day",
+};
+
 export const loader = async ({ request, params }: Route.LoaderArgs) => {
   const url = new URL(request.url);
   const slugs = params["*"]?.split("/") ?? [];
   const lastVideoIdParam = url.searchParams.get("lastVideoId");
+  const dbCachePolicy = deriveDbCachePolicy(TAGS_VIDEOS_ROUTE_CACHE_POLICY);
 
   if (slugs.length !== 1) {
     throw new Response("Not found", { status: 404, statusText: "Not found" });
@@ -59,7 +67,7 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
     const tagSlugs = TagSlugsValidator.parse(slugs);
 
     const [activeTags, [videos, totalVideosCount]] = await Promise.all([
-      getActiveTagsBySlugs(db, tagSlugs),
+      getActiveTagsBySlugs(db, tagSlugs, dbCachePolicy),
       getVideos(db, {
         tagSlugs,
         order,
@@ -67,7 +75,7 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
         durations,
         timeframe,
         lastVideoId,
-      }),
+      }, dbCachePolicy),
     ]);
 
     return new Response(
@@ -76,11 +84,7 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
         status: 200,
         headers: {
           "Content-Type": "application/json",
-          "Cache-Control": cacheHeader({
-            maxAge: "10minutes",
-            sMaxage: "1hour",
-            staleWhileRevalidate: "1day",
-          }),
+          "Cache-Control": cacheHeader(TAGS_VIDEOS_ROUTE_CACHE_POLICY),
         },
       }
     );

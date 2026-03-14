@@ -33,13 +33,17 @@ export const action = async ({ request }: Route.ActionArgs) => {
   }
 
   try {
-    const newToken = await refreshAccessToken();
+    const token = await refreshAccessToken();
+    const tokenInfo = await getTokenInfo();
 
     return new Response(
       JSON.stringify({
         success: true,
         message: "Token refreshed successfully",
-        tokenLength: newToken.length,
+        tokenLength: token.length,
+        tokenType: tokenInfo.tokenType,
+        expiresAt: tokenInfo.expiresAt,
+        createdAt: tokenInfo.createdAt,
       }),
       {
         status: 200,
