@@ -18,7 +18,14 @@ const getTagSlugsFromPathname = (location?: string | null) => {
     return [];
   }
 
-  return location.replace("/tags/", "").split("/");
+  if (!location.startsWith("/tags/")) {
+    return [];
+  }
+
+  return location
+    .slice("/tags/".length)
+    .split("/")
+    .filter((slug) => slug.trim().length > 0);
 };
 
 type UrlStateType = {

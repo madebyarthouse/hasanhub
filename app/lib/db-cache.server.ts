@@ -81,11 +81,7 @@ const jsonSafe = (value: unknown): unknown => {
   if (value instanceof Date) return value.toISOString();
 
   if (Array.isArray(value)) {
-    return value.map(jsonSafe).sort((a, b) => {
-      const left = JSON.stringify(a);
-      const right = JSON.stringify(b);
-      return left.localeCompare(right);
-    });
+    return value.map(jsonSafe);
   }
 
   if (value && typeof value === "object") {
@@ -102,6 +98,34 @@ const jsonSafe = (value: unknown): unknown => {
 
 export const normalizeCacheValue = <T>(value: T): T => {
   return JSON.parse(JSON.stringify(jsonSafe(value))) as T;
+};
+
+const normalizeCacheKeyValue = (value: unknown): unknown => {
+  if (value === undefined) return null;
+  if (value === null) return null;
+  if (typeof value === "bigint") return value.toString();
+  if (value instanceof Date) return value.toISOString();
+
+  if (Array.isArray(value)) {
+    return value
+      .map(normalizeCacheKeyValue)
+      .sort((a, b) =>
+        JSON.stringify(a).localeCompare(JSON.stringify(b))
+      );
+  }
+
+  if (value && typeof value === "object") {
+    return Object.keys(value)
+      .sort()
+      .reduce((acc, key) => {
+        acc[key] = normalizeCacheKeyValue(
+          (value as Record<string, unknown>)[key]
+        );
+        return acc;
+      }, {} as Record<string, unknown>);
+  }
+
+  return value;
 };
 
 const hashString = (value: string) => {
@@ -130,7 +154,7 @@ const isCacheEnvelope = (value: unknown): value is CacheEnvelope => {
 };
 
 export const createDbCacheKey = (scope: string, payload: unknown) => {
-  const normalizedPayload = jsonSafe(payload);
+  const normalizedPayload = normalizeCacheKeyValue(payload);
   const stablePayload = JSON.stringify(normalizedPayload);
   return `${scope}:${hashString(stablePayload)}`;
 };
