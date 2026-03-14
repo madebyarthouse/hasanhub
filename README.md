@@ -1,115 +1,142 @@
-# HasanHub (Cloudflare Worker + React Router)
+# HasanHub
 
-This repository hosts a full-stack React Router application running on Cloudflare Workers with a D1 database.
+![HasanHub preview](./hasanhub-screenvideo.gif)
+
+HasanHub is a web app that aggregates videos from multiple YouTube channels into one view. Tags can be added centrally and are then auto-detected across synced videos.
+
+The original project launched in April 2022 and is documented here: [chrcit.com/projects/hasanhub-com](https://www.chrcit.com/projects/hasanhub-com)
+
+> This is still a raw release with basic documentation.
+> There is currently no admin UI for editing data.
+> Non-dynamic data needs to be inserted directly into the database.
+
+## What Is This?
+
+HasanHub is a YouTube aggregator for the Hasanabi Clips Industrial Complex.
+
+Political streamer [Hasanabi](https://www.twitch.tv/hasanabi) allows fans to clip stream VODs, upload those clips to YouTube, and build fan channels around them. Over time this created a large ecosystem of Hasan-related channels. HasanHub pulls videos from those channels into a single feed so users can browse clips across the whole network instead of hopping between individual channels.
+
+## Why?
+
+Hasan's community is a particularly good fit for this kind of product because there are so many fan channels and so much backlog spread across them.
+
+But the idea is broader than Hasanabi. This setup can also work for other creators or communities that have:
+
+- multiple affiliated channels
+- a fragmented video archive
+- a need for unified discovery, tagging, and filtering
+
+## Features
+
+- Aggregate videos from many channels into one feed
+- Filter by tags, duration, timeframe, and ordering
+- Auto-match tags against synced videos
+- Show sidebar tag discovery based on views
+- Expose Twitch stream status and schedule data
+- Publish stats and sitemap routes
+- Run scheduled sync jobs for channels, videos, and tag matching
 
 ## Stack
 
-- React Router (SSR + data loaders)
-- Cloudflare Workers (`wrangler`)
-- Cloudflare D1 (`DB` binding)
-- Cloudflare KV (`DB_QUERY_CACHE` binding)
-- Drizzle ORM
-- React + TypeScript
+Frontend:
+
+- TypeScript
+- React 19
+- React Router 7 with SSR
+- Tailwind CSS v4
+
+Backend:
+
+- Cloudflare Workers
+- Cloudflare D1 (SQLite) with Drizzle ORM
+- Cloudflare KV for hot-query caching
+- Worker Cache API for response-level SWR caching
+- YouTube and Twitch integrations
+
+Tooling:
+
+- `pnpm`
+- Wrangler
+- Drizzle Kit
+- Vite
 
 ## Development
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
-Local app is served in development mode at `http://localhost:5173`.
+The local dev server runs at `http://localhost:5173`.
 
-## Production build
+Other useful commands:
 
 ```bash
-npm run build
+pnpm build
+pnpm typecheck
+pnpm db:generate
+pnpm db:migrate
+pnpm db:migrate:remote
+pnpm db:validate
+pnpm db:studio
 ```
 
-Run the generated server output:
+## Configuration
 
-```bash
-npm run start
-```
+This app is configured as a Cloudflare Worker in [wrangler.jsonc](/Users/chrcit/Developer/hasanhub/wrangler.jsonc).
 
-## Caching architecture
+Important bindings and environment values:
 
-The project uses two read-cache layers:
+- `DB`: Cloudflare D1 database
+- `DB_QUERY_CACHE`: Cloudflare KV namespace for Drizzle read caching
+- `YOUTUBE_API_KEY`: YouTube sync client
+- `TWITCH_CLIENT_ID`: Twitch API client ID
+- `TWITCH_CLIENT_SECRET`: Twitch API client secret
+- `TOP_OF_THE_HOUR_SECRET`: secret for the rating endpoint
+- `CLOUDFLARE_ACCOUNT_ID`: required by Drizzle Kit
+- `CLOUDFLARE_D1_ID`: required by Drizzle Kit
+- `CLOUDFLARE_TOKEN`: required by Drizzle Kit
 
-- Worker response cache (Cache API + SWR logic in `workers/app.ts`) for HTTP responses.
-- Query cache for hot DB reads in `app/lib/db-cache.server.ts` backed by Cloudflare KV and `cachified`.
+## Data Model And Editing
 
-### Query cache behavior
+There is no admin panel yet.
 
-- Scope: only high-cardinality hot read paths are wrapped.
-  - `getVideos` → `app/lib/get-videos.ts`
-  - `getTagsForSidebar` → `db/queries/sidebar.ts`
-  - `getActiveTagsBySlugs` → `app/lib/get-active-tags-by-slugs.ts`
-  - `getStats` → `app/lib/get-stats.server.ts`
-  - `getSitemapTagSlugs` → `app/lib/get-sitemap-tags.server.ts`
-- TTL and stale-while-revalidate are derived from each route’s existing cache policy using `deriveDbCachePolicy` (`app/lib/db-cache.server.ts`).
-- No explicit write-time invalidation is added yet; stale-while-revalidate + short TTLs are the invalidation model for now.
+That means operational data like channels, tags, and other non-dynamic records need to be managed directly in D1. Synced data such as videos and channel metadata is then refreshed through the app's sync tasks.
 
-Key files:
+Relevant schema lives in [db/schema.ts](/Users/chrcit/Developer/hasanhub/db/schema.ts).
 
-- `app/lib/db-cache.server.ts`  
-  - `deriveDbCachePolicy`
-  - `createDbCacheKey`
-  - `normalizeCacheValue`
-  - `getCachedQuery` / `withDbCache`
-- `workers/app.ts`  
-  - Env now includes `DB_QUERY_CACHE: KVNamespace`.
+## Sync Jobs
 
-## Cache policy wiring by route
+The worker has scheduled jobs defined in [app/cron/jobs.ts](/Users/chrcit/Developer/hasanhub/app/cron/jobs.ts):
 
-Route-level cache policies are shared and passed into DB cache calls so response and DB TTL/SWR are aligned:
+- `syncNewVideos`: every 15 minutes
+- `syncVideos`: every hour
+- `syncChannels`: daily at 03:00
+- `matchTags`: daily at 04:00
 
-- `app/routes/__videos/index.tsx` (`getVideos`)
-- `app/routes/__videos/tags/$splat.tsx` (`getVideos`, `getActiveTagsBySlugs`)
-- `app/routes/__videos.tsx` (`getTagsForSidebar`)
-- `app/routes/api/get-tags-for-sidebar.ts` (`getTagsForSidebar`)
-- `app/routes/stats.tsx` (`getStats`)
-- `app/routes/sitemap.xml.ts` (`getSitemapTagSlugs`)
+These jobs keep the dataset current and apply tag matching after sync.
 
-## Cloudflare KV setup
+## Caching
 
-`wrangler.jsonc` should include:
+HasanHub currently uses two cache layers:
 
-```jsonc
-"kv_namespaces": [
-  {
-    "binding": "DB_QUERY_CACHE",
-    "id": "<production-kv-id>",
-    "preview_id": "<preview-kv-id>"
-  }
-]
-```
+- Worker-level response caching with stale-while-revalidate behavior in [workers/app.ts](/Users/chrcit/Developer/hasanhub/workers/app.ts)
+- KV-backed query caching for hot Drizzle read paths in [app/lib/db-cache.server.ts](/Users/chrcit/Developer/hasanhub/app/lib/db-cache.server.ts)
 
-Create/fetch namespace IDs in Cloudflare and update `wrangler.jsonc` accordingly.
+The query cache is currently used for high-traffic read paths like:
 
-Example provisioning:
+- videos feed queries
+- sidebar tag queries
+- active tag lookup by slug
+- stats queries
+- sitemap tag queries
 
-```bash
-# one-time (run in your Cloudflare account context)
-wrangler kv namespace create DB_QUERY_CACHE
-wrangler kv namespace create DB_QUERY_CACHE --preview
-```
+## Database Scripts
 
-## DB query cache helpers
+There are helper scripts for local and remote D1 workflows:
 
-Use the dedicated helper pattern for hot reads:
-
-1. parse/build stable cache args.
-2. convert route policy to DB policy with `deriveDbCachePolicy`.
-3. call `getCachedQuery({ key, cachePolicy, getFreshValue })`.
-
-`createDbCacheKey` normalizes payloads before hashing to keep key generation stable across equivalent inputs.
-
-## Commands
-
-- `npm run typecheck` for type generation + `tsc`
-- `npm run db:validate` for DB validation helper script
-
-## Deployment notes
-
-Build and deploy with Wrangler using your normal Cloudflare workflow (not included here). Ensure KV namespace IDs and D1 database binding are valid for each environment.
+- `pnpm db:generate`
+- `pnpm db:migrate`
+- `pnpm db:migrate:remote`
+- `pnpm db:import:remote-to-local`
+- `pnpm db:import:local-to-remote`
