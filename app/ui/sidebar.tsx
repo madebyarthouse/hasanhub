@@ -4,6 +4,7 @@ import useActionUrl from "~/hooks/use-action-url";
 import useUrlState from "~/hooks/use-url-state";
 import type { TagSidebarRecord } from "../../db/types";
 import { Logo, StreamInfoComponent } from "./header";
+import LaunchBanner from "./launch-banner";
 import clsx from "clsx";
 
 // Component-specific types that match the transformed data from root.tsx
@@ -63,14 +64,17 @@ const MobileHeader = ({
         <div className="hidden sm:block">
           <SidebarSocialLinks />
         </div>
-        <div className="font-semibold">
-          Made by{" "}
-          <a
-            href="https://chrcit.com/projects/hasanhub-com"
-            className="underline underline-offset-2 font-semibold"
-          >
-            chrcit
-          </a>
+        <div className="w-full sm:w-auto">
+          <div className="font-semibold">
+            Made by{" "}
+            <a
+              href="https://chrcit.com/projects/hasanhub-com"
+              className="underline underline-offset-2 font-semibold"
+            >
+              chrcit
+            </a>
+          </div>
+          <LaunchBanner />
         </div>
       </div>
     </header>
@@ -169,6 +173,7 @@ const SidebarFooter = () => {
           </div>
           <SidebarSocialLinks />
         </div>
+        <LaunchBanner />
       </div>
     </div>
   );

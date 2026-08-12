@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import LaunchBanner from "./launch-banner";
 
 // Utility Functions
 const getTimeUntilStream = (startTime: string) => {
@@ -75,17 +76,20 @@ const SocialLinks = () => {
 
 const TopBar = () => {
   return (
-    <div className="flex justify-between items-center w-full pb-4">
-      <div className="flex flex-row gap-2 items-center text-sm">
-        Made by{" "}
-        <a
-          href="https://chrcit.com/projects/hasanhub-com"
-          className="underline underline-offset-2 font-semibold"
-        >
-          chrcit
-        </a>
+    <div className="flex flex-col w-full pb-4 gap-0">
+      <div className="flex justify-between items-center w-full">
+        <div className="flex flex-row gap-2 items-center text-sm">
+          Made by{" "}
+          <a
+            href="https://chrcit.com/projects/hasanhub-com"
+            className="underline underline-offset-2 font-semibold"
+          >
+            chrcit
+          </a>
+        </div>
+        <SocialLinks />
       </div>
-      <SocialLinks />
+      <LaunchBanner />
     </div>
   );
 };
