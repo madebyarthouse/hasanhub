@@ -17,7 +17,6 @@
     "db:import:local-to-remote": "bun ./scripts/db-import-local-to-remote.ts"
   },
   "dependencies": {
-    "@epic-web/cachified": "^4.0.0",
     "@react-router/node": "7.12.0",
     "@react-router/serve": "7.12.0",
     "@xmldom/xmldom": "^0.9.7",

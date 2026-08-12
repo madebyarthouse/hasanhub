@@ -1,20 +1,18 @@
 import { cacheHeader } from "pretty-cache-header";
 import { db } from "../../../db/client";
 import { getTagsForSidebar } from "../../../db/queries";
-import { deriveDbCachePolicy } from "~/lib/db-cache.server";
 import type { Route } from "./+types/get-tags-for-sidebar";
 
-export const loader = async (_args: Route.LoaderArgs) => {
-  const TAGS_CACHE_POLICY = {
-    sMaxage: "1day",
-    staleWhileRevalidate: "1week",
-  };
+/** Mirrors former KV TTL (1 day) with SWR. */
+const TAGS_CACHE_POLICY = {
+  public: true,
+  sMaxage: "1day",
+  staleWhileRevalidate: "1week",
+} as const;
 
+export const loader = async (_args: Route.LoaderArgs) => {
   try {
-    const tags = await getTagsForSidebar(
-      db,
-      deriveDbCachePolicy(TAGS_CACHE_POLICY)
-    );
+    const tags = await getTagsForSidebar(db);
     const headers =
       tags.length > 0
         ? cacheHeader(TAGS_CACHE_POLICY)

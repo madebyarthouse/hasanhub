@@ -7,7 +7,6 @@ import { db } from "../../db/client";
 import { getTagsForSidebar } from "../../db/queries";
 import { TagSlugsValidator } from "~/lib/get-videos";
 import { getStreamInfo } from "~/lib/get-stream-info.server";
-import { deriveDbCachePolicy } from "~/lib/db-cache.server";
 import type { Route } from "./+types/__videos";
 import useUrlState from "~/hooks/use-url-state";
 
@@ -24,11 +23,12 @@ type StreamScheduleDisplay = {
   title: string;
 };
 
+/** Mirrors former KV TTL (1 day) with SWR. */
 const TAGS_SIDEBAR_CACHE_POLICY = {
-  maxAge: "3days",
+  public: true,
   sMaxage: "1day",
   staleWhileRevalidate: "1week",
-};
+} as const;
 
 export type VideosLayoutContext = {
   tags: TagSidebarRecord[];
@@ -44,9 +44,8 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
   const slugs = url.pathname.startsWith("/tags/")
     ? url.pathname.replace("/tags/", "").split("/")
     : [];
-  const tagsCachePolicy = deriveDbCachePolicy(TAGS_SIDEBAR_CACHE_POLICY);
 
-  const tags = await getTagsForSidebar(db, tagsCachePolicy);
+  const tags = await getTagsForSidebar(db);
   const tagSlugs = TagSlugsValidator.parse(slugs) ?? [];
 
   let streamInfo: StreamInfoDisplay | null = null;

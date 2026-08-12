@@ -9,7 +9,6 @@ type VersionMetadata = {
 
 export type Env = {
   DB: D1Database;
-  DB_QUERY_CACHE: KVNamespace;
   YOUTUBE_API_KEY?: string;
   TWITCH_CLIENT_ID?: string;
   TWITCH_CLIENT_SECRET?: string;

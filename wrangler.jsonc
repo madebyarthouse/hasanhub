@@ -19,12 +19,6 @@
       "migrations_dir": "./drizzle",
     },
   ],
-  "kv_namespaces": [
-    {
-      "binding": "DB_QUERY_CACHE",
-      "id": "ce961ab51c3f470aa96ea8503cf94a24",
-    },
-  ],
   "assets": {
     "directory": "build/client",
   },
