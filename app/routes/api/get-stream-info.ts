@@ -13,7 +13,7 @@ export const loader = async (_args: Route.LoaderArgs) => {
     const headers = shouldCache
       ? cacheHeader({
           public: true,
-          sMaxage: "15minutes",
+          maxAge: "15minutes",
           staleWhileRevalidate: "1hour",
         })
       : cacheHeader({

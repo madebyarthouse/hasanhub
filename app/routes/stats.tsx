@@ -7,7 +7,7 @@ import type { Route } from "./+types/stats";
 /** Mirrors former KV TTL (1 hour) with SWR. */
 const STATS_CACHE_POLICY = {
   public: true,
-  sMaxage: "1hour",
+  maxAge: "1hour",
   staleWhileRevalidate: "1day",
 } as const;
 

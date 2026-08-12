@@ -6,7 +6,7 @@ import type { Route } from "./+types/get-tags-for-sidebar";
 /** Mirrors former KV TTL (1 day) with SWR. */
 const TAGS_CACHE_POLICY = {
   public: true,
-  sMaxage: "1day",
+  maxAge: "1day",
   staleWhileRevalidate: "1week",
 } as const;
 

@@ -116,16 +116,16 @@ These jobs keep the dataset current and apply tag matching after sync.
 
 ## Caching
 
-Caching is entirely CDN-side via [Workers Cache](https://developers.cloudflare.com/workers/cache/) (`cache.enabled` in [wrangler.jsonc](./wrangler.jsonc)). Routes set `Cache-Control` with `s-maxage` + `stale-while-revalidate`; Cloudflare serves hits without running the Worker.
+Caching is entirely CDN-side via [Workers Cache](https://developers.cloudflare.com/workers/cache/) (`cache.enabled` in [wrangler.jsonc](./wrangler.jsonc)). Routes set `Cache-Control` with `max-age` + `stale-while-revalidate` (use `max-age`, not `s-maxage`, so SWR works at the edge). Cloudflare serves hits without running the Worker.
 
 TTLs mirror the old KV query-cache windows:
 
-- `/` — `s-maxage=20minutes`, `stale-while-revalidate=1day`
-- `/tags/*` — `s-maxage=1hour`, `stale-while-revalidate=1day`
-- layout / sidebar / tags API — `s-maxage=1day`, `stale-while-revalidate=1week`
-- `/stats` — `s-maxage=1hour`, `stale-while-revalidate=1day`
-- `/sitemap.xml` / `robots.txt` — `s-maxage=1day`, `stale-while-revalidate=1week`
-- stream info API — `s-maxage=15minutes`, `stale-while-revalidate=1hour`
+- `/` — `max-age=20minutes`, `stale-while-revalidate=1day`
+- `/tags/*` — `max-age=1hour`, `stale-while-revalidate=1day`
+- layout / sidebar / tags API — `max-age=1day`, `stale-while-revalidate=1week`
+- `/stats` — `max-age=1hour`, `stale-while-revalidate=1day`
+- `/sitemap.xml` / `robots.txt` — `max-age=1day`, `stale-while-revalidate=1week`
+- stream info API — `max-age=15minutes`, `stale-while-revalidate=1hour`
 
 ## Database Scripts
 

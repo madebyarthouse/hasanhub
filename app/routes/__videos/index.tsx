@@ -14,7 +14,7 @@ import type { Route } from "./+types/index";
 /** Homepage: refresh every 20 minutes; SWR mirrors former KV window. */
 const VIDEOS_ROUTE_CACHE_POLICY = {
   public: true,
-  sMaxage: "20minutes",
+  maxAge: "20minutes",
   staleWhileRevalidate: "1day",
 } as const;
 

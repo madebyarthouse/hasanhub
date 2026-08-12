@@ -40,7 +40,7 @@ type LoaderData = {
 /** Mirrors former KV TTL (1 hour) with SWR. */
 const TAGS_VIDEOS_ROUTE_CACHE_POLICY = {
   public: true,
-  sMaxage: "1hour",
+  maxAge: "1hour",
   staleWhileRevalidate: "1day",
 } as const;
 
