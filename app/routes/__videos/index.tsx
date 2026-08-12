@@ -3,7 +3,6 @@ import { cacheHeader } from "pretty-cache-header";
 import { useEffect, useState } from "react";
 import { useFetcher, useLoaderData } from "react-router";
 import getVideos from "~/lib/get-videos";
-import { deriveDbCachePolicy } from "~/lib/db-cache.server";
 import VideosGrid from "~/ui/videos-grid";
 import { UrlParamsSchema } from "~/utils/validators";
 import { getOrderingTitle } from "~/utils/get-ordering-title";
@@ -12,16 +11,16 @@ import useActionUrl from "~/hooks/use-action-url";
 import { db } from "../../../db/client";
 import type { Route } from "./+types/index";
 
+/** Homepage: refresh every 20 minutes; SWR mirrors former KV window. */
 const VIDEOS_ROUTE_CACHE_POLICY = {
-  maxAge: "10minutes",
-  sMaxage: "1hour",
+  public: true,
+  maxAge: "20minutes",
   staleWhileRevalidate: "1day",
-};
+} as const;
 
 export const loader = async ({ request }: Route.LoaderArgs) => {
   const url = new URL(request.url);
   const lastVideoIdParam = url.searchParams.get("lastVideoId");
-  const dbCachePolicy = deriveDbCachePolicy(VIDEOS_ROUTE_CACHE_POLICY);
 
   try {
     const { order, durations, timeframe, by, lastVideoId } =
@@ -39,7 +38,7 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
       timeframe,
       by,
       lastVideoId,
-    }, dbCachePolicy);
+    });
 
     return new Response(JSON.stringify({ totalVideosCount, videos }), {
       status: 200,

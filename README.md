@@ -49,8 +49,7 @@ Backend:
 
 - Cloudflare Workers
 - Cloudflare D1 (SQLite) with Drizzle ORM
-- Cloudflare KV for hot-query caching
-- Worker Cache API for response-level SWR caching
+- Workers Cache (CDN) driven by `Cache-Control` headers
 - YouTube and Twitch integrations
 
 Tooling:
@@ -88,7 +87,6 @@ This app is configured as a Cloudflare Worker in [wrangler.jsonc](/Users/chrcit/
 Important bindings and environment values:
 
 - `DB`: Cloudflare D1 database
-- `DB_QUERY_CACHE`: Cloudflare KV namespace for Drizzle read caching
 - `YOUTUBE_API_KEY`: YouTube sync client
 - `TWITCH_CLIENT_ID`: Twitch API client ID
 - `TWITCH_CLIENT_SECRET`: Twitch API client secret
@@ -118,18 +116,16 @@ These jobs keep the dataset current and apply tag matching after sync.
 
 ## Caching
 
-HasanHub currently uses two cache layers:
+Caching is entirely CDN-side via [Workers Cache](https://developers.cloudflare.com/workers/cache/) (`cache.enabled` in [wrangler.jsonc](./wrangler.jsonc)). Routes set `Cache-Control` with `max-age` + `stale-while-revalidate` (use `max-age`, not `s-maxage`, so SWR works at the edge). Cloudflare serves hits without running the Worker.
 
-- Worker-level response caching with stale-while-revalidate behavior in [workers/app.ts](/Users/chrcit/Developer/hasanhub/workers/app.ts)
-- KV-backed query caching for hot Drizzle read paths in [app/lib/db-cache.server.ts](/Users/chrcit/Developer/hasanhub/app/lib/db-cache.server.ts)
+TTLs mirror the old KV query-cache windows:
 
-The query cache is currently used for high-traffic read paths like:
-
-- videos feed queries
-- sidebar tag queries
-- active tag lookup by slug
-- stats queries
-- sitemap tag queries
+- `/` — `max-age=20minutes`, `stale-while-revalidate=1day`
+- `/tags/*` — `max-age=1hour`, `stale-while-revalidate=1day`
+- layout / sidebar / tags API — `max-age=1day`, `stale-while-revalidate=1week`
+- `/stats` — `max-age=1hour`, `stale-while-revalidate=1day`
+- `/sitemap.xml` / `robots.txt` — `max-age=1day`, `stale-while-revalidate=1week`
+- stream info API — `max-age=15minutes`, `stale-while-revalidate=1hour`
 
 ## Database Scripts
 

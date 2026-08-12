@@ -2,21 +2,18 @@ import { useLoaderData } from "react-router";
 import { cacheHeader } from "pretty-cache-header";
 import { db } from "../../db/client";
 import { getStats } from "~/lib/get-stats.server";
-import { deriveDbCachePolicy } from "~/lib/db-cache.server";
 import type { Route } from "./+types/stats";
 
+/** Mirrors former KV TTL (1 hour) with SWR. */
 const STATS_CACHE_POLICY = {
+  public: true,
   maxAge: "1hour",
-  sMaxage: "1hour",
   staleWhileRevalidate: "1day",
-};
+} as const;
 
 export const loader = async (_args: Route.LoaderArgs) => {
   try {
-    const { stats, statsWithoutMain } = await getStats(
-      db,
-      deriveDbCachePolicy(STATS_CACHE_POLICY)
-    );
+    const { stats, statsWithoutMain } = await getStats(db);
 
     return new Response(
       JSON.stringify({
