@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 
-const STORAGE_KEY = "hasanhub:launch-banner-dismissed-2026-08";
+const STORAGE_KEY = "hasanhub:launch-banner-dismissed-2026-09";
 const DISMISS_EVENT = "hasanhub:launch-banner-dismiss";
-const BANNER_EXPIRES_AT = Date.parse("2026-08-17T00:00:00.000Z"); // end of week (Sun Aug 16)
+const BANNER_EXPIRES_AT = Date.parse("2026-09-24T00:00:00.000Z"); // through Sept 23
 const ARTHOUSE_BLUE = "#0011ff";
 
 const SOCIAL_LINKS = [
