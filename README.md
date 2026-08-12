@@ -120,8 +120,8 @@ These jobs keep the dataset current and apply tag matching after sync.
 
 HasanHub currently uses two cache layers:
 
-- Worker-level response caching with stale-while-revalidate behavior in [workers/app.ts](/Users/chrcit/Developer/hasanhub/workers/app.ts)
-- KV-backed query caching for hot Drizzle read paths in [app/lib/db-cache.server.ts](/Users/chrcit/Developer/hasanhub/app/lib/db-cache.server.ts)
+- [Workers Cache](https://developers.cloudflare.com/workers/cache/) in front of the Worker (`cache.enabled` in [wrangler.jsonc](./wrangler.jsonc)). Cloudflare serves cacheable responses from the CDN without running the Worker, driven entirely by the `Cache-Control` headers routes already return.
+- KV-backed query caching for hot Drizzle read paths in [app/lib/db-cache.server.ts](./app/lib/db-cache.server.ts)
 
 The query cache is currently used for high-traffic read paths like:
 
