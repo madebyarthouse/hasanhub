@@ -121,7 +121,7 @@ Caching is entirely CDN-side via [Workers Cache](https://developers.cloudflare.c
 TTLs mirror the old KV query-cache windows:
 
 - `/` — `max-age=20minutes`, `stale-while-revalidate=1day`
-- `/tags/*` — `max-age=1hour`, `stale-while-revalidate=1day`
+- `/tags/*` — `max-age=6hours` for browsers, `max-age=72hours` for crawlers (`isbot` / empty UA), `stale-while-revalidate=1week` for both. No `Vary: User-Agent` so the CDN is not fragmented per browser.
 - layout / sidebar / tags API — `max-age=1day`, `stale-while-revalidate=1week`
 - `/stats` — `max-age=1hour`, `stale-while-revalidate=1day`
 - `/sitemap.xml` / `robots.txt` — `max-age=1day`, `stale-while-revalidate=1week`

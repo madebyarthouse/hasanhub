@@ -9,6 +9,7 @@ import { UrlParamsSchema } from "~/utils/validators";
 import { getOrderingTitle } from "~/utils/get-ordering-title";
 import useUrlState from "~/hooks/use-url-state";
 import useActionUrl from "~/hooks/use-action-url";
+import { isbot } from "isbot";
 import { db } from "../../../../db/client";
 import type { Route } from "./+types/$splat";
 
@@ -37,17 +38,33 @@ type LoaderData = {
   activeTags: Awaited<ReturnType<typeof getActiveTagsBySlugs>>;
 };
 
-/** Mirrors former KV TTL (1 hour) with SWR. */
-const TAGS_VIDEOS_ROUTE_CACHE_POLICY = {
+const TAGS_PAGE_CACHE_POLICY = {
   public: true,
-  maxAge: "1hour",
-  staleWhileRevalidate: "1day",
+  maxAge: "6hours",
+  staleWhileRevalidate: "1week",
 } as const;
+
+const TAGS_PAGE_CRAWLER_CACHE_POLICY = {
+  public: true,
+  maxAge: "72hours",
+  staleWhileRevalidate: "1week",
+} as const;
+
+const getTagsPageCachePolicy = (request: Request) => {
+  const userAgent = request.headers.get("user-agent") ?? "";
+  // Empty UA is treated as a crawler. Do not send Vary: User-Agent —
+  // Workers Cache would store a variant per browser string.
+  if (userAgent.length === 0 || isbot(userAgent)) {
+    return TAGS_PAGE_CRAWLER_CACHE_POLICY;
+  }
+  return TAGS_PAGE_CACHE_POLICY;
+};
 
 export const loader = async ({ request, params }: Route.LoaderArgs) => {
   const url = new URL(request.url);
   const slugs = params["*"]?.split("/") ?? [];
   const lastVideoIdParam = url.searchParams.get("lastVideoId");
+  const cachePolicy = getTagsPageCachePolicy(request);
 
   if (slugs.length !== 1) {
     throw new Response("Not found", { status: 404, statusText: "Not found" });
@@ -83,7 +100,7 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
         status: 200,
         headers: {
           "Content-Type": "application/json",
-          "Cache-Control": cacheHeader(TAGS_VIDEOS_ROUTE_CACHE_POLICY),
+          "Cache-Control": cacheHeader(cachePolicy),
         },
       }
     );
