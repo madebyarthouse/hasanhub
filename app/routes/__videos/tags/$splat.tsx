@@ -9,7 +9,7 @@ import { UrlParamsSchema } from "~/utils/validators";
 import { getOrderingTitle } from "~/utils/get-ordering-title";
 import useUrlState from "~/hooks/use-url-state";
 import useActionUrl from "~/hooks/use-action-url";
-import { isbot } from "isbot";
+import { isCrawlerRequest } from "~/lib/crawler.server";
 import { db } from "../../../../db/client";
 import type { Route } from "./+types/$splat";
 
@@ -51,10 +51,9 @@ const TAGS_PAGE_CRAWLER_CACHE_POLICY = {
 } as const;
 
 const getTagsPageCachePolicy = (request: Request) => {
-  const userAgent = request.headers.get("user-agent") ?? "";
-  // Empty UA is treated as a crawler. Do not send Vary: User-Agent —
-  // Workers Cache would store a variant per browser string.
-  if (userAgent.length === 0 || isbot(userAgent)) {
+  // Do not send Vary: User-Agent — Workers Cache would store a
+  // variant per browser string.
+  if (isCrawlerRequest(request)) {
     return TAGS_PAGE_CRAWLER_CACHE_POLICY;
   }
   return TAGS_PAGE_CACHE_POLICY;
@@ -62,7 +61,7 @@ const getTagsPageCachePolicy = (request: Request) => {
 
 export const loader = async ({ request, params }: Route.LoaderArgs) => {
   const url = new URL(request.url);
-  const slugs = params["*"]?.split("/") ?? [];
+  const slugs = params["*"]?.split("/").filter(Boolean) ?? [];
   const lastVideoIdParam = url.searchParams.get("lastVideoId");
   const cachePolicy = getTagsPageCachePolicy(request);
 
@@ -81,18 +80,29 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
       });
 
     const tagSlugs = TagSlugsValidator.parse(slugs);
+    const hasListFilters =
+      (durations && durations.length > 0) || Boolean(timeframe);
+    const skipCount = !hasListFilters || isCrawlerRequest(request);
 
-    const [activeTags, [videos, totalVideosCount]] = await Promise.all([
+    const [activeTags, [videos, queriedCount]] = await Promise.all([
       getActiveTagsBySlugs(db, tagSlugs),
-      getVideos(db, {
-        tagSlugs,
-        order,
-        by,
-        durations,
-        timeframe,
-        lastVideoId,
-      }),
+      getVideos(
+        db,
+        {
+          tagSlugs,
+          order,
+          by,
+          durations,
+          timeframe,
+          lastVideoId,
+        },
+        { skipCount }
+      ),
     ]);
+
+    const storedCount = activeTags[0]?.videoCount;
+    const totalVideosCount =
+      !hasListFilters && storedCount != null ? storedCount : queriedCount;
 
     return new Response(
       JSON.stringify({ totalVideosCount, videos, activeTags, tagSlugs }),
@@ -101,6 +111,9 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
         headers: {
           "Content-Type": "application/json",
           "Cache-Control": cacheHeader(cachePolicy),
+          ...(lastVideoId
+            ? { "X-Robots-Tag": "noindex, nofollow" }
+            : {}),
         },
       }
     );
@@ -120,8 +133,12 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
 };
 
 export const headers: Route.HeadersFunction = ({ loaderHeaders }) => {
+  const headers: Record<string, string> = {};
   const cacheControl = loaderHeaders.get("Cache-Control");
-  return cacheControl ? { "Cache-Control": cacheControl } : {};
+  const robotsTag = loaderHeaders.get("X-Robots-Tag");
+  if (cacheControl) headers["Cache-Control"] = cacheControl;
+  if (robotsTag) headers["X-Robots-Tag"] = robotsTag;
+  return headers;
 };
 
 export default function TagPage() {

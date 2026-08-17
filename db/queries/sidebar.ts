@@ -1,23 +1,19 @@
-import { sql } from "drizzle-orm";
+import { desc, gt } from "drizzle-orm";
+import { Tag } from "../schema";
 import type { TagSidebarRecord } from "../types";
 import type { ReturnTypeOrDb } from "./types";
 
-export const getTagsForSidebar = async (db: ReturnTypeOrDb) => {
-  const rows = await db.all(
-    sql`
-      SELECT t.id, t.name, t.slug, sum(v.views) AS viewsCount
-      FROM Tag t
-        JOIN TagVideo tv ON tv.tagId = t.id
-        JOIN Video v ON tv.videoId = v.id
-      GROUP BY t.id
-      ORDER BY viewsCount DESC
-    `
-  );
-
-  return rows.map((row) => ({
-    id: Number(row.id),
-    name: String(row.name),
-    slug: row.slug === null ? null : String(row.slug),
-    viewsCount: Number(row.viewsCount ?? 0),
-  })) as TagSidebarRecord[];
+export const getTagsForSidebar = async (
+  db: ReturnTypeOrDb
+): Promise<TagSidebarRecord[]> => {
+  return db
+    .select({
+      id: Tag.id,
+      name: Tag.name,
+      slug: Tag.slug,
+      viewsCount: Tag.viewsCount,
+    })
+    .from(Tag)
+    .where(gt(Tag.videoCount, 0))
+    .orderBy(desc(Tag.viewsCount));
 };

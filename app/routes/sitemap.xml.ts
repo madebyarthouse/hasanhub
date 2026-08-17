@@ -27,10 +27,10 @@ export const loader = async (_args: Route.LoaderArgs) => {
       .map(
         (tag) => `
         <url>
-            <loc>${BASE_URL}/tags/${tag}</loc>
-            <lastmod>${now}</lastmod>
-            <changefreq>daily</changefreq>
-            <priority>1.0</priority>
+            <loc>${BASE_URL}/tags/${tag.slug}</loc>
+            <lastmod>${tag.lastedMatchedAt ?? now}</lastmod>
+            <changefreq>weekly</changefreq>
+            <priority>0.6</priority>
         </url>
             `
       )

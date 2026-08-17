@@ -100,6 +100,8 @@ export const Tag = sqliteTable(
     synonyms: text("synonyms").notNull().default(""),
     slug: text("slug"),
     lastedMatchedAt: text("lastedMatchedAt"),
+    videoCount: integer("videoCount").notNull().default(0),
+    viewsCount: integer("viewsCount").notNull().default(0),
   },
   (table) => ({
     slugIdx: index("Tag_slug_idx").on(table.slug),

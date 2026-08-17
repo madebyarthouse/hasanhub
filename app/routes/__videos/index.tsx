@@ -45,6 +45,9 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
       headers: {
         "Content-Type": "application/json",
         "Cache-Control": cacheHeader(VIDEOS_ROUTE_CACHE_POLICY),
+        ...(lastVideoId
+          ? { "X-Robots-Tag": "noindex, nofollow" }
+          : {}),
       },
     });
   } catch (error) {
@@ -63,8 +66,12 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
 };
 
 export const headers: Route.HeadersFunction = ({ loaderHeaders }) => {
+  const headers: Record<string, string> = {};
   const cacheControl = loaderHeaders.get("Cache-Control");
-  return cacheControl ? { "Cache-Control": cacheControl } : {};
+  const robotsTag = loaderHeaders.get("X-Robots-Tag");
+  if (cacheControl) headers["Cache-Control"] = cacheControl;
+  if (robotsTag) headers["X-Robots-Tag"] = robotsTag;
+  return headers;
 };
 
 export default function Index() {

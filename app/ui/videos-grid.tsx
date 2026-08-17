@@ -185,6 +185,7 @@ const VideosGrid = ({
               ) : (
                 <a
                   href={loadMoreUrl(lastVideoId ?? -1)}
+                  rel="nofollow"
                   onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
                     e.preventDefault();
 

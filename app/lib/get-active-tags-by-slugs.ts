@@ -15,6 +15,7 @@ const getActiveTagsBySlugs = async (
       id: Tag.id,
       name: Tag.name,
       slug: Tag.slug,
+      videoCount: Tag.videoCount,
     })
     .from(Tag)
     .where(inArray(Tag.slug, tagSlugs));

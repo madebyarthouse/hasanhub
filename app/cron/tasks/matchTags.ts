@@ -3,6 +3,7 @@ import { matchTagWithVideos } from "~/sync/services/matching";
 import { chunkByParams } from "~/utils";
 import { Tag, TagVideo, Video } from "../../../db/schema";
 import { db } from "../../../db/client";
+import { refreshTagAggregates } from "../../../db/queries";
 import type { ReturnTypeOrDb } from "../../../db/queries/types";
 
 const fetchVideosChunked = async (
@@ -94,6 +95,8 @@ export const matchTags = async () => {
       .set({ lastedMatchedAt: new Date().toISOString() })
       .where(eq(Tag.id, tag.id));
   }
+
+  await refreshTagAggregates(db);
 
   console.log("matchTags:inserted", {
     tagCount: tags.length,

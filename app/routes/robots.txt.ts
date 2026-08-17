@@ -3,7 +3,11 @@ export const loader = () => {
 Allow: /$
 Allow: /tags/*/$
 Disallow: /tags/*/*
-Disallow: /*?*lastVideoId=`;
+Disallow: /*?*lastVideoId=
+Disallow: /*?*durations=
+Disallow: /*?*timeframe=
+Disallow: /*?*order=
+Disallow: /*?*by=`;
 
   const body = `
 User-agent: Googlebot

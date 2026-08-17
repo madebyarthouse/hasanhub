@@ -7,6 +7,7 @@ import { publishStatus, videoSyncStatus } from "~/utils/dbEnums";
 import { chunkAndMergePromises } from "~/utils";
 import { Video } from "../../../db/schema";
 import { db } from "../../../db/client";
+import { refreshTagAggregates } from "../../../db/queries";
 
 const minute = 1000 * 60;
 const hour = minute * 60;
@@ -119,6 +120,8 @@ export const syncVideos = async () => {
     sample: videosData.slice(0, 20).map((video) => video.id),
     truncated: videosData.length > 20,
   });
+
+  await refreshTagAggregates(db);
 
   return {
     fetched: videos.length,

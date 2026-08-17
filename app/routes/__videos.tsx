@@ -7,6 +7,7 @@ import { db } from "../../db/client";
 import { getTagsForSidebar } from "../../db/queries";
 import { TagSlugsValidator } from "~/lib/get-videos";
 import { getStreamInfo } from "~/lib/get-stream-info.server";
+import { isCrawlerRequest } from "~/lib/crawler.server";
 import type { Route } from "./+types/__videos";
 import useUrlState from "~/hooks/use-url-state";
 
@@ -42,14 +43,36 @@ export type VideosLayoutContext = {
 export const loader = async ({ request }: Route.LoaderArgs) => {
   const url = new URL(request.url);
   const slugs = url.pathname.startsWith("/tags/")
-    ? url.pathname.replace("/tags/", "").split("/")
+    ? url.pathname.replace("/tags/", "").split("/").filter(Boolean)
     : [];
+
+  if (url.pathname.startsWith("/tags/") && slugs.length !== 1) {
+    throw new Response("Not found", { status: 404, statusText: "Not found" });
+  }
 
   const tags = await getTagsForSidebar(db);
   const tagSlugs = TagSlugsValidator.parse(slugs) ?? [];
 
   let streamInfo: StreamInfoDisplay | null = null;
   let streamSchedule: StreamScheduleDisplay | null = null;
+
+  if (isCrawlerRequest(request)) {
+    return new Response(
+      JSON.stringify({
+        tags,
+        tagSlugs,
+        streamInfo,
+        streamSchedule,
+      }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": cacheHeader(TAGS_SIDEBAR_CACHE_POLICY),
+        },
+      }
+    );
+  }
 
   try {
     const [info, schedule] = await getStreamInfo();
@@ -90,8 +113,12 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
 };
 
 export const headers: Route.HeadersFunction = ({ loaderHeaders }) => {
+  const headers: Record<string, string> = {};
   const cacheControl = loaderHeaders.get("Cache-Control");
-  return cacheControl ? { "Cache-Control": cacheControl } : {};
+  const robotsTag = loaderHeaders.get("X-Robots-Tag");
+  if (cacheControl) headers["Cache-Control"] = cacheControl;
+  if (robotsTag) headers["X-Robots-Tag"] = robotsTag;
+  return headers;
 };
 
 export default function VideosLayout() {

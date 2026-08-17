@@ -36,11 +36,19 @@ const GetVideosValidator = z.object({
   lastVideoId: LastVideoIdValidator,
 });
 
-const getVideos = async (db: ReturnTypeOrDb, params: GetVideosArgs) => {
+type GetVideosOptions = {
+  skipCount?: boolean;
+};
+
+const getVideos = async (
+  db: ReturnTypeOrDb,
+  params: GetVideosArgs,
+  options: GetVideosOptions = {}
+) => {
   const { order, durations, timeframe, by, lastVideoId, tagSlugs, take } =
     GetVideosValidator.parse(params);
 
-  const conditions = [
+  const filterConditions = [
     eq(Video.disabled, false),
     eq(Video.syncStatus, videoSyncStatus.Full),
     eq(Video.publishStatus, publishStatus.Published),
@@ -52,8 +60,32 @@ const getVideos = async (db: ReturnTypeOrDb, params: GetVideosArgs) => {
       .from(TagVideo)
       .innerJoin(Tag, eq(TagVideo.tagId, Tag.id))
       .where(inArray(Tag.slug, tagSlugs));
-    conditions.push(inArray(Video.id, tagVideoSubquery));
+    filterConditions.push(inArray(Video.id, tagVideoSubquery));
   }
+
+  if (durations) {
+    const minMaxPairs = getMinxMaxForTimeFilter(durations) ?? [];
+    const durationFilter =
+      minMaxPairs.length > 0
+        ? or(
+            ...minMaxPairs.map(([min, max]) =>
+              and(gte(Video.duration, min), lte(Video.duration, max))
+            )
+          )
+        : undefined;
+    if (durationFilter) {
+      filterConditions.push(durationFilter);
+    }
+  }
+
+  if (timeframe) {
+    const earliestDate = getDateRangeForTimeframe(timeframe);
+    if (earliestDate) {
+      filterConditions.push(gt(Video.publishedAt, earliestDate.toISOString()));
+    }
+  }
+
+  const pageConditions = [...filterConditions];
 
   if (lastVideoId) {
     const lastVideo = await getLastVideo(db, lastVideoId);
@@ -66,38 +98,18 @@ const getVideos = async (db: ReturnTypeOrDb, params: GetVideosArgs) => {
           : lastVideo?.publishedAt ?? null;
     if (lastValue) {
       if ((order ?? "desc") === "asc") {
-        conditions.push(
+        pageConditions.push(
           key === "views"
             ? gt(Video.views, Number(lastValue))
             : gt(Video.publishedAt, String(lastValue))
         );
       } else {
-        conditions.push(
+        pageConditions.push(
           key === "views"
             ? lt(Video.views, Number(lastValue))
             : lt(Video.publishedAt, String(lastValue))
         );
       }
-    }
-  }
-
-  if (durations) {
-    const minMaxPairs = getMinxMaxForTimeFilter(durations) ?? [];
-    if (minMaxPairs.length > 0) {
-      conditions.push(
-        or(
-          ...minMaxPairs.map(([min, max]) =>
-            and(gte(Video.duration, min), lte(Video.duration, max))
-          )
-        )
-      );
-    }
-  }
-
-  if (timeframe) {
-    const earliestDate = getDateRangeForTimeframe(timeframe);
-    if (earliestDate) {
-      conditions.push(gt(Video.publishedAt, earliestDate.toISOString()));
     }
   }
 
@@ -127,7 +139,7 @@ const getVideos = async (db: ReturnTypeOrDb, params: GetVideosArgs) => {
     })
     .from(Video)
     .leftJoin(Channel, eq(Video.channelId, Channel.id))
-    .where(and(...conditions))
+    .where(and(...pageConditions))
     .orderBy(ordering)
     .limit(take ?? 25);
 
@@ -185,10 +197,14 @@ const getVideos = async (db: ReturnTypeOrDb, params: GetVideosArgs) => {
       })) ?? [],
   }));
 
+  if (options.skipCount || lastVideoId) {
+    return [data, 0] as const;
+  }
+
   const countRow = await db
     .select({ count: sql<number>`count(*)` })
     .from(Video)
-    .where(and(...conditions));
+    .where(and(...filterConditions));
 
   const totalVideosCount = Number(countRow[0]?.count ?? 0);
 

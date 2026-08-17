@@ -3,9 +3,16 @@ import { Tag } from "../../db/schema";
 import type { ReturnTypeOrDb } from "../../db/queries/types";
 
 export const getSitemapTagSlugs = async (db: ReturnTypeOrDb) => {
-  const rows = await db.select({ slug: Tag.slug }).from(Tag).where(isNotNull(Tag.slug));
+  const rows = await db
+    .select({
+      slug: Tag.slug,
+      lastedMatchedAt: Tag.lastedMatchedAt,
+    })
+    .from(Tag)
+    .where(isNotNull(Tag.slug));
 
-  return rows
-    .map((row) => row.slug)
-    .filter((slug): slug is string => slug !== null);
+  return rows.filter(
+    (row): row is { slug: string; lastedMatchedAt: string | null } =>
+      row.slug !== null
+  );
 };
