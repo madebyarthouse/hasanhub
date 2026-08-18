@@ -93,10 +93,26 @@ const fetchTwitchJson = async <T>(
   return (await response.json()) as T;
 };
 
+const isUnauthorizedError = (error: unknown): error is StreamInfoError =>
+  Boolean(
+    error &&
+      typeof error === "object" &&
+      (error as StreamInfoError).unauthorized
+  );
+
+const valueOrNull = <T>(result: PromiseSettledResult<T>): T | null => {
+  if (result.status === "fulfilled") {
+    return result.value;
+  }
+
+  console.warn("Twitch API call failed:", result.reason);
+  return null;
+};
+
 const getStreamInfoFromToken = async (accessToken: string) => {
   const clientId = env.TWITCH_CLIENT_ID?.trim() ?? "";
 
-  return await Promise.all([
+  const [infoResult, scheduleResult] = await Promise.allSettled([
     fetchTwitchJson<StreamInfo>(
       "https://api.twitch.tv/helix/streams?first=1&user_id=207813352",
       accessToken,
@@ -108,6 +124,16 @@ const getStreamInfoFromToken = async (accessToken: string) => {
       clientId
     ),
   ]);
+
+  const unauthorizedResult = [infoResult, scheduleResult].find(
+    (result): result is PromiseRejectedResult =>
+      result.status === "rejected" && isUnauthorizedError(result.reason)
+  );
+  if (unauthorizedResult) {
+    throw unauthorizedResult.reason;
+  }
+
+  return [valueOrNull(infoResult), valueOrNull(scheduleResult)] as const;
 };
 
 export const getStreamInfo = async () => {
@@ -116,11 +142,7 @@ export const getStreamInfo = async () => {
   try {
     return await getStreamInfoFromToken(accessToken);
   } catch (error) {
-    if (
-      error &&
-      typeof error === "object" &&
-      (error as StreamInfoError).unauthorized
-    ) {
+    if (isUnauthorizedError(error)) {
       const refreshedToken = await getValidAccessToken({ forceRefresh: true });
       return getStreamInfoFromToken(refreshedToken);
     }
