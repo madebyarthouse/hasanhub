@@ -123,25 +123,35 @@ const getVideos = async (
         ? desc(Video.views)
         : desc(Video.publishedAt);
 
-  const videos = await db
-    .select({
-      id: Video.id,
-      youtubeId: Video.youtubeId,
-      largeThumbnailUrl: Video.largeThumbnailUrl,
-      title: Video.title,
-      publishedAt: Video.publishedAt,
-      views: Video.views,
-      duration: Video.duration,
-      channelId: Video.channelId,
-      channelTitle: Channel.title,
-      channelSmallThumbnailUrl: Channel.smallThumbnailUrl,
-      channelYoutubeId: Channel.youtubeId,
-    })
-    .from(Video)
-    .leftJoin(Channel, eq(Video.channelId, Channel.id))
-    .where(and(...pageConditions))
-    .orderBy(ordering)
-    .limit(take ?? 25);
+  const shouldCount = !(options.skipCount || lastVideoId);
+  const [videos, totalVideosCount] = await Promise.all([
+    db
+      .select({
+        id: Video.id,
+        youtubeId: Video.youtubeId,
+        largeThumbnailUrl: Video.largeThumbnailUrl,
+        title: Video.title,
+        publishedAt: Video.publishedAt,
+        views: Video.views,
+        duration: Video.duration,
+        channelId: Video.channelId,
+        channelTitle: Channel.title,
+        channelSmallThumbnailUrl: Channel.smallThumbnailUrl,
+        channelYoutubeId: Channel.youtubeId,
+      })
+      .from(Video)
+      .leftJoin(Channel, eq(Video.channelId, Channel.id))
+      .where(and(...pageConditions))
+      .orderBy(ordering)
+      .limit(take ?? 25),
+    shouldCount
+      ? db
+          .select({ count: sql<number>`count(*)` })
+          .from(Video)
+          .where(and(...filterConditions))
+          .then((countRow) => Number(countRow[0]?.count ?? 0))
+      : Promise.resolve(0),
+  ]);
 
   const videoIds = videos.map((video) => video.id).filter(Boolean);
   const tags = videoIds.length
@@ -196,17 +206,6 @@ const getVideos = async (
           : null,
       })) ?? [],
   }));
-
-  if (options.skipCount || lastVideoId) {
-    return [data, 0] as const;
-  }
-
-  const countRow = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(Video)
-    .where(and(...filterConditions));
-
-  const totalVideosCount = Number(countRow[0]?.count ?? 0);
 
   return [data, totalVideosCount] as const;
 };

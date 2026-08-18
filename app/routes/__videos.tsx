@@ -40,6 +40,40 @@ export type VideosLayoutContext = {
   streamSchedule?: StreamScheduleDisplay;
 };
 
+const emptyStreamDisplay: {
+  streamInfo: StreamInfoDisplay | null;
+  streamSchedule: StreamScheduleDisplay | null;
+} = {
+  streamInfo: null,
+  streamSchedule: null,
+};
+
+const loadStreamDisplay = async () => {
+  try {
+    const [info, schedule] = await getStreamInfo();
+    return {
+      streamInfo: info?.data?.length
+        ? {
+            user_login: info.data[0].user_login,
+            user_name: info.data[0].user_name,
+            title: info.data[0].title,
+          }
+        : null,
+      streamSchedule: schedule?.data?.segments?.length
+        ? {
+            broadcaster_login: schedule.data.broadcaster_login,
+            broadcaster_name: schedule.data.broadcaster_name,
+            start_time: schedule.data.segments[0].start_time,
+            title: schedule.data.segments[0].title,
+          }
+        : null,
+    };
+  } catch (error) {
+    console.warn("Stream info unavailable:", error);
+    return emptyStreamDisplay;
+  }
+};
+
 export const loader = async ({ request }: Route.LoaderArgs) => {
   const url = new URL(request.url);
   const slugs = url.pathname.startsWith("/tags/")
@@ -50,50 +84,13 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
     throw new Response("Not found", { status: 404, statusText: "Not found" });
   }
 
-  const tags = await getTagsForSidebar(db);
   const tagSlugs = TagSlugsValidator.parse(slugs) ?? [];
-
-  let streamInfo: StreamInfoDisplay | null = null;
-  let streamSchedule: StreamScheduleDisplay | null = null;
-
-  if (isCrawlerRequest(request)) {
-    return new Response(
-      JSON.stringify({
-        tags,
-        tagSlugs,
-        streamInfo,
-        streamSchedule,
-      }),
-      {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Cache-Control": cacheHeader(TAGS_SIDEBAR_CACHE_POLICY),
-        },
-      }
-    );
-  }
-
-  try {
-    const [info, schedule] = await getStreamInfo();
-    streamInfo = info?.data?.length
-      ? {
-          user_login: info.data[0].user_login,
-          user_name: info.data[0].user_name,
-          title: info.data[0].title,
-        }
-      : null;
-    streamSchedule = schedule?.data?.segments?.length
-      ? {
-          broadcaster_login: schedule.data.broadcaster_login,
-          broadcaster_name: schedule.data.broadcaster_name,
-          start_time: schedule.data.segments[0].start_time,
-          title: schedule.data.segments[0].title,
-        }
-      : null;
-  } catch (error) {
-    console.warn("Stream info unavailable:", error);
-  }
+  // Single fetch runs this layout loader in the same Worker request as the
+  // leaf route. Start Twitch and sidebar D1 together so they overlap with it.
+  const [tags, { streamInfo, streamSchedule }] = await Promise.all([
+    getTagsForSidebar(db),
+    isCrawlerRequest(request) ? emptyStreamDisplay : loadStreamDisplay(),
+  ]);
 
   return new Response(
     JSON.stringify({
