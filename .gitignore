@@ -8,3 +8,4 @@
 .wrangler
 .d1/
 dump.sql
+__pycache__/

@@ -27,6 +27,8 @@
   },
   "observability": {
     "enabled": true,
+    // Keep full diagnostics during the HTTP 500 investigation. Head sampling
+    // also drops error logs; reassess using dynamic traffic and log volume.
     "head_sampling_rate": 1,
     "logs": {
       "enabled": true,
