@@ -7,6 +7,7 @@
     "dev": "react-router dev",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
+    "test:queries": "python3 -m unittest discover -s tests -p 'test_*.py'",
     "db:validate": "node --loader ts-node/esm scripts/validate-db.ts",
     "db:generate": "npx drizzle-kit generate",
     "db:migrate": "wrangler d1 migrations apply hasanhub --local",

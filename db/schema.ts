@@ -88,6 +88,19 @@ export const Video = sqliteTable(
     syncStatusIdx: index("Video_syncStatus_idx").on(table.syncStatus),
     publishStatusIdx: index("Video_publishStatus_idx").on(table.publishStatus),
     viewsIdx: index("Video_views_idx").on(table.views),
+    visiblePublishedAtIdx: index("Video_visible_publishedAt_idx").on(
+      table.disabled,
+      table.syncStatus,
+      table.publishStatus,
+      table.publishedAt
+    ),
+    visibleViewsIdx: index("Video_visible_views_idx").on(
+      table.disabled,
+      table.syncStatus,
+      table.publishStatus,
+      table.views
+    ),
+    createdAtIdx: index("Video_createdAt_idx").on(table.createdAt),
     youtubeIdUnique: uniqueIndex("Video_youtubeId_key").on(table.youtubeId),
   })
 );

@@ -15,6 +15,13 @@
       "when": 1786992392507,
       "tag": "0001_add_tag_aggregates",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1793235769765,
+      "tag": "0002_video_query_indexes",
+      "breakpoints": true
     }
   ]
 }
